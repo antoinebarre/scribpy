@@ -8,3 +8,16 @@ wheels/
 
 # Virtual environments
 .venv
+
+# pytest
+.pytest_cache/
+
+# coverage
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+
+# ruff
+.ruff_cache/
