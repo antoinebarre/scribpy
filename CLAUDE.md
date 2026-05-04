@@ -33,6 +33,9 @@ The intended flow is: **parser** reads `.md` → **core** builds an AST/document
 From the README, all code must follow:
 
 - **SOLID principles**
+- Prefere functional programming instead of Object Oriented except for data (use dataclass)
+- boost the maintenability of the code : use classical design pattern
+- injection instead of inheritances
 - **Google Python Style Guide**
 - **Full type hints** on all public functions and methods
 - **Cyclomatic complexity < 5** per function
