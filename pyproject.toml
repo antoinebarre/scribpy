@@ -21,6 +21,7 @@ packages = ["src/scribpy"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--tb=short"
+pythonpath = ["src"]
 
 [tool.mypy]
 strict = true
