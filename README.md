@@ -45,6 +45,22 @@ scribpy/
 └── plugins/       # Extension points
 ```
 
+## Development
+
+```bash
+uv sync --dev       # install package + dev dependencies
+make check          # format · lint · typecheck · test (all at once)
+```
+
+Individual commands:
+
+| Command          | Description                        |
+|------------------|------------------------------------|
+| `make format`    | Auto-format with ruff              |
+| `make lint`      | Lint with ruff                     |
+| `make typecheck` | Type-check with mypy (strict mode) |
+| `make test`      | Run tests with coverage report     |
+
 ## Contributing
 
 1. Fork the repository

@@ -1,7 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "scribpy"
 version = "0.1.0"
-description = "Add your description here"
+description = "Manipulate, edit, and generate documents from Markdown files."
 readme = "README.md"
 requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Antoine" }]
 dependencies = []
+
+[project.scripts]
+scribpy = "scribpy.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/scribpy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short"
+
+[tool.mypy]
+strict = true
+packages = ["scribpy"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=6",
+    "ruff>=0.4",
+    "mypy>=1.10",
+]
