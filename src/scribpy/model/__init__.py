@@ -11,3 +11,7 @@ Defines the core frozen dataclasses that flow through the pipeline:
     DocumentIndex — ordered index of files for assembly
     Diagnostic    — an error, warning, or info message
 """
+
+from scribpy.model.diagnostic import Diagnostic, DiagnosticSeverity
+
+__all__ = ["Diagnostic", "DiagnosticSeverity"]
