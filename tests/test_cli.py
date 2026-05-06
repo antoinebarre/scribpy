@@ -30,7 +30,7 @@ def test_demo_create_returns_zero_and_creates_valid_project(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert "Created Scribpy demo project" in captured.out
+    assert "Created valid Scribpy demo project" in captured.out
     assert captured.err == ""
     assert (target / "scribpy.toml").is_file()
 
@@ -38,6 +38,67 @@ def test_demo_create_returns_zero_and_creates_valid_project(
     check_output = capsys.readouterr()
     assert check_exit_code == 0
     assert check_output.err == ""
+
+
+def test_demo_create_invalid_variant_creates_project_with_diagnostics(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    target = tmp_path / "external-demo"
+
+    exit_code = main(["demo", "create", str(target), "--variant", "invalid"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "Created invalid Scribpy demo project" in captured.out
+    assert captured.err == ""
+
+    check_exit_code = main(["index", "check", "--root", str(target)])
+    check_output = capsys.readouterr()
+    assert check_exit_code == 1
+    assert "error IDX002" in check_output.err
+    assert "error IDX003" in check_output.err
+    assert "warning IDX005" in check_output.err
+
+
+def test_demo_create_help_documents_variants_and_examples(capsys) -> None:
+    exit_code = main(["demo", "create", "-h"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "scribpy demo create dd1 --variant invalid" in captured.out
+    assert "valid    creates a project expected to pass index check" in captured.out
+    assert "invalid  creates a project with missing" in captured.out
+
+
+def test_root_help_documents_common_workflows(capsys) -> None:
+    exit_code = main(["-h"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "Common workflows:" in captured.out
+    assert "scribpy demo create dd1" in captured.out
+    assert "scribpy index check --root dd1" in captured.out
+
+
+def test_demo_help_documents_next_step(capsys) -> None:
+    exit_code = main(["demo", "-h"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "After creation:" in captured.out
+    assert "scribpy index check --root dd1" in captured.out
+
+
+def test_index_check_help_documents_examples_and_exit_codes(capsys) -> None:
+    exit_code = main(["index", "check", "-h"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "scribpy index check --root dd1" in captured.out
+    assert "What is checked:" in captured.out
+    assert "0  no blocking error diagnostics" in captured.out
+    assert "1  at least one error diagnostic" in captured.out
 
 
 def test_demo_create_returns_one_when_target_contains_demo_files(

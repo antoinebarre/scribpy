@@ -30,6 +30,22 @@ def test_created_demo_project_passes_index_check(tmp_path: Path) -> None:
     assert result.diagnostics == ()
 
 
+def test_create_invalid_demo_project_produces_index_diagnostics(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target, variant="invalid")
+
+    result = run_index_check(target)
+
+    assert result.failed is True
+    assert tuple(diagnostic.code for diagnostic in result.diagnostics) == (
+        "IDX003",
+        "IDX002",
+        "IDX005",
+    )
+
+
 def test_create_demo_project_refuses_existing_demo_files_without_force(
     tmp_path: Path,
 ) -> None:
