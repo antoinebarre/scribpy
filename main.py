@@ -1,4 +1,4 @@
-"""Interactive demo of scribpy.utils file utilities."""
+"""Interactive demo of scribpy.utils file and generator utilities."""
 
 import sys
 import tempfile
@@ -6,7 +6,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from scribpy.utils import is_md_file, list_md_files, read_md_file, write_md_file
+from scribpy.utils import (
+    MarkdownConfig,
+    generate_markdown,
+    is_md_file,
+    list_md_files,
+    read_md_file,
+    write_md_file,
+)
 
 
 def _section(title: str) -> None:
@@ -90,6 +97,46 @@ def demo_write_md_file(tmp: Path) -> None:
         print(f"  ValueError        → {e}")
 
 
+_WORK_DIR = Path(__file__).parent / "work"
+
+
+def demo_generator() -> None:
+    _section("generate_markdown")
+
+    # --- default config (all sections) ---
+    doc = generate_markdown(seed=42)
+    size_kb = len(doc.encode()) / 1024
+    out = _WORK_DIR / "lorem.md"
+    write_md_file(out, doc)
+    print(f"  seed=42  → {len(doc.splitlines())} lines, {size_kb:.1f} KB → {out}")
+    print("  First 3 lines:")
+    for line in doc.splitlines()[:3]:
+        print(f"    {line}")
+
+    # --- minimal config (no optional sections) ---
+    cfg_minimal = MarkdownConfig(
+        include_math=False,
+        include_mermaid=False,
+        include_alerts=False,
+        include_footnotes=False,
+        include_details=False,
+    )
+    doc_minimal = generate_markdown(seed=42, config=cfg_minimal)
+    out_minimal = _WORK_DIR / "lorem_minimal.md"
+    write_md_file(out_minimal, doc_minimal)
+    size_min = len(doc_minimal.encode()) / 1024
+    print(
+        f"  minimal  → {len(doc_minimal.splitlines())} lines, "
+        f"{size_min:.1f} KB → {out_minimal}"
+    )
+
+    # --- custom separator ---
+    cfg_sep = MarkdownConfig(section_separator="\n\n* * *\n\n")
+    doc_sep = generate_markdown(seed=0, config=cfg_sep)
+    sep_count = doc_sep.count("* * *")
+    print(f"  custom separator '* * *' appears {sep_count} time(s)")
+
+
 def main() -> None:
     print("scribpy — utils demo")
 
@@ -99,6 +146,7 @@ def main() -> None:
         demo_list_md_files(tmp)
         demo_read_md_file(tmp)
         demo_write_md_file(tmp)
+        demo_generator()
 
     print("\nDone.")
 
