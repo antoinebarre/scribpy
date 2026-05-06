@@ -129,7 +129,9 @@ def test_demo_create_force_overwrites_demo_files(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert "Next: scribpy index check" in captured.out
+    assert "Next steps:" in captured.out
+    assert "scribpy index check" in captured.out
+    assert "scribpy parse check" in captured.out
     assert captured.err == ""
 
 

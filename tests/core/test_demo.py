@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from scribpy.core import create_demo_project, run_index_check
+from scribpy.core import create_demo_project, parse_project_documents, run_index_check
 
 
 def test_create_demo_project_writes_tutorial_files(tmp_path: Path) -> None:
@@ -70,7 +70,7 @@ def test_create_demo_project_overwrites_demo_files_with_force(tmp_path: Path) ->
     result = create_demo_project(target, force=True)
 
     assert result.failed is False
-    assert existing.read_text(encoding="utf-8").startswith("# Scribpy Demo")
+    assert "# Scribpy Demo" in existing.read_text(encoding="utf-8")
 
 
 def test_create_demo_project_refuses_file_target(tmp_path: Path) -> None:
@@ -102,3 +102,84 @@ def test_create_demo_project_reports_write_failure(
     assert result.failed is True
     assert len(result.diagnostics) == 1
     assert result.diagnostics[0].code == "DEMO002"
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 integration — valid demo passes parse check
+# ---------------------------------------------------------------------------
+
+
+def test_created_demo_project_passes_parse_check(tmp_path: Path) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target)
+
+    result = parse_project_documents(target)
+
+    assert result.failed is False
+    assert len(result.documents) == 2
+
+
+def test_created_demo_project_documents_in_index_order(tmp_path: Path) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target)
+
+    result = parse_project_documents(target)
+
+    titles = [d.title for d in result.documents]
+    assert titles == ["Scribpy Demo", "Setup Guide"]
+
+
+def test_created_demo_project_frontmatter_extracted(tmp_path: Path) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target)
+
+    result = parse_project_documents(target)
+
+    index_doc = result.documents[0]
+    assert index_doc.frontmatter["author"] == "Demo Author"
+    assert index_doc.frontmatter["version"] == 1
+    assert index_doc.frontmatter["tags"] == ["scribpy", "docs-as-code"]
+
+
+def test_created_demo_project_links_extracted(tmp_path: Path) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target)
+
+    result = parse_project_documents(target)
+
+    index_doc = result.documents[0]
+    all_targets = [link.target for link in index_doc.links]
+    assert any("guide/setup.md" in t for t in all_targets)
+    assert any("github.com" in t for t in all_targets)
+
+
+def test_created_demo_project_assets_extracted(tmp_path: Path) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target)
+
+    result = parse_project_documents(target)
+
+    index_doc = result.documents[0]
+    assert len(index_doc.assets) == 1
+    assert index_doc.assets[0].target == "assets/architecture.png"
+
+
+def test_created_demo_project_headings_extracted(tmp_path: Path) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target)
+
+    result = parse_project_documents(target)
+
+    index_doc = result.documents[0]
+    levels = [h.level for h in index_doc.headings]
+    assert 1 in levels
+    assert 2 in levels
+
+
+def test_invalid_demo_fails_parse_check(tmp_path: Path) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target, variant="invalid")
+
+    result = parse_project_documents(target)
+
+    assert result.failed is True

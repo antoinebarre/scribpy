@@ -350,7 +350,10 @@ def _run_demo_create_command(
         return 1
 
     print(f"Created {variant} Scribpy demo project at {target}", file=stdout)
-    print(f"Next: scribpy index check --root {target}", file=stdout)
+    print("", file=stdout)
+    print("Next steps:", file=stdout)
+    print(f"  scribpy index check --root {target}", file=stdout)
+    print(f"  scribpy parse check --root {target}", file=stdout)
     return 0
 
 
