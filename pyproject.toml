@@ -23,7 +23,11 @@ classifiers = [
     "Topic :: Software Development :: Documentation",
     "Typing :: Typed",
 ]
-dependencies = []
+dependencies = [
+    "PyYAML>=6",
+    "tomlkit>=0.13",
+    "markdown-it-py>=3",
+]
 
 [project.urls]
 Homepage = "https://github.com/antoinebarre/scribpy"
@@ -107,4 +111,5 @@ dev = [
     "radon>=6",
     "ruff>=0.4",
     "mypy>=1.10",
+    "types-pyyaml>=6.0.12.20260408",
 ]
