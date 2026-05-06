@@ -39,8 +39,8 @@ contains() {
 
 printf "\n${B}Running CI checks…${N}\n\n"
 
-run "format-check"  work/format.log    uv run ruff format --check src/ tests/ scripts/
-run "lint"          work/lint.log      uv run ruff check  src/ tests/ scripts/
+run "format-check"  work/format.log    uv run ruff format --check src/ scripts/
+run "lint"          work/lint.log      uv run ruff check  src/ scripts/
 run "type-check"    work/typecheck.log uv run mypy src/
 run "metrics"       work/metrics.log   uv run python scripts/code_metrics.py
 

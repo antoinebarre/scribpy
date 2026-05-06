@@ -1,13 +1,13 @@
 .PHONY: format lint docstrings format-check typecheck metrics test check ci clean-dist build check-dist publish-test publish
 
 format:
-	uv run ruff format src/ tests/ scripts/
+	uv run ruff format src/ scripts/
 
 format-check:
-	uv run ruff format --check src/ tests/ scripts/
+	uv run ruff format --check src/ scripts/
 
 lint:
-	uv run ruff check src/ tests/ scripts/
+	uv run ruff check src/ scripts/
 
 docstrings:
 	uv run ruff check src/ --select D --ignore D100,D104

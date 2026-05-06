@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from scribpy.utils import is_md_file, list_md_files, read_md_file, write_md_file
+from scribpy.utils import RealFileSystem, is_md_file, list_md_files, read_md_file, write_md_file
 
 # --- is_md_file ---
 
@@ -136,3 +136,29 @@ def test_write_md_file_raises_for_wrong_extension(tmp_path: Path) -> None:
     f = tmp_path / "out.txt"
     with pytest.raises(ValueError):
         write_md_file(f, "# Hello")
+
+
+# --- RealFileSystem ---
+
+
+def test_real_filesystem_write_text_and_read_text(tmp_path: Path) -> None:
+    fs = RealFileSystem()
+    path = tmp_path / "doc.md"
+    fs.write_text(path, "# Hello\n")
+    assert fs.read_text(path) == "# Hello\n"
+
+
+def test_real_filesystem_exists(tmp_path: Path) -> None:
+    fs = RealFileSystem()
+    existing = tmp_path / "a.md"
+    existing.write_text("x")
+    assert fs.exists(existing) is True
+    assert fs.exists(tmp_path / "missing.md") is False
+
+
+def test_real_filesystem_glob(tmp_path: Path) -> None:
+    fs = RealFileSystem()
+    (tmp_path / "a.md").write_text("a")
+    (tmp_path / "b.md").write_text("b")
+    result = sorted(fs.glob(tmp_path, "*.md"))
+    assert result == [tmp_path / "a.md", tmp_path / "b.md"]

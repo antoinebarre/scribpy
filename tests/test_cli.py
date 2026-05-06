@@ -180,14 +180,66 @@ def test_non_integer_system_exit_code_maps_to_usage_error() -> None:
     assert _exit_code(SystemExit("bad usage")) == 2
 
 
+def test_parse_check_returns_zero_for_valid_project(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md")
+
+    exit_code = main(["parse", "check", "--root", str(tmp_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "1 document(s) successfully" in captured.out
+    assert captured.err == ""
+
+
+def test_parse_check_returns_one_when_config_missing(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    exit_code = main(["parse", "check", "--root", str(tmp_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "error CFG001" in captured.err
+    assert captured.out == ""
+
+
+def test_parse_check_prints_warning_but_returns_zero(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "---\nbad: [unclosed\n---\n# T\n")
+
+    exit_code = main(["parse", "check", "--root", str(tmp_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "PRS002" in captured.err
+    assert "1 document(s) successfully" in captured.out
+
+
+def test_parse_check_help_documents_examples_and_exit_codes(capsys) -> None:
+    exit_code = main(["parse", "check", "-h"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "scribpy parse check --root dd1" in captured.out
+    assert "What is checked:" in captured.out
+    assert "0  no blocking error diagnostics" in captured.out
+
+
 def _write_config(root: Path, content: str) -> Path:
     config_path = root / "scribpy.toml"
     config_path.write_text(content, encoding="utf-8")
     return config_path
 
 
-def _write_source(root: Path, relative_path: str) -> Path:
+def _write_source(root: Path, relative_path: str, content: str = "# Title\n") -> Path:
     source_path = root / relative_path
     source_path.parent.mkdir(parents=True, exist_ok=True)
-    source_path.write_text("# Title\n", encoding="utf-8")
+    source_path.write_text(content, encoding="utf-8")
     return source_path
