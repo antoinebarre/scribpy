@@ -8,7 +8,12 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import TextIO
 
-from scribpy.core import DemoVariant, create_demo_project, run_index_check
+from scribpy.core import (
+    DemoVariant,
+    create_demo_project,
+    parse_project_documents,
+    run_index_check,
+)
 from scribpy.utils import format_diagnostics
 
 _VALID_DEMO_VARIANTS = ("valid", "invalid")
@@ -33,6 +38,46 @@ Common workflows:
 More help:
   scribpy demo create -h
   scribpy index check -h
+"""
+_PARSE_DESCRIPTION = """\
+Parse Markdown sources and verify the FC-03 semantic extraction chain.
+
+Parse commands load configuration, discover source files, build the document
+index, and parse each Markdown file into a typed Document. They report
+diagnostics from every stage of the chain.
+"""
+_PARSE_EPILOG = """\
+Examples:
+  scribpy parse check --root dd1
+  scribpy parse check --root dd1/scribpy.toml
+  scribpy parse check
+
+Use `scribpy demo create dd1` first if you need a project to try.
+"""
+_PARSE_CHECK_DESCRIPTION = """\
+Parse all Markdown sources and report diagnostics for the full FC-03 chain:
+configuration, source discovery, document index, and Markdown parsing.
+
+A valid project prints the number of successfully parsed documents and returns
+exit code 0. Any blocking error returns exit code 1.
+"""
+_PARSE_CHECK_EPILOG = """\
+Examples:
+  scribpy parse check --root dd1
+  scribpy parse check --root dd1/scribpy.toml
+  scribpy parse check --root .
+
+What is checked:
+  - scribpy.toml can be found and loaded
+  - paths.source exists and stays inside the project
+  - Markdown files are discovered and indexed
+  - each Markdown file parses without errors
+  - frontmatter, headings, links, and assets are extracted
+
+Exit codes:
+  0  no blocking error diagnostics
+  1  at least one error diagnostic
+  2  invalid CLI usage
 """
 _INDEX_DESCRIPTION = """\
 Inspect project source discovery and document index configuration.
@@ -148,6 +193,9 @@ def _main(argv: Sequence[str] | None, stdout: TextIO, stderr: TextIO) -> int:
     if args.command == "index" and args.index_command == "check":
         return _run_index_check_command(args.root, stderr)
 
+    if args.command == "parse" and args.parse_command == "check":
+        return _run_parse_check_command(args.root, stdout, stderr)
+
     if args.command == "demo" and args.demo_command == "create":
         return _run_demo_create_command(
             args.target,
@@ -169,6 +217,31 @@ def _build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     subparsers = parser.add_subparsers(dest="command")
+
+    parse_parser = subparsers.add_parser(
+        "parse",
+        help="Parse Markdown sources and report semantic extraction diagnostics",
+        description=_PARSE_DESCRIPTION,
+        epilog=_PARSE_EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parse_subparsers = parse_parser.add_subparsers(dest="parse_command")
+    parse_check_parser = parse_subparsers.add_parser(
+        "check",
+        help="Parse all Markdown sources and report diagnostics",
+        description=_PARSE_CHECK_DESCRIPTION,
+        epilog=_PARSE_CHECK_EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parse_check_parser.add_argument(
+        "--root",
+        type=Path,
+        default=None,
+        help=(
+            "Project root, any path inside a project, or a direct path to "
+            "scribpy.toml. Defaults to the current working directory."
+        ),
+    )
 
     index_parser = subparsers.add_parser(
         "index",
@@ -243,6 +316,19 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _run_parse_check_command(root: Path | None, stdout: TextIO, stderr: TextIO) -> int:
+    result = parse_project_documents(root)
+    if result.diagnostics:
+        print(format_diagnostics(result.diagnostics), file=stderr)
+    if result.failed:
+        return 1
+    print(
+        f"Parsed {len(result.documents)} document(s) successfully.",
+        file=stdout,
+    )
+    return 0
+
+
 def _run_index_check_command(root: Path | None, stderr: TextIO) -> int:
     result = run_index_check(root)
     if result.diagnostics:
@@ -264,7 +350,10 @@ def _run_demo_create_command(
         return 1
 
     print(f"Created {variant} Scribpy demo project at {target}", file=stdout)
-    print(f"Next: scribpy index check --root {target}", file=stdout)
+    print("", file=stdout)
+    print("Next steps:", file=stdout)
+    print(f"  scribpy index check --root {target}", file=stdout)
+    print(f"  scribpy parse check --root {target}", file=stdout)
     return 0
 
 

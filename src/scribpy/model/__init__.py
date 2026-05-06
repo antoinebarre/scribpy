@@ -31,7 +31,7 @@ from scribpy.model.protocols import (
     MarkdownParser,
     PdfRenderer,
 )
-from scribpy.model.results import BuildArtifact, BuildResult, LintResult
+from scribpy.model.results import BuildArtifact, BuildResult, LintResult, ParseResult
 from scribpy.model.source import SourceFile
 
 __all__ = [
@@ -52,6 +52,7 @@ __all__ = [
     "MarkdownAst",
     "MarkdownParser",
     "PdfRenderer",
+    "ParseResult",
     "Project",
     "Reference",
     "ReferenceKind",

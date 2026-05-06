@@ -7,6 +7,25 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from scribpy.model.diagnostic import Diagnostic
+from scribpy.model.document import Document
+
+
+@dataclass(frozen=True)
+class ParseResult:
+    """Result of a Markdown parsing operation.
+
+    Attributes:
+        documents: Documents successfully parsed before completion. Failed
+            parses may still contain partial results when other source files
+            were valid.
+        diagnostics: Diagnostics produced while reading, parsing, or extracting
+            semantic document data.
+        failed: Whether the operation should be considered failing.
+    """
+
+    documents: tuple[Document, ...]
+    diagnostics: tuple[Diagnostic, ...]
+    failed: bool
 
 
 @dataclass(frozen=True)
@@ -59,4 +78,4 @@ class BuildResult:
     diagnostics: tuple[Diagnostic, ...]
 
 
-__all__ = ["BuildArtifact", "BuildResult", "LintResult"]
+__all__ = ["BuildArtifact", "BuildResult", "LintResult", "ParseResult"]

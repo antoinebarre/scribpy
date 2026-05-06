@@ -34,7 +34,7 @@ make check
 Ce pipeline local exécute :
 
 ```text
-format -> lint -> docstrings -> typecheck -> test
+format -> lint -> docstrings -> typecheck -> metrics -> test
 ```
 
 Commandes ciblées :
@@ -45,6 +45,7 @@ make format-check  # vérifie le format sans modifier
 make lint          # ruff check src/ tests/
 make docstrings    # règles pydocstyle Google sur src/
 make typecheck     # mypy strict sur src/
+make metrics       # métriques de code + rapport Markdown
 make test          # pytest + coverage
 ```
 
@@ -89,10 +90,19 @@ Logs produits :
 | `work/format.log` | Résultat du format-check |
 | `work/lint.log` | Résultat Ruff |
 | `work/typecheck.log` | Résultat mypy |
+| `work/metrics.log` | Résultat des métriques de code |
+| `work/code-metrics-report.md` | Rapport Markdown des métriques de code |
 | `work/test.log` | Résultat pytest + coverage |
 | `work/junit.xml` | Rapport JUnit |
 | `work/coverage.xml` | Rapport coverage XML |
 | `work/htmlcov/` | Rapport coverage HTML |
+
+Artefacts GitHub Actions :
+
+- le workflow CI publie les logs, XML, rapports Markdown et `htmlcov/` dans
+  l'artefact `ci-reports-*` ;
+- le workflow de publication publie les rapports qualité dans l'artefact
+  `quality-reports-*`, en plus des distributions Python.
 
 ---
 

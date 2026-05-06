@@ -29,19 +29,20 @@ make check
 Execution order:
 
 ```text
-format -> lint -> docstrings -> typecheck -> test
+format -> lint -> docstrings -> typecheck -> metrics -> test
 ```
 
 Defined in `Makefile`:
 
 | Target | Command | Purpose |
 |--------|---------|---------|
-| `format` | `uv run ruff format src/ tests/` | Apply automatic formatting |
-| `lint` | `uv run ruff check src/ tests/` | Run static lint rules |
+| `format` | `uv run ruff format src/ tests/ scripts/` | Apply automatic formatting |
+| `lint` | `uv run ruff check src/ tests/ scripts/` | Run static lint rules |
 | `docstrings` | `uv run ruff check src/ --select D --ignore D100,D104` | Check Google-style source docstrings |
 | `typecheck` | `uv run mypy src/` | Run strict static typing |
+| `metrics` | `uv run python scripts/code_metrics.py` | Check code metrics thresholds |
 | `test` | `uv run pytest` | Run tests and coverage |
-| `check` | `format lint docstrings typecheck test` | Run the full local quality gate |
+| `check` | `format lint docstrings typecheck metrics test` | Run the full local quality gate |
 
 `make check` is intentionally mutating because `format` rewrites files. For a
 non-mutating formatting check, use:
@@ -57,7 +58,7 @@ make format-check
 Command:
 
 ```text
-uv run ruff format src/ tests/
+uv run ruff format src/ tests/ scripts/
 ```
 
 Configuration:
@@ -85,14 +86,14 @@ Rationale:
 Command:
 
 ```text
-uv run ruff check src/ tests/
+uv run ruff check src/ tests/ scripts/
 ```
 
 Configuration:
 
 ```toml
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP"]
+select = ["E", "F", "I", "UP", "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915"]
 ```
 
 Controlled rule families:
@@ -103,6 +104,8 @@ Controlled rule families:
 | `F` | Pyflakes correctness checks |
 | `I` | import sorting |
 | `UP` | pyupgrade modernization |
+| `C901` | cyclomatic complexity threshold |
+| `PLR091x` | function size and branching thresholds |
 
 Controlled points:
 
@@ -110,12 +113,26 @@ Controlled points:
 - unused imports and undefined names;
 - import ordering;
 - modern Python syntax for the supported Python version.
+- function complexity, branching, returns, arguments and statement counts.
 
 Rationale:
 
 - this is a compact baseline with low noise;
 - it catches common correctness issues without forcing broad style rules too
   early.
+
+Metric thresholds are configured in `pyproject.toml`:
+
+```toml
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 8
+max-branches = 12
+max-returns = 6
+max-statements = 50
+```
 
 ---
 
@@ -198,7 +215,64 @@ Rationale:
 
 ---
 
-## 7. Tests and Coverage
+## 7. Code Metrics
+
+Command:
+
+```text
+uv run python scripts/code_metrics.py
+```
+
+Configuration:
+
+```toml
+[tool.scribpy.code_metrics]
+paths = ["src/scribpy"]
+exclude = []
+max_cyclomatic_complexity = 10
+max_average_complexity = 4.0
+min_maintainability_index = 45.0
+max_module_logical_lines = 300
+max_module_source_lines = 500
+report_path = "work/code-metrics-report.md"
+```
+
+Controlled points:
+
+- maximum cyclomatic complexity per function or method;
+- average cyclomatic complexity across analyzed blocks;
+- maintainability index per module;
+- logical lines per module;
+- source lines per module.
+
+Implementation:
+
+- `scripts/code_metrics.py` reads thresholds only from `pyproject.toml`;
+- Radon provides the raw metrics calculations;
+- expected and actual values are printed in the terminal;
+- failures are printed as plain text and return exit code `1`;
+- a Markdown report is generated at `work/code-metrics-report.md`.
+
+Generated report:
+
+| Column | Meaning |
+|--------|---------|
+| `Metric` | Metric under control |
+| `Expected` | Threshold configured in `pyproject.toml` |
+| `Actual` | Measured value and worst offending file or block |
+| `Status` | `PASSED` or `FAILED` |
+
+Rationale:
+
+- Ruff catches local function complexity during linting;
+- Radon gives a second, reportable metric gate for maintainability and module
+  size;
+- all thresholds stay in the same configuration file as the other quality
+  tools.
+
+---
+
+## 8. Tests and Coverage
 
 Command:
 
@@ -277,7 +351,7 @@ false sense of test safety.
 
 ---
 
-## 8. CI Command
+## 9. CI Command
 
 Command:
 
@@ -301,7 +375,7 @@ Purpose:
 
 ---
 
-## 9. Distribution Checks
+## 10. Distribution Checks
 
 Commands:
 
@@ -326,7 +400,7 @@ Rationale:
 
 ---
 
-## 10. Current Quality Gate
+## 11. Current Quality Gate
 
 The current local gate is:
 
@@ -340,8 +414,9 @@ It controls:
 2. static lint;
 3. Google-style source docstrings;
 4. strict typing;
-5. tests;
-6. coverage threshold and reports.
+5. code metrics and metrics report;
+6. tests;
+7. coverage threshold and reports.
 
 Expected successful output includes:
 
@@ -350,13 +425,14 @@ ruff format: unchanged or reformatted
 ruff check: All checks passed
 docstrings: All checks passed
 mypy: Success
+metrics: Code metrics passed
 pytest: all tests passed
 coverage: fail_under reached
 ```
 
 ---
 
-## 11. Documentation Layout
+## 12. Documentation Layout
 
 Development decision records live under:
 

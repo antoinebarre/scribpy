@@ -26,6 +26,7 @@ from scribpy.utils.diagnostics import (
     sort_diagnostics,
 )
 from scribpy.utils.file_utils import (
+    RealFileSystem,
     is_md_file,
     list_md_files,
     read_md_file,
@@ -37,6 +38,7 @@ from scribpy.utils.toml import load_toml
 __all__ = [
     "DIAGNOSTIC_SEVERITY_ORDER",
     "MarkdownConfig",
+    "RealFileSystem",
     "format_diagnostic",
     "format_diagnostics",
     "generate_markdown",

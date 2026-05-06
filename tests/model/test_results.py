@@ -5,11 +5,19 @@ from pathlib import Path
 
 import pytest
 
-from scribpy.model import BuildArtifact, BuildResult, Diagnostic, LintResult
+from scribpy.model import (
+    BuildArtifact,
+    BuildResult,
+    Diagnostic,
+    Document,
+    LintResult,
+    MarkdownAst,
+    ParseResult,
+)
 
 
 def test_result_objects_are_frozen_dataclasses() -> None:
-    result_types = (BuildArtifact, BuildResult, LintResult)
+    result_types = (BuildArtifact, BuildResult, LintResult, ParseResult)
 
     for result_type in result_types:
         assert is_dataclass(result_type)
@@ -25,6 +33,38 @@ def test_lint_result_exposes_diagnostics_and_failure_state() -> None:
 
     result = LintResult(diagnostics=(diagnostic,), failed=True)
 
+    assert result.diagnostics == (diagnostic,)
+    assert result.failed is True
+
+    with pytest.raises(FrozenInstanceError):
+        result.failed = False
+
+
+def test_parse_result_exposes_documents_diagnostics_and_failure_state() -> None:
+    document = Document(
+        path=Path("doc/index.md"),
+        relative_path=Path("index.md"),
+        source="# Title\n",
+        frontmatter={"title": "Title"},
+        ast=MarkdownAst(backend="scribpy-minimal", tokens=()),
+        title="Title",
+        headings=(),
+        links=(),
+        assets=(),
+    )
+    diagnostic = Diagnostic(
+        severity="error",
+        code="PRS002",
+        message="Invalid frontmatter",
+    )
+
+    result = ParseResult(
+        documents=(document,),
+        diagnostics=(diagnostic,),
+        failed=True,
+    )
+
+    assert result.documents == (document,)
     assert result.diagnostics == (diagnostic,)
     assert result.failed is True
 
