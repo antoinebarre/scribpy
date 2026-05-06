@@ -14,3 +14,9 @@ Extraction helpers:
     extract_links(ast)    -> tuple[Reference, ...]
     extract_assets(ast)   -> tuple[AssetRef, ...]
 """
+
+from __future__ import annotations
+
+from scribpy.parser.frontmatter import FrontmatterResult, parse_frontmatter
+
+__all__ = ["FrontmatterResult", "parse_frontmatter"]
