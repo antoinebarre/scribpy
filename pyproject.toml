@@ -21,10 +21,22 @@ packages = ["src/scribpy"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--tb=short"
+pythonpath = ["src"]
+cache_dir = "work/.pytest_cache"
+
+[tool.coverage.run]
+data_file = "work/.coverage"
+
+[tool.coverage.html]
+directory = "work/htmlcov"
 
 [tool.mypy]
 strict = true
 packages = ["scribpy"]
+cache_dir = "work/.mypy_cache"
+
+[tool.ruff]
+cache-dir = "work/.ruff_cache"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
