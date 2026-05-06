@@ -38,15 +38,68 @@ _DEFAULT_CONFIG = MarkdownConfig()
 # ---------------------------------------------------------------------------
 
 _WORDS: tuple[str, ...] = (
-    "lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing",
-    "elit", "sed", "do", "eiusmod", "tempor", "incididunt", "ut", "labore",
-    "et", "dolore", "magna", "aliqua", "enim", "ad", "minim", "veniam",
-    "quis", "nostrud", "exercitation", "ullamco", "laboris", "nisi",
-    "aliquip", "ex", "ea", "commodo", "consequat", "duis", "aute", "irure",
-    "reprehenderit", "in", "voluptate", "velit", "esse", "cillum",
-    "fugiat", "nulla", "pariatur", "excepteur", "sint", "occaecat",
-    "cupidatat", "non", "proident", "sunt", "culpa", "qui", "officia",
-    "deserunt", "mollit", "anim", "id", "est", "laborum",
+    "lorem",
+    "ipsum",
+    "dolor",
+    "sit",
+    "amet",
+    "consectetur",
+    "adipiscing",
+    "elit",
+    "sed",
+    "do",
+    "eiusmod",
+    "tempor",
+    "incididunt",
+    "ut",
+    "labore",
+    "et",
+    "dolore",
+    "magna",
+    "aliqua",
+    "enim",
+    "ad",
+    "minim",
+    "veniam",
+    "quis",
+    "nostrud",
+    "exercitation",
+    "ullamco",
+    "laboris",
+    "nisi",
+    "aliquip",
+    "ex",
+    "ea",
+    "commodo",
+    "consequat",
+    "duis",
+    "aute",
+    "irure",
+    "reprehenderit",
+    "in",
+    "voluptate",
+    "velit",
+    "esse",
+    "cillum",
+    "fugiat",
+    "nulla",
+    "pariatur",
+    "excepteur",
+    "sint",
+    "occaecat",
+    "cupidatat",
+    "non",
+    "proident",
+    "sunt",
+    "culpa",
+    "qui",
+    "officia",
+    "deserunt",
+    "mollit",
+    "anim",
+    "id",
+    "est",
+    "laborum",
 )
 
 _CODE_SNIPPETS: tuple[tuple[str, str], ...] = (
@@ -66,9 +119,24 @@ _CODE_SNIPPETS: tuple[tuple[str, str], ...] = (
 )
 
 _EMOJIS: tuple[str, ...] = (
-    ":rocket:", ":star:", ":fire:", ":tada:", ":zap:", ":book:", ":gear:",
-    ":bulb:", ":warning:", ":white_check_mark:", ":x:", ":memo:", ":mag:",
-    ":heart:", ":thumbsup:", ":eyes:", ":sparkles:", ":construction:",
+    ":rocket:",
+    ":star:",
+    ":fire:",
+    ":tada:",
+    ":zap:",
+    ":book:",
+    ":gear:",
+    ":bulb:",
+    ":warning:",
+    ":white_check_mark:",
+    ":x:",
+    ":memo:",
+    ":mag:",
+    ":heart:",
+    ":thumbsup:",
+    ":eyes:",
+    ":sparkles:",
+    ":construction:",
 )
 
 _ALERT_TYPES: tuple[str, ...] = ("NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION")
@@ -149,7 +217,11 @@ _TABLE_ALIGNMENTS: tuple[tuple[str, ...], ...] = (
 )
 
 _STATUS_VALUES: tuple[str, ...] = (
-    "Active", "Pending", "Done", "Cancelled", "In Progress"
+    "Active",
+    "Pending",
+    "Done",
+    "Cancelled",
+    "In Progress",
 )
 
 
@@ -976,9 +1048,7 @@ def _optional_sections(rng: random.Random, config: MarkdownConfig) -> list[str]:
     return [fn(rng) for attr, fn in _OPTIONAL_SECTION_FNS if getattr(config, attr)]
 
 
-def _footnote_parts(
-    rng: random.Random, include: bool
-) -> tuple[list[str], list[str]]:
+def _footnote_parts(rng: random.Random, include: bool) -> tuple[list[str], list[str]]:
     """Generates footnote section and definition lines, or returns empty
     lists when disabled.
 

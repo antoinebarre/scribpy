@@ -16,4 +16,3 @@ __all__ = [
     "read_md_file",
     "write_md_file",
 ]
-
