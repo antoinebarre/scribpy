@@ -195,6 +195,44 @@ Individual commands:
 
 ---
 
+## Release to PyPI
+
+Before publishing, update the package version in `pyproject.toml`, then run:
+
+```bash
+make check
+make check-dist
+```
+
+`make check-dist` builds both distribution artifacts into `dist/` and validates
+their metadata with Twine.
+
+For a first publication, test the upload on TestPyPI:
+
+```bash
+make publish-test
+```
+
+Install the TestPyPI build in a clean environment:
+
+```bash
+python -m pip install \
+  --index-url https://test.pypi.org/simple/ \
+  --extra-index-url https://pypi.org/simple/ \
+  scribpy
+```
+
+When the TestPyPI package looks correct, publish the same version to PyPI:
+
+```bash
+make publish
+```
+
+PyPI package files are immutable: if a version has already been uploaded, bump
+the version before publishing again.
+
+---
+
 ## Design
 
 Scribpy favors a functional programming style:
