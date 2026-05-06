@@ -39,9 +39,10 @@ contains() {
 
 printf "\n${B}Running CI checks…${N}\n\n"
 
-run "format-check"  work/format.log    uv run ruff format --check src/ tests/
-run "lint"          work/lint.log      uv run ruff check  src/ tests/
+run "format-check"  work/format.log    uv run ruff format --check src/ tests/ scripts/
+run "lint"          work/lint.log      uv run ruff check  src/ tests/ scripts/
 run "type-check"    work/typecheck.log uv run mypy src/
+run "metrics"       work/metrics.log   uv run python scripts/code_metrics.py
 
 # Tests — exit code 5 means no tests were collected; treat as pass.
 printf " %-16s  " "tests"
@@ -67,6 +68,7 @@ if [ "${#FAIL_NAMES[@]}" -gt 0 ]; then
             format-check) log=work/format.log    ;;
             lint)         log=work/lint.log      ;;
             type-check)   log=work/typecheck.log ;;
+            metrics)      log=work/metrics.log   ;;
             tests)        log=work/test.log      ;;
             *)            log=''                 ;;
         esac
@@ -82,8 +84,12 @@ printf "\n${B}%s${N}\n" "$SEP"
 printf "${B} %-16s  %-10s  %s${N}\n" "Check" "Status" "Details"
 printf "${B}%s${N}\n" "$SEP"
 
-for name in "format-check" "lint" "type-check" "tests"; do
-    details=$( [ "$name" = "tests" ] && echo "$TEST_INFO" || echo '' )
+for name in "format-check" "lint" "type-check" "metrics" "tests"; do
+    case "$name" in
+        metrics) details="report work/code-metrics-report.md" ;;
+        tests)   details="$TEST_INFO" ;;
+        *)       details='' ;;
+    esac
     if ! contains "$name" "${FAIL_NAMES[@]+"${FAIL_NAMES[@]}"}"; then
         printf " %-16s  ${G}✔ pass${N}      %s\n" "$name" "$details"
     else

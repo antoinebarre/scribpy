@@ -30,6 +30,7 @@ jobs:
           name: ci-reports-${{ github.run_number }}
           path: |
             work/*.log
+            work/*.md
             work/*.xml
             work/htmlcov/
           if-no-files-found: ignore

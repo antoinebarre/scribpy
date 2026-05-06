@@ -76,15 +76,35 @@ cache_dir = "work/.mypy_cache"
 cache-dir = "work/.ruff_cache"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP"]
+select = ["E", "F", "I", "UP", "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 8
+max-branches = 12
+max-returns = 6
+max-statements = 50
+
+[tool.scribpy.code_metrics]
+paths = ["src/scribpy"]
+exclude = []
+max_cyclomatic_complexity = 10
+max_average_complexity = 4.0
+min_maintainability_index = 45.0
+max_module_logical_lines = 300
+max_module_source_lines = 500
+report_path = "work/code-metrics-report.md"
 
 [dependency-groups]
 dev = [
     "pytest>=8",
     "pytest-cov>=6",
+    "radon>=6",
     "ruff>=0.4",
     "mypy>=1.10",
 ]
