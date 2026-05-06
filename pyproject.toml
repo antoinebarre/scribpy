@@ -44,12 +44,18 @@ fallback-version = "0.0.0"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--tb=short --cov=scribpy --cov-report=term-missing --cov-report=xml:work/coverage.xml --cov-report=html:work/htmlcov --junitxml=work/junit.xml"
+addopts = "--tb=short --cov=src/scribpy --cov-report=term-missing --cov-report=xml:work/coverage.xml --cov-report=html:work/htmlcov --junitxml=work/junit.xml"
 pythonpath = ["src"]
 cache_dir = "work/.pytest_cache"
 
 [tool.coverage.run]
 data_file = "work/.coverage"
+source = ["src/scribpy"]
+omit = [
+    "src/scribpy/__init__.py",
+    "src/scribpy/__main__.py",
+    "src/scribpy/**/__init__.py",
+]
 
 [tool.coverage.report]
 fail_under = 80
