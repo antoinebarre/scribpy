@@ -13,5 +13,31 @@ Defines the core frozen dataclasses that flow through the pipeline:
 """
 
 from scribpy.model.diagnostic import Diagnostic, DiagnosticSeverity
+from scribpy.model.document import Document
+from scribpy.model.index import DocumentIndex, IndexMode
+from scribpy.model.markdown import (
+    AssetKind,
+    AssetRef,
+    Heading,
+    MarkdownAst,
+    Reference,
+    ReferenceKind,
+)
+from scribpy.model.project import Project
+from scribpy.model.source import SourceFile
 
-__all__ = ["Diagnostic", "DiagnosticSeverity"]
+__all__ = [
+    "AssetKind",
+    "AssetRef",
+    "Diagnostic",
+    "DiagnosticSeverity",
+    "Document",
+    "DocumentIndex",
+    "Heading",
+    "IndexMode",
+    "MarkdownAst",
+    "Project",
+    "Reference",
+    "ReferenceKind",
+    "SourceFile",
+]
