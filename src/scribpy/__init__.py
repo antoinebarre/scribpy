@@ -1,29 +1,43 @@
-"""scribpy — Parse, transform, and export Markdown documents.
+"""scribpy — Docs-as-Code toolkit and document compiler.
 
-Submodules
-----------
-scribpy.utils
-    File-system helpers: discover, read, and write ``.md`` files.
-scribpy.parsers
-    Markdown ingestion and tokenisation.
+Package layout
+--------------
+scribpy.cli
+    Command-line interface (scribpy init / lint / build / …).
 scribpy.core
-    Document model and abstract syntax tree.
-scribpy.editors
-    In-place mutation helpers for the document model.
-scribpy.exporters
-    Renderers targeting PDF, HTML, DOCX, and other formats.
-scribpy.plugins
-    Extension points for hooking into the pipeline.
+    Public Python API facade for scripting and automation.
+scribpy.config
+    scribpy.toml loading, parsing, and validation.
+scribpy.project
+    Project scanning and document index management.
+scribpy.model
+    Frozen dataclasses: Project, Document, Heading, Reference, …
+scribpy.parser
+    Markdown parsing layer (MarkdownParser protocol + adapters).
+scribpy.lint
+    Documentation quality engine (lint rules + diagnostics).
+scribpy.transforms
+    Document transformation pipeline (TOC, includes, numbering, …).
+scribpy.builders
+    Output generation: Markdown, HTML, PDF.
+scribpy.themes
+    HTML / PDF templates and CSS theme management.
+scribpy.assets
+    Image, diagram, and static file handling.
+scribpy.extensions
+    Plugin registry for custom rules, transforms, and builders.
+scribpy.utils
+    Low-level path, string, I/O, and hashing helpers.
 
-Typical usage
--------------
+Quick start
+-----------
 ::
 
-    from scribpy.utils import list_md_files, read_md_file
+    from scribpy.core import load_markdown, get_headings
 
-    for path in list_md_files("./docs"):
-        content = read_md_file(path)
-        ...
+    doc = load_markdown("docs/index.md")
+    for h in get_headings(doc):
+        print(h.level, h.title)
 """
 
 from importlib.metadata import PackageNotFoundError, version
