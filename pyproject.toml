@@ -20,15 +20,22 @@ packages = ["src/scribpy"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--tb=short"
+addopts = "--tb=short --cov=scribpy --cov-report=term-missing --cov-report=xml:work/coverage.xml --cov-report=html:work/htmlcov --junitxml=work/junit.xml"
 pythonpath = ["src"]
 cache_dir = "work/.pytest_cache"
 
 [tool.coverage.run]
 data_file = "work/.coverage"
 
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+
 [tool.coverage.html]
 directory = "work/htmlcov"
+
+[tool.coverage.xml]
+output = "work/coverage.xml"
 
 [tool.mypy]
 strict = true
