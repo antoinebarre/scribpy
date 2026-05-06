@@ -20,6 +20,58 @@ def test_index_check_returns_zero_for_valid_project(
     assert captured.err == ""
 
 
+def test_demo_create_returns_zero_and_creates_valid_project(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    target = tmp_path / "external-demo"
+
+    exit_code = main(["demo", "create", str(target)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "Created Scribpy demo project" in captured.out
+    assert captured.err == ""
+    assert (target / "scribpy.toml").is_file()
+
+    check_exit_code = main(["index", "check", "--root", str(target)])
+    check_output = capsys.readouterr()
+    assert check_exit_code == 0
+    assert check_output.err == ""
+
+
+def test_demo_create_returns_one_when_target_contains_demo_files(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    target = tmp_path / "external-demo"
+    (target / "doc").mkdir(parents=True)
+    (target / "doc/index.md").write_text("# Existing\n", encoding="utf-8")
+
+    exit_code = main(["demo", "create", str(target)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "error DEMO001" in captured.err
+    assert captured.out == ""
+
+
+def test_demo_create_force_overwrites_demo_files(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    target = tmp_path / "external-demo"
+    (target / "doc").mkdir(parents=True)
+    (target / "doc/index.md").write_text("# Existing\n", encoding="utf-8")
+
+    exit_code = main(["demo", "create", str(target), "--force"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "Next: scribpy index check" in captured.out
+    assert captured.err == ""
+
+
 def test_index_check_returns_one_and_prints_diagnostics_for_invalid_project(
     tmp_path: Path,
     capsys,

@@ -1,0 +1,12 @@
+[project]
+name = "scribpy-phase-2-demo"
+
+[paths]
+source = "doc"
+
+[index]
+mode = "explicit"
+files = [
+  "index.md",
+  "guide/setup.md",
+]
