@@ -1,10 +1,8 @@
 """Entry point for `python -m scribpy` and the `scribpy` CLI command."""
 
+from __future__ import annotations
 
-def main() -> None:
-    """Run the Scribpy command-line entry point."""
-    print("Hello from scribpy!")
-
+from scribpy.cli.main import main
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
