@@ -18,7 +18,6 @@ def resolve_project_root(config_path: Path) -> Path:
     Returns:
         Absolute project root path, defined as the configuration file parent.
     """
-
     return config_path.resolve().parent
 
 
@@ -37,7 +36,6 @@ def scan_project(
         Source file paths are ordered deterministically and their relative paths
         are relative to the configured source directory.
     """
-
     project_root = root.resolve()
     source_dir = (project_root / config.paths.source).resolve()
 

@@ -479,7 +479,7 @@ def _task_item(done: bool, text: str) -> str:
 
 
 def _alert(kind: str, text: str) -> str:
-    """Returns a GitHub-flavored alert block.
+    r"""Returns a GitHub-flavored alert block.
 
     GitHub renders these blockquotes with a coloured icon based on ``kind``.
 
@@ -531,7 +531,7 @@ def _math_inline(expr: str) -> str:
 
 
 def _math_block(expr: str) -> str:
-    """Wraps a LaTeX expression in double-dollar display-math delimiters.
+    r"""Wraps a LaTeX expression in double-dollar display-math delimiters.
 
     Args:
         expr: LaTeX source (without delimiters).
@@ -650,8 +650,7 @@ def _task_list(rng: random.Random) -> str:
 
 
 def _random_table(rng: random.Random) -> str:
-    """Builds a 5-row GFM table (Name / Status / Description) with a random
-    column alignment.
+    """Builds a 5-row GFM table with random column alignment.
 
     Args:
         rng: Seeded random instance for alignment choice and cell content.
@@ -678,8 +677,10 @@ def _random_table(rng: random.Random) -> str:
 
 
 def _section_title(rng: random.Random) -> str:
-    """Generates the H1 title block: emoji heading, subtitle blockquote,
-    author @mention, and semver badge.
+    """Generates the H1 title block.
+
+    The block contains an emoji heading, subtitle blockquote, author @mention,
+    and semver badge.
 
     Args:
         rng: Seeded random instance for title words, emoji, username and
@@ -707,8 +708,9 @@ def _section_title(rng: random.Random) -> str:
 
 
 def _section_headings(rng: random.Random) -> str:
-    """Demonstrates all six heading levels (H1–H6), each followed by a
-    Lorem Ipsum sentence.
+    """Demonstrates all six heading levels.
+
+    Each heading level from H1 to H6 is followed by a Lorem Ipsum sentence.
 
     Args:
         rng: Seeded random instance for heading titles and sentence content.
@@ -725,8 +727,10 @@ def _section_headings(rng: random.Random) -> str:
 
 
 def _section_emphasis(rng: random.Random) -> str:
-    """Shows all inline-emphasis variants: bold, italic, bold-italic,
-    strikethrough, sub/superscript, and inline code.
+    """Shows all inline-emphasis variants.
+
+    The section includes bold, italic, bold-italic, strikethrough,
+    sub/superscript, and inline code.
 
     Args:
         rng: Seeded random instance for Lorem Ipsum word selection.
@@ -755,8 +759,9 @@ def _section_emphasis(rng: random.Random) -> str:
 
 
 def _section_lists(rng: random.Random) -> str:
-    """Groups the unordered, ordered, and task lists under a single
-    ``## Lists`` section.
+    """Groups list variants under a single section.
+
+    The section contains unordered, ordered, and task list examples.
 
     Args:
         rng: Seeded random instance forwarded to each list builder.
@@ -777,8 +782,10 @@ def _section_lists(rng: random.Random) -> str:
 
 
 def _section_code(rng: random.Random) -> str:
-    """Shows two randomly selected fenced code blocks with inline-code
-    examples in the preamble.
+    """Shows code examples.
+
+    The section contains two randomly selected fenced code blocks with
+    inline-code examples in the preamble.
 
     Args:
         rng: Seeded random instance for snippet selection.
@@ -803,7 +810,9 @@ def _section_code(rng: random.Random) -> str:
 
 
 def _section_links_images(rng: random.Random) -> str:
-    """Demonstrates inline links, autolinks, reference-style links, and an
+    """Demonstrates links and images.
+
+    The section includes inline links, autolinks, reference-style links, and an
     embedded image with caption.
 
     Args:
@@ -940,8 +949,9 @@ def _section_mermaid(rng: random.Random) -> str:
 
 
 def _section_details(rng: random.Random) -> str:
-    """Creates two ``<details>`` collapsible blocks: one with a code
-    snippet, one with plain text.
+    """Creates two ``<details>`` collapsible blocks.
+
+    One block contains a code snippet and the other contains plain text.
 
     Args:
         rng: Seeded random instance for summary labels, snippet selection
@@ -963,8 +973,10 @@ def _section_details(rng: random.Random) -> str:
 
 
 def _section_misc(rng: random.Random) -> str:
-    """Groups GitHub-specific extras: emojis, @mentions, #refs, HR, hard
-    line break, HTML comment, kbd, and mark.
+    """Groups GitHub-specific extras.
+
+    The section includes emojis, @mentions, issue refs, horizontal rules, hard
+    line breaks, HTML comments, keyboard keys, and mark tags.
 
     Args:
         rng: Seeded random instance for emoji sampling, username/issue
@@ -1035,8 +1047,10 @@ def _core_sections(rng: random.Random) -> list[str]:
 
 
 def _optional_sections(rng: random.Random, config: MarkdownConfig) -> list[str]:
-    """Returns optional section strings whose flag in *config* is True,
-    in document order.
+    """Returns enabled optional section strings.
+
+    Sections are returned in document order when their flag in ``config`` is
+    true.
 
     Args:
         rng: Seeded random instance forwarded to each enabled section builder.
@@ -1049,8 +1063,9 @@ def _optional_sections(rng: random.Random, config: MarkdownConfig) -> list[str]:
 
 
 def _footnote_parts(rng: random.Random, include: bool) -> tuple[list[str], list[str]]:
-    """Generates footnote section and definition lines, or returns empty
-    lists when disabled.
+    """Generates footnote section and definition lines.
+
+    Empty lists are returned when footnotes are disabled.
 
     Args:
         rng: Seeded random instance for footnote content.

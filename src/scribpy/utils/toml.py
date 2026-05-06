@@ -20,7 +20,6 @@ def load_toml(path: Path) -> dict[str, object]:
         OSError: If the file cannot be read.
         tomllib.TOMLDecodeError: If the file content is not valid TOML.
     """
-
     with path.open("rb") as stream:
         return cast("dict[str, object]", tomllib.load(stream))
 

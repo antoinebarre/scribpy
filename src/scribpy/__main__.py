@@ -2,6 +2,7 @@
 
 
 def main() -> None:
+    """Run the Scribpy command-line entry point."""
     print("Hello from scribpy!")
 
 

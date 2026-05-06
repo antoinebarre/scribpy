@@ -31,7 +31,6 @@ def find_config(start: Path) -> Path | None:
         Path to the first discovered configuration file, or ``None`` when no
         configuration file exists in ``start`` or any parent directory.
     """
-
     current = start if start.is_dir() else start.parent
     for candidate_root in (current, *current.parents):
         candidate = candidate_root / CONFIG_FILENAME
@@ -53,7 +52,6 @@ def load_toml_config(path: Path) -> dict[str, object]:
         OSError: If the file cannot be read.
         tomllib.TOMLDecodeError: If the file content is not valid TOML.
     """
-
     return load_toml(path)
 
 
@@ -70,7 +68,6 @@ def parse_config(raw: Mapping[str, object]) -> Config:
         ConfigParseError: If a known configuration section or value has an
             invalid shape.
     """
-
     project = _parse_project_config(_section(raw, "project"))
     paths = _parse_path_config(_section(raw, "paths"))
     index = _parse_index_config(_section(raw, "index"))
@@ -87,7 +84,6 @@ def validate_config(config: Config) -> tuple[Diagnostic, ...]:
         Diagnostics describing invalid semantic values. An empty tuple means
         the configuration is valid for the current implementation phase.
     """
-
     diagnostics: list[Diagnostic] = []
 
     if not _is_safe_relative_path(config.paths.source):
@@ -132,7 +128,6 @@ def load_config(path: Path) -> tuple[Config | None, tuple[Diagnostic, ...]]:
         A tuple containing the parsed configuration when loading succeeds, or
         ``None`` otherwise, plus diagnostics for expected user-facing failures.
     """
-
     config_path = path if path.name == CONFIG_FILENAME else find_config(path)
     if config_path is None or not config_path.is_file():
         return None, (

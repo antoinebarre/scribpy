@@ -78,6 +78,9 @@ cache-dir = "work/.ruff_cache"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
 
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
 [dependency-groups]
 dev = [
     "pytest>=8",
