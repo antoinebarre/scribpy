@@ -1,20 +1,8 @@
-"""Public Python API facade for scribpy.
+"""Public Python API facade for Scribpy."""
 
-This is the stable user-facing interface. Internal package structure
-may evolve independently.
+from scribpy.core.demo import create_demo_project
+from scribpy.core.index_check import run_index_check
 
-Markdown document operations:
-    load_markdown(path)                      -> Document
-    save_markdown(document, path)            -> None
-    get_headings(document)                   -> tuple[Heading, ...]
-    get_links(document)                      -> tuple[Reference, ...]
-    replace_link(document, old, new)         -> Document
-    normalize_markdown(document, options)    -> Document
-    merge_documents(documents, options)      -> Document
-    split_document(document, strategy)       -> tuple[Document, ...]
-    generate_toc(document_or_seq, options)   -> str
+check_index = run_index_check
 
-Project-level operations:
-    build_project(root, target)              -> BuildResult
-    lint_project(root)                       -> LintResult
-"""
+__all__ = ["check_index", "create_demo_project", "run_index_check"]

@@ -1,4 +1,4 @@
-.PHONY: format lint format-check typecheck test check ci clean-dist build check-dist publish-test publish
+.PHONY: format lint docstrings format-check typecheck test check ci clean-dist build check-dist publish-test publish
 
 format:
 	uv run ruff format src/ tests/
@@ -9,6 +9,9 @@ format-check:
 lint:
 	uv run ruff check src/ tests/
 
+docstrings:
+	uv run ruff check src/ --select D --ignore D100,D104
+
 typecheck:
 	uv run mypy src/
 
@@ -18,7 +21,7 @@ test:
 	code=$$?; [ $$code -eq 5 ] && exit 0 || exit $$code
 
 # Local dev: format (mutating) + all checks
-check: format lint typecheck test
+check: format lint docstrings typecheck test
 
 # CI: all checks via the consolidated script (no early exit, full summary)
 ci:
