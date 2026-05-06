@@ -5,17 +5,16 @@ from pathlib import Path
 
 import pytest
 
-from scribpy.config import (
-    Config,
-    IndexConfig,
-    PathConfig,
-    ProjectConfig,
+import scribpy.config.loader as config_loader
+from scribpy.config.loader import (
+    ConfigParseError,
     find_config,
     load_config,
     load_toml_config,
     parse_config,
     validate_config,
 )
+from scribpy.config.types import Config, IndexConfig, PathConfig, ProjectConfig
 
 
 def test_config_objects_are_frozen_dataclasses() -> None:
@@ -125,6 +124,26 @@ def test_load_config_returns_cfg003_for_invalid_value_type(tmp_path: Path) -> No
     assert diagnostics[0].path == config_path
 
 
+def test_load_config_returns_cfg001_when_file_read_fails(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "scribpy.toml"
+    config_path.write_text("[project]\n", encoding="utf-8")
+
+    def fail_to_load_toml(_path: Path) -> dict[str, object]:
+        raise OSError("permission denied")
+
+    monkeypatch.setattr(config_loader, "load_toml_config", fail_to_load_toml)
+
+    config, diagnostics = load_config(config_path)
+
+    assert config is None
+    assert len(diagnostics) == 1
+    assert diagnostics[0].code == "CFG001"
+    assert diagnostics[0].path == config_path
+
+
 def test_load_config_returns_config_and_no_diagnostics_for_valid_file(
     tmp_path: Path,
 ) -> None:
@@ -157,3 +176,37 @@ def test_load_config_returns_cfg004_for_unsafe_but_parseable_path(
     assert config is not None
     assert len(diagnostics) == 1
     assert diagnostics[0].code == "CFG004"
+
+
+@pytest.mark.parametrize(
+    ("raw", "message"),
+    (
+        ({"project": "docs"}, "Configuration section [project] must be a table."),
+        (
+            {"project": {"name": 42}},
+            "Configuration value project.name must be a string.",
+        ),
+        (
+            {"index": {"mode": 42}},
+            "Configuration value index.mode must be a string.",
+        ),
+        (
+            {"index": {"mode": "hybrid"}},
+            "Configuration value index.mode must be 'filesystem' or 'explicit'.",
+        ),
+        (
+            {"index": {"files": "index.md"}},
+            "Configuration value index.files must be a list.",
+        ),
+        (
+            {"index": {"files": [42]}},
+            "Every index.files entry must be a string.",
+        ),
+    ),
+)
+def test_parse_config_rejects_invalid_shapes(
+    raw: dict[str, object],
+    message: str,
+) -> None:
+    with pytest.raises(ConfigParseError, match=message):
+        parse_config(raw)
