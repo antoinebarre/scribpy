@@ -24,18 +24,30 @@ from scribpy.model.markdown import (
     ReferenceKind,
 )
 from scribpy.model.project import Project
+from scribpy.model.protocols import (
+    DiagramRenderer,
+    FileSystem,
+    HtmlRenderer,
+    MarkdownParser,
+    PdfRenderer,
+)
 from scribpy.model.source import SourceFile
 
 __all__ = [
     "AssetKind",
     "AssetRef",
+    "DiagramRenderer",
     "Diagnostic",
     "DiagnosticSeverity",
     "Document",
     "DocumentIndex",
+    "FileSystem",
     "Heading",
+    "HtmlRenderer",
     "IndexMode",
     "MarkdownAst",
+    "MarkdownParser",
+    "PdfRenderer",
     "Project",
     "Reference",
     "ReferenceKind",
