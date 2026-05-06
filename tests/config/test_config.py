@@ -208,5 +208,6 @@ def test_parse_config_rejects_invalid_shapes(
     raw: dict[str, object],
     message: str,
 ) -> None:
-    with pytest.raises(ConfigParseError, match=message):
+    with pytest.raises(ConfigParseError) as exc_info:
         parse_config(raw)
+    assert str(exc_info.value) == message

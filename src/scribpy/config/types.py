@@ -10,21 +10,35 @@ from scribpy.model import IndexMode
 
 @dataclass(frozen=True)
 class ProjectConfig:
-    """Project-level configuration."""
+    """Project-level configuration.
+
+    Attributes:
+        name: Optional human-readable project name.
+    """
 
     name: str | None = None
 
 
 @dataclass(frozen=True)
 class PathConfig:
-    """Filesystem paths used by Scribpy."""
+    """Filesystem paths used by Scribpy.
+
+    Attributes:
+        source: Markdown source directory relative to the project root.
+    """
 
     source: Path = Path("doc")
 
 
 @dataclass(frozen=True)
 class IndexConfig:
-    """Document index configuration."""
+    """Document index configuration.
+
+    Attributes:
+        mode: Strategy used to build the document index.
+        files: Explicit ordered Markdown file list when ``mode`` is
+            ``"explicit"``.
+    """
 
     mode: IndexMode = "filesystem"
     files: tuple[Path, ...] = ()
@@ -32,7 +46,13 @@ class IndexConfig:
 
 @dataclass(frozen=True)
 class Config:
-    """Minimal project configuration required by the project context chain."""
+    """Minimal project configuration required by the project context chain.
+
+    Attributes:
+        project: Project metadata.
+        paths: Filesystem paths.
+        index: Document index settings.
+    """
 
     project: ProjectConfig = ProjectConfig()
     paths: PathConfig = PathConfig()
