@@ -52,6 +52,12 @@ def test_parse_config_reads_minimal_toml_shape() -> None:
     assert config.index.files == (Path("intro.md"), Path("guide/setup.md"))
 
 
+def test_parse_config_accepts_hybrid_index_mode_for_later_diagnostics() -> None:
+    config = parse_config({"index": {"mode": "hybrid"}})
+
+    assert config.index.mode == "hybrid"
+
+
 def test_find_config_walks_up_from_nested_directory(tmp_path: Path) -> None:
     config_path = tmp_path / "scribpy.toml"
     nested = tmp_path / "doc" / "guide"
@@ -191,8 +197,9 @@ def test_load_config_returns_cfg004_for_unsafe_but_parseable_path(
             "Configuration value index.mode must be a string.",
         ),
         (
-            {"index": {"mode": "hybrid"}},
-            "Configuration value index.mode must be 'filesystem' or 'explicit'.",
+            {"index": {"mode": "unknown"}},
+            "Configuration value index.mode must be 'filesystem', 'explicit', "
+            "or 'hybrid'.",
         ),
         (
             {"index": {"files": "index.md"}},

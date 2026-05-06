@@ -12,7 +12,7 @@ from scribpy.model import Diagnostic, IndexMode
 from scribpy.utils.toml import load_toml
 
 CONFIG_FILENAME = "scribpy.toml"
-_SUPPORTED_INDEX_MODES = frozenset[IndexMode]({"explicit", "filesystem"})
+_KNOWN_INDEX_MODES = frozenset[IndexMode]({"explicit", "filesystem", "hybrid"})
 
 type RawSection = Mapping[str, object]
 
@@ -203,9 +203,10 @@ def _parse_index_config(raw: RawSection) -> IndexConfig:
     mode = raw.get("mode", "filesystem")
     if not isinstance(mode, str):
         raise ConfigParseError("Configuration value index.mode must be a string.")
-    if mode not in _SUPPORTED_INDEX_MODES:
+    if mode not in _KNOWN_INDEX_MODES:
         raise ConfigParseError(
-            "Configuration value index.mode must be 'filesystem' or 'explicit'."
+            "Configuration value index.mode must be 'filesystem', 'explicit', "
+            "or 'hybrid'."
         )
 
     files = raw.get("files", ())
