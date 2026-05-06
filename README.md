@@ -228,25 +228,13 @@ The GitHub Actions `Publish` workflow then:
 
 1. runs the checks;
 2. builds the source distribution and wheel;
-3. publishes to TestPyPI;
-4. publishes to PyPI after the `pypi` environment approval, if configured.
+3. publishes to PyPI after the `pypi` environment approval, if configured.
 
-Before the first release, configure Trusted Publishing on both package indexes:
+Before the first release, configure Trusted Publishing on PyPI:
 
-| Index    | Repository owner | Repository name | Workflow filename | Environment |
-|----------|------------------|-----------------|-------------------|-------------|
-| TestPyPI | `antoinebarre`   | `scribpy`       | `publish.yml`     | `testpypi`  |
-| PyPI     | `antoinebarre`   | `scribpy`       | `publish.yml`     | `pypi`      |
-
-Install a TestPyPI beta build in a clean environment:
-
-```bash
-python -m pip install \
-  --index-url https://test.pypi.org/simple/ \
-  --extra-index-url https://pypi.org/simple/ \
-  --pre \
-  scribpy
-```
+| Repository owner | Repository name | Workflow filename | Environment |
+|------------------|-----------------|-------------------|-------------|
+| `antoinebarre`   | `scribpy`       | `publish.yml`     | `pypi`      |
 
 Install a beta build from PyPI:
 
