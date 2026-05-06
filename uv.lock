@@ -313,7 +313,6 @@ wheels = [
 
 [[package]]
 name = "scribpy"
-version = "0.0.1b1"
 source = { editable = "." }
 
 [package.dev-dependencies]

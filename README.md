@@ -197,7 +197,10 @@ Individual commands:
 
 ## Release to PyPI
 
-Before publishing, update the package version in `pyproject.toml`, then run:
+Releases are tag-driven. The package version is derived from the Git tag by
+`hatch-vcs`, so do not edit the version manually in `pyproject.toml`.
+
+Run the local checks first:
 
 ```bash
 make check
@@ -206,30 +209,53 @@ make check-dist
 
 `make check-dist` builds both distribution artifacts into `dist/` and validates
 their metadata with Twine.
+Local builds made away from an exact release tag will have a development
+version; the published version is produced by the GitHub tag.
 
-For a first publication, test the upload on TestPyPI:
+Create and push a version tag from `main`:
 
 ```bash
-make publish-test
+git switch main
+git pull --ff-only
+git tag v0.0.1b1
+git push origin v0.0.1b1
 ```
 
-Install the TestPyPI build in a clean environment:
+Tags pushed from commits that are not on `origin/main` are rejected by the
+publish workflow.
+
+The GitHub Actions `Publish` workflow then:
+
+1. runs the checks;
+2. builds the source distribution and wheel;
+3. publishes to TestPyPI;
+4. publishes to PyPI after the `pypi` environment approval, if configured.
+
+Before the first release, configure Trusted Publishing on both package indexes:
+
+| Index    | Repository owner | Repository name | Workflow filename | Environment |
+|----------|------------------|-----------------|-------------------|-------------|
+| TestPyPI | `antoinebarre`   | `scribpy`       | `publish.yml`     | `testpypi`  |
+| PyPI     | `antoinebarre`   | `scribpy`       | `publish.yml`     | `pypi`      |
+
+Install a TestPyPI beta build in a clean environment:
 
 ```bash
 python -m pip install \
   --index-url https://test.pypi.org/simple/ \
   --extra-index-url https://pypi.org/simple/ \
+  --pre \
   scribpy
 ```
 
-When the TestPyPI package looks correct, publish the same version to PyPI:
+Install a beta build from PyPI:
 
 ```bash
-make publish
+python -m pip install --pre scribpy
 ```
 
 PyPI package files are immutable: if a version has already been uploaded, bump
-the version before publishing again.
+the tag before publishing again, for example `v0.0.1b2`.
 
 ---
 
