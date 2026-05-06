@@ -31,11 +31,14 @@ from scribpy.model.protocols import (
     MarkdownParser,
     PdfRenderer,
 )
+from scribpy.model.results import BuildArtifact, BuildResult, LintResult
 from scribpy.model.source import SourceFile
 
 __all__ = [
     "AssetKind",
     "AssetRef",
+    "BuildArtifact",
+    "BuildResult",
     "DiagramRenderer",
     "Diagnostic",
     "DiagnosticSeverity",
@@ -45,6 +48,7 @@ __all__ = [
     "Heading",
     "HtmlRenderer",
     "IndexMode",
+    "LintResult",
     "MarkdownAst",
     "MarkdownParser",
     "PdfRenderer",
