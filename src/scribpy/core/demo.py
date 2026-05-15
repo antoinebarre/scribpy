@@ -23,6 +23,8 @@ mode = "explicit"
 files = [
   "index.md",
   "guide/setup.md",
+  "guide/workflow.md",
+  "reference/diagnostics.md",
 ]
 """,
     Path("doc/index.md"): """\
@@ -39,13 +41,14 @@ tags:
 
 Welcome to the Scribpy demo project.
 
-This document exercises the **phase 3 parsing chain**: frontmatter extraction,
-heading detection, link extraction, and image references.
+This document exercises the **phase 4 lint-first chain** on top of project
+loading and semantic extraction.
 
 ## What Scribpy Does
 
 Scribpy converts Markdown sources into structured output formats.
 See the [setup guide](guide/setup.md) for the next steps.
+Then continue with the [workflow guide](guide/workflow.md#daily-workflow).
 
 Visit the [Scribpy project](https://github.com/example/scribpy) for more
 information.
@@ -53,7 +56,7 @@ information.
 ## Project Structure
 
 The document index is declared in `scribpy.toml`.
-Order is explicit: `index.md` is parsed before `guide/setup.md`.
+Order is explicit and deterministic across four documents.
 
 ![Scribpy architecture overview](assets/architecture.png)
 """,
@@ -83,14 +86,67 @@ pip install scribpy
 
 ## Verification
 
-Run the full chain check to verify parsing works:
+Run the full semantic check to verify parsing works:
 
 ```bash
 scribpy parse check --root .
 ```
 
-![Setup diagram](assets/setup.png)
+Then run the lint chain:
+
+```bash
+scribpy lint --root .
+```
+
+Continue with the [workflow guide](workflow.md).
+
+![Setup diagram](../assets/setup.png)
 """,
+    Path("doc/guide/workflow.md"): """\
+---
+title: Workflow Guide
+author: Demo Author
+---
+
+# Workflow Guide
+
+This document demonstrates valid heading structure and cross-document links.
+
+## Daily Workflow
+
+1. Edit Markdown sources.
+2. Run `scribpy index check --root .`.
+3. Run `scribpy parse check --root .`.
+4. Run `scribpy lint --root .`.
+
+For the list of emitted diagnostics, see the
+[diagnostics reference](../reference/diagnostics.md#lint-diagnostics).
+
+## Review Checklist
+
+Before sharing docs, confirm headings, local links, and image assets are valid.
+""",
+    Path("doc/reference/diagnostics.md"): """\
+---
+title: Diagnostics Reference
+author: Demo Author
+---
+
+# Diagnostics Reference
+
+Scribpy exposes stable diagnostic codes for each chain.
+
+## Lint Diagnostics
+
+- `LINT001`: document without H1.
+- `LINT002`: invalid heading hierarchy.
+- `LINT003`: broken internal link.
+- `LINT004`: missing local asset.
+
+Return to the [workflow guide](../guide/workflow.md#daily-workflow).
+""",
+    Path("doc/assets/architecture.png"): "demo asset: architecture\n",
+    Path("doc/assets/setup.png"): "demo asset: setup\n",
     Path("README.md"): """\
 # Scribpy Demo Project
 
@@ -118,10 +174,19 @@ Parses every Markdown file and extracts frontmatter, headings, links,
 and image references. Reports diagnostics for any file that cannot be read
 or parsed.
 
+## Phase 4 — Lint-first user value
+
+```bash
+scribpy lint --root .
+```
+
+Checks heading structure, local links, and local assets before any build output
+exists.
+
 ## Next steps
 
-Re-run checks after editing `doc/index.md` or `doc/guide/setup.md`
-and observe how diagnostics change.
+Re-run checks after editing the files under `doc/` and observe how diagnostics
+change.
 """,
 }
 
@@ -137,8 +202,8 @@ source = "doc"
 mode = "explicit"
 files = [
   "index.md",
-  "missing.md",
-  "index.md",
+  "guide/setup.md",
+  "guide/lint-lab.md",
 ]
 """,
     Path("doc/index.md"): """\
@@ -151,10 +216,11 @@ author: Demo Author
 
 This project is **intentionally invalid** to demonstrate Scribpy diagnostics.
 
-The explicit index in `scribpy.toml` references `missing.md` and repeats
-`index.md`. Run the checks below to see the expected errors.
+The index is valid, so `scribpy lint` can run and report content issues from
+`guide/lint-lab.md`.
 
-See [setup](guide/setup.md) — this file exists but is excluded from the index.
+See the [setup guide](guide/setup.md) and the
+[lint lab](guide/lint-lab.md#exercise).
 
 ![Demo image](assets/demo.png)
 """,
@@ -165,15 +231,31 @@ title: Setup (unlisted)
 
 # Setup
 
-This file exists but is not listed in the explicit index.
-
-It demonstrates the `IDX005` warning: Scribpy found the file during source
-discovery but it is absent from `index.files`.
+This file is valid and keeps the project navigable while the lint lab contains
+intentional defects.
 
 ## Links
 
 Back to [index](../index.md).
 """,
+    Path("doc/guide/lint-lab.md"): """\
+---
+title: Lint Lab
+---
+
+## Exercise
+
+This file intentionally has no H1.
+
+### Jumped Heading
+
+The heading level jumps from H2 to H3 without a top-level heading.
+
+See the [missing page](ghost.md).
+
+![Missing diagram](../assets/missing.png)
+""",
+    Path("doc/assets/demo.png"): "demo asset: invalid variant\n",
     Path("README.md"): """\
 # Scribpy Invalid Demo Project
 
@@ -189,11 +271,7 @@ scribpy demo create --variant invalid
 scribpy index check --root .
 ```
 
-Expected diagnostics:
-
-- `IDX002`: `missing.md` is listed but does not exist
-- `IDX003`: `index.md` is listed twice
-- `IDX005`: `guide/setup.md` exists but is not listed
+The project context is valid so later checks can run.
 
 ## Phase 3 — Parse and semantic extraction
 
@@ -201,8 +279,20 @@ Expected diagnostics:
 scribpy parse check --root .
 ```
 
-Because the index is broken, `parse check` will also fail.
-Fix the index first, then rerun to see a clean parse result.
+Parsing succeeds so the lint phase receives a complete semantic model.
+
+## Phase 4 — Lint-first user value
+
+```bash
+scribpy lint --root .
+```
+
+Expected diagnostics from `guide/lint-lab.md`:
+
+- `LINT001`: document without H1
+- `LINT002`: invalid heading hierarchy
+- `LINT003`: broken internal link
+- `LINT004`: missing local asset
 """,
 }
 

@@ -134,7 +134,7 @@ Exit codes:
 """
 _DEMO_DESCRIPTION = """\
 Create small Scribpy tutorial projects that can be checked with
-`scribpy index check`.
+`scribpy index check`, `scribpy parse check`, and `scribpy lint`.
 
 The demo command is useful when trying Scribpy in another repository because it
 creates a complete mini project without requiring you to write scribpy.toml by
@@ -153,8 +153,8 @@ _DEMO_CREATE_DESCRIPTION = """\
 Create a tutorial project containing scribpy.toml, README.md, and Markdown
 files under doc/.
 
-The valid variant passes index check. The invalid variant intentionally creates
-index diagnostics for learning and troubleshooting.
+The valid variant passes index, parse, and lint checks. The invalid variant
+intentionally creates lint diagnostics for learning and troubleshooting.
 """
 _DEMO_CREATE_EPILOG = """\
 Examples:
@@ -168,13 +168,18 @@ What it creates:
   dd1/README.md
   dd1/doc/index.md
   dd1/doc/guide/setup.md
+  dd1/doc/guide/workflow.md
+  dd1/doc/reference/diagnostics.md
+  dd1/doc/assets/*.png
 
 Next steps:
   scribpy index check --root dd1
+  scribpy parse check --root dd1
+  scribpy lint --root dd1
 
 Variants:
-  valid    creates a project expected to pass index check
-  invalid  creates a project with missing, duplicate, and unindexed files
+  valid    creates a project expected to pass index, parse, and lint checks
+  invalid  creates a project with intentional lint diagnostics
 
 Overwrite behavior:
   Existing demo files are not overwritten unless --force is passed.
@@ -394,6 +399,7 @@ def _run_demo_create_command(
     print("Next steps:", file=stdout)
     print(f"  scribpy index check --root {target}", file=stdout)
     print(f"  scribpy parse check --root {target}", file=stdout)
+    print(f"  scribpy lint --root {target}", file=stdout)
     return 0
 
 

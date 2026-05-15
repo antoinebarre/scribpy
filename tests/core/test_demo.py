@@ -4,7 +4,12 @@ from pathlib import Path
 
 import pytest
 
-from scribpy.core import create_demo_project, parse_project_documents, run_index_check
+from scribpy.core import (
+    create_demo_project,
+    lint_project,
+    parse_project_documents,
+    run_index_check,
+)
 
 
 def test_create_demo_project_writes_tutorial_files(tmp_path: Path) -> None:
@@ -17,6 +22,10 @@ def test_create_demo_project_writes_tutorial_files(tmp_path: Path) -> None:
     assert (target / "scribpy.toml").is_file()
     assert (target / "doc/index.md").is_file()
     assert (target / "doc/guide/setup.md").is_file()
+    assert (target / "doc/guide/workflow.md").is_file()
+    assert (target / "doc/reference/diagnostics.md").is_file()
+    assert (target / "doc/assets/architecture.png").is_file()
+    assert (target / "doc/assets/setup.png").is_file()
     assert (target / "README.md").is_file()
 
 
@@ -30,7 +39,7 @@ def test_created_demo_project_passes_index_check(tmp_path: Path) -> None:
     assert result.diagnostics == ()
 
 
-def test_create_invalid_demo_project_produces_index_diagnostics(
+def test_create_invalid_demo_project_passes_index_check(
     tmp_path: Path,
 ) -> None:
     target = tmp_path / "external-demo"
@@ -38,12 +47,8 @@ def test_create_invalid_demo_project_produces_index_diagnostics(
 
     result = run_index_check(target)
 
-    assert result.failed is True
-    assert tuple(diagnostic.code for diagnostic in result.diagnostics) == (
-        "IDX003",
-        "IDX002",
-        "IDX005",
-    )
+    assert result.failed is False
+    assert result.diagnostics == ()
 
 
 def test_create_demo_project_refuses_existing_demo_files_without_force(
@@ -116,7 +121,7 @@ def test_created_demo_project_passes_parse_check(tmp_path: Path) -> None:
     result = parse_project_documents(target)
 
     assert result.failed is False
-    assert len(result.documents) == 2
+    assert len(result.documents) == 4
 
 
 def test_created_demo_project_documents_in_index_order(tmp_path: Path) -> None:
@@ -126,7 +131,12 @@ def test_created_demo_project_documents_in_index_order(tmp_path: Path) -> None:
     result = parse_project_documents(target)
 
     titles = [d.title for d in result.documents]
-    assert titles == ["Scribpy Demo", "Setup Guide"]
+    assert titles == [
+        "Scribpy Demo",
+        "Setup Guide",
+        "Workflow Guide",
+        "Diagnostics Reference",
+    ]
 
 
 def test_created_demo_project_frontmatter_extracted(tmp_path: Path) -> None:
@@ -182,4 +192,29 @@ def test_invalid_demo_fails_parse_check(tmp_path: Path) -> None:
 
     result = parse_project_documents(target)
 
+    assert result.failed is False
+
+
+def test_created_demo_project_passes_lint(tmp_path: Path) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target)
+
+    result = lint_project(target)
+
+    assert result.failed is False
+    assert result.diagnostics == ()
+
+
+def test_invalid_demo_reports_phase_4_lint_diagnostics(tmp_path: Path) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target, variant="invalid")
+
+    result = lint_project(target)
+
     assert result.failed is True
+    assert tuple(diagnostic.code for diagnostic in result.diagnostics) == (
+        "LINT001",
+        "LINT002",
+        "LINT003",
+        "LINT004",
+    )
