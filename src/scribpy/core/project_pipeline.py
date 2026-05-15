@@ -24,7 +24,16 @@ def run_project_parse_pipeline(
     filesystem: FileSystem | None = None,
     parser: MarkdownParser | None = None,
 ) -> PipelineResult[ProjectPipelineState]:
-    """Run the shared project pipeline through document parsing."""
+    """Run the shared project pipeline through document parsing.
+
+    Args:
+        root: Project root, child path, config path, or ``None`` for cwd.
+        filesystem: Optional filesystem service override.
+        parser: Optional Markdown parser override.
+
+    Returns:
+        Project preparation state plus accumulated diagnostics.
+    """
     initial = ProjectPipelineState(
         start=Path.cwd() if root is None else root,
         filesystem=filesystem if filesystem is not None else RealFileSystem(),

@@ -14,7 +14,15 @@ def run_lint_rules(
     context: LintContext,
     rules: Iterable[LintRule],
 ) -> LintResult:
-    """Run lint rules in caller-provided order and aggregate diagnostics."""
+    """Run lint rules in caller-provided order and aggregate diagnostics.
+
+    Args:
+        context: Shared lint inputs for the current project.
+        rules: Rules to execute in deterministic order.
+
+    Returns:
+        Aggregated lint diagnostics and failure state.
+    """
     diagnostics: list[Diagnostic] = []
     for rule in rules:
         diagnostics.extend(rule.run(context))

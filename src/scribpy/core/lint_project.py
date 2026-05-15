@@ -21,7 +21,17 @@ def lint_project(
     parser: MarkdownParser | None = None,
     registry: ExtensionRegistry | None = None,
 ) -> LintResult:
-    """Load, parse, and lint a Scribpy documentation project."""
+    """Load, parse, and lint a Scribpy documentation project.
+
+    Args:
+        root: Project root, child path, config path, or ``None`` for cwd.
+        filesystem: Optional filesystem service override.
+        parser: Optional Markdown parser override.
+        registry: Optional lint rule registry override.
+
+    Returns:
+        Aggregated lint diagnostics and failure state.
+    """
     prepared = run_project_parse_pipeline(root, filesystem, parser)
     if prepared.failed or prepared.value is None or has_errors(prepared.diagnostics):
         return LintResult(diagnostics=prepared.diagnostics, failed=True)

@@ -18,7 +18,14 @@ class MissingLocalAssetRule:
     code = "LINT004"
 
     def run(self, context: LintContext) -> tuple[Diagnostic, ...]:
-        """Return diagnostics for missing local asset files."""
+        """Return diagnostics for missing local asset files.
+
+        Args:
+            context: Shared lint inputs for the current project.
+
+        Returns:
+            Diagnostics emitted by the asset rule.
+        """
         diagnostics: list[Diagnostic] = []
         for document in context.documents:
             diagnostics.extend(self._lint_document(document, context))

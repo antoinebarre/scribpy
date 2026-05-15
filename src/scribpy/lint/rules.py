@@ -12,16 +12,31 @@ from scribpy.model import Diagnostic
 
 
 class LintRule(Protocol):
-    """Contract implemented by all lint rules."""
+    """Contract implemented by all lint rules.
+
+    Attributes:
+        code: Stable diagnostic code emitted by the rule.
+    """
 
     code: str
 
     def run(self, context: LintContext) -> tuple[Diagnostic, ...]:
-        """Return diagnostics emitted by this rule."""
+        """Return diagnostics emitted by this rule.
+
+        Args:
+            context: Shared lint inputs for the current project.
+
+        Returns:
+            Diagnostics emitted by the rule.
+        """
 
 
 def native_lint_rules() -> tuple[LintRule, ...]:
-    """Return the built-in lint rules in deterministic execution order."""
+    """Return the built-in lint rules in deterministic execution order.
+
+    Returns:
+        Built-in lint rules in deterministic execution order.
+    """
     return (
         MissingH1Rule(),
         HeadingHierarchyRule(),

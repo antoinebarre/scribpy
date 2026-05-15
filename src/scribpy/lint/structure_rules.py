@@ -12,7 +12,14 @@ class MissingH1Rule:
     code = "LINT001"
 
     def run(self, context: LintContext) -> tuple[Diagnostic, ...]:
-        """Return one diagnostic for each document without an H1."""
+        """Return one diagnostic for each document without an H1.
+
+        Args:
+            context: Shared lint inputs for the current project.
+
+        Returns:
+            Diagnostics emitted by the missing-H1 rule.
+        """
         return tuple(
             Diagnostic(
                 severity="error",
@@ -32,7 +39,14 @@ class HeadingHierarchyRule:
     code = "LINT002"
 
     def run(self, context: LintContext) -> tuple[Diagnostic, ...]:
-        """Return diagnostics for heading-level jumps larger than one."""
+        """Return diagnostics for heading-level jumps larger than one.
+
+        Args:
+            context: Shared lint inputs for the current project.
+
+        Returns:
+            Diagnostics emitted by the heading-hierarchy rule.
+        """
         diagnostics: list[Diagnostic] = []
         for document in context.documents:
             previous_level = 0

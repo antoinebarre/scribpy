@@ -9,17 +9,32 @@ from scribpy.lint import LintRule, native_lint_rules
 
 @dataclass(frozen=True)
 class ExtensionRegistry:
-    """Registered extensions available to the current execution."""
+    """Registered extensions available to the current execution.
+
+    Attributes:
+        lint_rules: Lint rules available to the current execution.
+    """
 
     lint_rules: tuple[LintRule, ...] = ()
 
     def with_lint_rule(self, rule: LintRule) -> ExtensionRegistry:
-        """Return a new registry with one additional lint rule."""
+        """Return a new registry with one additional lint rule.
+
+        Args:
+            rule: Lint rule to append.
+
+        Returns:
+            New registry containing the added rule.
+        """
         return ExtensionRegistry(lint_rules=(*self.lint_rules, rule))
 
     @classmethod
     def native(cls) -> ExtensionRegistry:
-        """Return a registry preloaded with built-in lint rules."""
+        """Return a registry preloaded with built-in lint rules.
+
+        Returns:
+            Registry containing Scribpy's built-in lint rules.
+        """
         return cls(lint_rules=native_lint_rules())
 
 

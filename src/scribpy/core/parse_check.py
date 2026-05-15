@@ -14,7 +14,16 @@ def parse_project_documents(
     filesystem: FileSystem | None = None,
     parser: MarkdownParser | None = None,
 ) -> ParseResult:
-    """Load a project, build its document index, and parse all Markdown files."""
+    """Load a project, build its index, and parse all Markdown files.
+
+    Args:
+        root: Project root, child path, config path, or ``None`` for cwd.
+        filesystem: Optional filesystem service override.
+        parser: Optional Markdown parser override.
+
+    Returns:
+        Parsed documents, diagnostics, and failure state.
+    """
     result = run_project_parse_pipeline(root, filesystem, parser)
     documents = () if result.value is None else result.value.documents
     return ParseResult(

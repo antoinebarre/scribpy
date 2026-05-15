@@ -16,7 +16,14 @@ from scribpy.utils import has_errors
 def resolve_config_step(
     state: ProjectPipelineState,
 ) -> PipelineResult[ProjectPipelineState]:
-    """Resolve the project configuration path."""
+    """Resolve the project configuration path.
+
+    Args:
+        state: Initial project pipeline state.
+
+    Returns:
+        Updated state carrying the configuration path.
+    """
     config_path = _resolve_config_path(state.start)
     if config_path is None:
         return PipelineResult.fail((_missing_config_diagnostic(state.start),), state)
@@ -26,7 +33,14 @@ def resolve_config_step(
 def load_config_step(
     state: ProjectPipelineState,
 ) -> PipelineResult[ProjectPipelineState]:
-    """Load and validate project configuration."""
+    """Load and validate project configuration.
+
+    Args:
+        state: Project pipeline state with a resolved configuration path.
+
+    Returns:
+        Updated state carrying parsed configuration.
+    """
     assert state.config_path is not None
     config, diagnostics = load_config(state.config_path)
     next_state = replace(state, config=config)
@@ -38,7 +52,14 @@ def load_config_step(
 def scan_sources_step(
     state: ProjectPipelineState,
 ) -> PipelineResult[ProjectPipelineState]:
-    """Discover source files from project configuration."""
+    """Discover source files from project configuration.
+
+    Args:
+        state: Project pipeline state with parsed configuration.
+
+    Returns:
+        Updated state carrying project root and discovered sources.
+    """
     assert state.config_path is not None
     assert state.config is not None
     project_root = resolve_project_root(state.config_path)

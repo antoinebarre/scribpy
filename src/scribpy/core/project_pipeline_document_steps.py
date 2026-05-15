@@ -14,7 +14,14 @@ from scribpy.utils import has_errors
 def build_index_step(
     state: ProjectPipelineState,
 ) -> PipelineResult[ProjectPipelineState]:
-    """Build and validate the deterministic document index."""
+    """Build and validate the deterministic document index.
+
+    Args:
+        state: Project pipeline state with configuration and source files.
+
+    Returns:
+        Updated state carrying the document index.
+    """
     assert state.config is not None
     index, diagnostics = build_document_index(state.config, state.source_files)
     next_state = replace(state, index=index)
@@ -26,7 +33,14 @@ def build_index_step(
 def parse_documents_step(
     state: ProjectPipelineState,
 ) -> PipelineResult[ProjectPipelineState]:
-    """Order and parse source files into semantic documents."""
+    """Order and parse source files into semantic documents.
+
+    Args:
+        state: Project pipeline state with a valid document index.
+
+    Returns:
+        Updated state carrying ordered files and parsed documents.
+    """
     assert state.index is not None
     ordered_files, order_diagnostics = order_by_index(state.index, state.source_files)
     parse_result = parse_documents(ordered_files, state.filesystem, state.parser)

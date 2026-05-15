@@ -15,24 +15,52 @@ DIAGNOSTIC_SEVERITY_ORDER: Mapping[DiagnosticSeverity, int] = {
 
 
 def severity_rank(severity: DiagnosticSeverity) -> int:
-    """Return the deterministic sort rank for a diagnostic severity."""
+    """Return the deterministic sort rank for a diagnostic severity.
+
+    Args:
+        severity: Diagnostic severity to rank.
+
+    Returns:
+        Integer sort rank.
+    """
     return DIAGNOSTIC_SEVERITY_ORDER[severity]
 
 
 def has_errors(diagnostics: Iterable[Diagnostic]) -> bool:
-    """Return whether any diagnostic has ``"error"`` severity."""
+    """Return whether any diagnostic has ``"error"`` severity.
+
+    Args:
+        diagnostics: Diagnostics to inspect.
+
+    Returns:
+        Whether at least one diagnostic is an error.
+    """
     return any(diagnostic.severity == "error" for diagnostic in diagnostics)
 
 
 def sort_diagnostics(diagnostics: Iterable[Diagnostic]) -> tuple[Diagnostic, ...]:
-    """Return diagnostics sorted by path, line, severity, code, and message."""
+    """Return diagnostics sorted by stable display fields.
+
+    Args:
+        diagnostics: Diagnostics to sort.
+
+    Returns:
+        Diagnostics sorted by path, line, severity, code, and message.
+    """
     return tuple(sorted(diagnostics, key=_diagnostic_sort_key))
 
 
 def group_diagnostics_by_path(
     diagnostics: Iterable[Diagnostic],
 ) -> Mapping[Path | None, tuple[Diagnostic, ...]]:
-    """Return diagnostics grouped by path with sorted diagnostics per group."""
+    """Return diagnostics grouped by path with sorted entries per group.
+
+    Args:
+        diagnostics: Diagnostics to group.
+
+    Returns:
+        Mapping from related path to sorted diagnostics.
+    """
     grouped: dict[Path | None, list[Diagnostic]] = {}
     for diagnostic in sort_diagnostics(diagnostics):
         grouped.setdefault(diagnostic.path, []).append(diagnostic)
@@ -44,7 +72,14 @@ def group_diagnostics_by_path(
 
 
 def format_diagnostic(diagnostic: Diagnostic) -> str:
-    """Format one diagnostic for deterministic CLI output."""
+    """Format one diagnostic for deterministic CLI output.
+
+    Args:
+        diagnostic: Diagnostic to render.
+
+    Returns:
+        Human-readable diagnostic text.
+    """
     prefix = _format_location(diagnostic)
     body = f"{diagnostic.severity} {diagnostic.code}: {diagnostic.message}"
     first_line = f"{prefix}: {body}" if prefix else body
@@ -60,7 +95,15 @@ def format_diagnostics(
     *,
     sort: bool = True,
 ) -> str:
-    """Format diagnostics as a newline-separated deterministic CLI report."""
+    """Format diagnostics as a deterministic CLI report.
+
+    Args:
+        diagnostics: Diagnostics to render.
+        sort: Whether to sort diagnostics before formatting.
+
+    Returns:
+        Newline-separated diagnostic report.
+    """
     items = sort_diagnostics(diagnostics) if sort else tuple(diagnostics)
     return "\n".join(format_diagnostic(diagnostic) for diagnostic in items)
 

@@ -29,7 +29,7 @@ make check
 Execution order:
 
 ```text
-format -> lint -> docstrings -> typecheck -> metrics -> test
+format -> lint -> docstrings -> docstrings-strict -> typecheck -> metrics -> test
 ```
 
 Defined in `Makefile`:
@@ -39,10 +39,11 @@ Defined in `Makefile`:
 | `format` | `uv run ruff format src/ tests/ scripts/` | Apply automatic formatting |
 | `lint` | `uv run ruff check src/ tests/ scripts/` | Run static lint rules |
 | `docstrings` | `uv run ruff check src/ --select D --ignore D100,D104` | Check Google-style source docstrings |
+| `docstrings-strict` | `uv run python scripts/check_google_docstrings.py` | Enforce Scribpy's strict public API docstring contract |
 | `typecheck` | `uv run mypy src/` | Run strict static typing |
 | `metrics` | `uv run python scripts/code_metrics.py` | Check code metrics thresholds |
 | `test` | `uv run pytest` | Run tests and coverage |
-| `check` | `format lint docstrings typecheck metrics test` | Run the full local quality gate |
+| `check` | `format lint docstrings docstrings-strict typecheck metrics test` | Run the full local quality gate |
 
 `make check` is intentionally mutating because `format` rewrites files. For a
 non-mutating formatting check, use:
@@ -68,7 +69,7 @@ Configuration:
 cache-dir = "work/.ruff_cache"
 ```
 
-Controlled points:
+Ruff-controlled points:
 
 - Python source formatting under `src/`;
 - test formatting under `tests/`;
@@ -155,10 +156,30 @@ Controlled points:
 
 - public functions and classes in `src/` have docstrings where required;
 - docstrings follow the Google convention recognized by Ruff/pydocstyle;
-- sections such as `Args`, `Returns`, `Raises`, and `Attributes` follow the
-  expected structure;
 - docstring formatting issues such as missing summary separation or invalid
   escape sequences are reported.
+
+Additional Scribpy strict contract:
+
+- every public function or method with documented parameters has an `Args:`
+  section;
+- every public function or method with a non-`None` return annotation has a
+  `Returns:` section;
+- every public class with annotated public fields has an `Attributes:` section;
+- private functions and private classes are exempt unless documented by choice.
+
+Command:
+
+```text
+uv run python scripts/check_google_docstrings.py
+```
+
+Why two checks are needed:
+
+- Ruff/pydocstyle validates presence and structural Google-style formatting;
+- it does not require every public signature to include complete `Args`,
+  `Returns`, and `Attributes` sections;
+- the project-specific AST check expresses that stricter local contract.
 
 Ignored rules:
 

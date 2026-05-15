@@ -12,7 +12,20 @@ from scribpy.model.protocols import FileSystem, MarkdownParser
 
 @dataclass(frozen=True)
 class ProjectPipelineState:
-    """Intermediate products built while preparing a Scribpy project."""
+    """Intermediate products built while preparing a Scribpy project.
+
+    Attributes:
+        start: Initial root, child, or configuration path supplied by caller.
+        filesystem: Filesystem service used by parsing steps.
+        parser: Optional Markdown parser adapter override.
+        config_path: Resolved path to ``scribpy.toml``.
+        config: Parsed project configuration.
+        project_root: Resolved project root directory.
+        source_files: Source files discovered by the project scanner.
+        index: Deterministic document index.
+        ordered_files: Source files ordered by the document index.
+        documents: Semantic documents produced by parsing.
+    """
 
     start: Path
     filesystem: FileSystem

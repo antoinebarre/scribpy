@@ -41,6 +41,8 @@ printf "\n${B}Running CI checks…${N}\n\n"
 
 run "format-check"  work/format.log    uv run ruff format --check src/ scripts/
 run "lint"          work/lint.log      uv run ruff check  src/ scripts/
+run "docstrings"    work/docstrings.log uv run ruff check src/ --select D --ignore D100,D104
+run "docstrings-strict" work/docstrings-strict.log uv run python scripts/check_google_docstrings.py
 run "type-check"    work/typecheck.log uv run mypy src/
 run "metrics"       work/metrics.log   uv run python scripts/code_metrics.py
 
@@ -67,6 +69,8 @@ if [ "${#FAIL_NAMES[@]}" -gt 0 ]; then
         case $name in
             format-check) log=work/format.log    ;;
             lint)         log=work/lint.log      ;;
+            docstrings)   log=work/docstrings.log ;;
+            docstrings-strict) log=work/docstrings-strict.log ;;
             type-check)   log=work/typecheck.log ;;
             metrics)      log=work/metrics.log   ;;
             tests)        log=work/test.log      ;;
@@ -84,7 +88,7 @@ printf "\n${B}%s${N}\n" "$SEP"
 printf "${B} %-16s  %-10s  %s${N}\n" "Check" "Status" "Details"
 printf "${B}%s${N}\n" "$SEP"
 
-for name in "format-check" "lint" "type-check" "metrics" "tests"; do
+for name in "format-check" "lint" "docstrings" "docstrings-strict" "type-check" "metrics" "tests"; do
     case "$name" in
         metrics) details="report work/code-metrics-report.md" ;;
         tests)   details="$TEST_INFO" ;;

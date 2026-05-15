@@ -20,7 +20,14 @@ class BrokenInternalLinkRule:
     code = "LINT003"
 
     def run(self, context: LintContext) -> tuple[Diagnostic, ...]:
-        """Return diagnostics for unresolved local links or anchors."""
+        """Return diagnostics for unresolved local links or anchors.
+
+        Args:
+            context: Shared lint inputs for the current project.
+
+        Returns:
+            Diagnostics emitted by the internal-link rule.
+        """
         documents = context.documents_by_path
         diagnostics: list[Diagnostic] = []
         for document in context.documents:
