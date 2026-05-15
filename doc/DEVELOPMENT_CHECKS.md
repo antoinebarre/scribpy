@@ -43,10 +43,16 @@ Defined in `Makefile`:
 | `typecheck` | `uv run mypy src/` | Run strict static typing |
 | `metrics` | `uv run python scripts/code_metrics.py` | Check code metrics thresholds |
 | `test` | `uv run pytest` | Run tests and coverage |
-| `check` | `format lint docstrings docstrings-strict typecheck metrics test` | Run the full local quality gate |
+| `check` | `bash scripts/check.sh` | Run the full local quality gate with a progress table and final summary |
 
-`make check` is intentionally mutating because `format` rewrites files. For a
-non-mutating formatting check, use:
+`make check` is intentionally mutating because `format` rewrites files. Its
+output is intentionally compact while checks are running, then prints:
+
+- one live status row per check;
+- detailed logs only for failed checks;
+- one final summary table with the most useful detail for each step.
+
+For a non-mutating formatting check, use:
 
 ```text
 make format-check

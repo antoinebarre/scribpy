@@ -8,6 +8,7 @@ G='\033[32m' R='\033[31m' Y='\033[33m' B='\033[1m' N='\033[0m'
 SEP='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
 
 mkdir -p work
+export UV_CACHE_DIR="${UV_CACHE_DIR:-work/.uv-cache}"
 
 PASS=0
 FAIL=0

@@ -26,8 +26,9 @@ test:
 	uv run pytest; \
 	code=$$?; [ $$code -eq 5 ] && exit 0 || exit $$code
 
-# Local dev: format (mutating) + all checks
-check: format lint docstrings docstrings-strict typecheck metrics test
+# Local dev: mutating format + consolidated readable summary
+check:
+	@bash scripts/check.sh
 
 # CI: all checks via the consolidated script (no early exit, full summary)
 ci:
