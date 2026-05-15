@@ -11,6 +11,7 @@ from typing import TextIO
 from scribpy.core import (
     DemoVariant,
     create_demo_project,
+    lint_project,
     parse_project_documents,
     run_index_check,
 )
@@ -78,6 +79,18 @@ Exit codes:
   0  no blocking error diagnostics
   1  at least one error diagnostic
   2  invalid CLI usage
+"""
+_LINT_DESCRIPTION = """\
+Check documentation quality from the semantic document model.
+
+Lint commands load configuration, discover and parse Markdown sources, then run
+the configured documentation quality rules over the extracted semantic model.
+"""
+_LINT_EPILOG = """\
+Examples:
+  scribpy lint --root dd1
+  scribpy lint --root dd1/scribpy.toml
+  scribpy lint
 """
 _INDEX_DESCRIPTION = """\
 Inspect project source discovery and document index configuration.
@@ -196,6 +209,9 @@ def _main(argv: Sequence[str] | None, stdout: TextIO, stderr: TextIO) -> int:
     if args.command == "parse" and args.parse_command == "check":
         return _run_parse_check_command(args.root, stdout, stderr)
 
+    if args.command == "lint":
+        return _run_lint_command(args.root, stderr)
+
     if args.command == "demo" and args.demo_command == "create":
         return _run_demo_create_command(
             args.target,
@@ -234,6 +250,23 @@ def _build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parse_check_parser.add_argument(
+        "--root",
+        type=Path,
+        default=None,
+        help=(
+            "Project root, any path inside a project, or a direct path to "
+            "scribpy.toml. Defaults to the current working directory."
+        ),
+    )
+
+    lint_parser = subparsers.add_parser(
+        "lint",
+        help="Check documentation quality",
+        description=_LINT_DESCRIPTION,
+        epilog=_LINT_EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    lint_parser.add_argument(
         "--root",
         type=Path,
         default=None,
@@ -331,6 +364,13 @@ def _run_parse_check_command(root: Path | None, stdout: TextIO, stderr: TextIO) 
 
 def _run_index_check_command(root: Path | None, stderr: TextIO) -> int:
     result = run_index_check(root)
+    if result.diagnostics:
+        print(format_diagnostics(result.diagnostics), file=stderr)
+    return 1 if result.failed else 0
+
+
+def _run_lint_command(root: Path | None, stderr: TextIO) -> int:
+    result = lint_project(root)
     if result.diagnostics:
         print(format_diagnostics(result.diagnostics), file=stderr)
     return 1 if result.failed else 0

@@ -234,6 +234,38 @@ def test_parse_check_help_documents_examples_and_exit_codes(capsys) -> None:
     assert "0  no blocking error diagnostics" in captured.out
 
 
+def test_lint_returns_zero_for_valid_project(tmp_path: Path, capsys) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n")
+
+    exit_code = main(["lint", "--root", str(tmp_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_lint_returns_one_and_prints_diagnostics(tmp_path: Path, capsys) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "## Missing H1\n")
+
+    exit_code = main(["lint", "--root", str(tmp_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "error LINT001" in captured.err
+    assert "error LINT002" in captured.err
+
+
+def test_lint_help_documents_examples(capsys) -> None:
+    exit_code = main(["lint", "-h"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "scribpy lint --root dd1" in captured.out
+
+
 def _write_config(root: Path, content: str) -> Path:
     config_path = root / "scribpy.toml"
     config_path.write_text(content, encoding="utf-8")
