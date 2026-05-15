@@ -40,7 +40,7 @@ def test_demo_create_returns_zero_and_creates_valid_project(
     assert check_output.err == ""
 
 
-def test_demo_create_invalid_variant_creates_project_with_diagnostics(
+def test_demo_create_invalid_variant_creates_project_with_lint_diagnostics(
     tmp_path: Path,
     capsys,
 ) -> None:
@@ -55,10 +55,16 @@ def test_demo_create_invalid_variant_creates_project_with_diagnostics(
 
     check_exit_code = main(["index", "check", "--root", str(target)])
     check_output = capsys.readouterr()
-    assert check_exit_code == 1
-    assert "error IDX002" in check_output.err
-    assert "error IDX003" in check_output.err
-    assert "warning IDX005" in check_output.err
+    assert check_exit_code == 0
+    assert check_output.err == ""
+
+    lint_exit_code = main(["lint", "--root", str(target)])
+    lint_output = capsys.readouterr()
+    assert lint_exit_code == 1
+    assert "error LINT001" in lint_output.err
+    assert "error LINT002" in lint_output.err
+    assert "error LINT003" in lint_output.err
+    assert "error LINT004" in lint_output.err
 
 
 def test_demo_create_help_documents_variants_and_examples(capsys) -> None:
@@ -67,8 +73,11 @@ def test_demo_create_help_documents_variants_and_examples(capsys) -> None:
     captured = capsys.readouterr()
     assert exit_code == 0
     assert "scribpy demo create dd1 --variant invalid" in captured.out
-    assert "valid    creates a project expected to pass index check" in captured.out
-    assert "invalid  creates a project with missing" in captured.out
+    assert (
+        "valid    creates a project expected to pass index, parse, and lint checks"
+        in captured.out
+    )
+    assert "invalid  creates a project with intentional lint diagnostics" in captured.out
 
 
 def test_root_help_documents_common_workflows(capsys) -> None:
@@ -132,6 +141,7 @@ def test_demo_create_force_overwrites_demo_files(
     assert "Next steps:" in captured.out
     assert "scribpy index check" in captured.out
     assert "scribpy parse check" in captured.out
+    assert "scribpy lint" in captured.out
     assert captured.err == ""
 
 
@@ -232,6 +242,38 @@ def test_parse_check_help_documents_examples_and_exit_codes(capsys) -> None:
     assert "scribpy parse check --root dd1" in captured.out
     assert "What is checked:" in captured.out
     assert "0  no blocking error diagnostics" in captured.out
+
+
+def test_lint_returns_zero_for_valid_project(tmp_path: Path, capsys) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n")
+
+    exit_code = main(["lint", "--root", str(tmp_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_lint_returns_one_and_prints_diagnostics(tmp_path: Path, capsys) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "## Missing H1\n")
+
+    exit_code = main(["lint", "--root", str(tmp_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "error LINT001" in captured.err
+    assert "error LINT002" in captured.err
+
+
+def test_lint_help_documents_examples(capsys) -> None:
+    exit_code = main(["lint", "-h"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "scribpy lint --root dd1" in captured.out
 
 
 def _write_config(root: Path, content: str) -> Path:

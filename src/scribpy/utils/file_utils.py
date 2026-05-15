@@ -12,24 +12,58 @@ class RealFileSystem:
     """Concrete ``FileSystem`` implementation backed by the OS filesystem."""
 
     def read_text(self, path: Path) -> str:
-        """Return the UTF-8 text content of ``path``."""
+        """Return the UTF-8 text content of a path.
+
+        Args:
+            path: File path to read.
+
+        Returns:
+            UTF-8 file contents.
+        """
         return path.read_text(encoding="utf-8")
 
     def write_text(self, path: Path, content: str) -> None:
-        """Write UTF-8 ``content`` to ``path``."""
+        """Write UTF-8 content to a path.
+
+        Args:
+            path: File path to write.
+            content: UTF-8 text content to persist.
+        """
         path.write_text(content, encoding="utf-8")
 
     def exists(self, path: Path) -> bool:
-        """Return whether ``path`` exists."""
+        """Return whether a path exists.
+
+        Args:
+            path: Candidate filesystem path.
+
+        Returns:
+            Whether the path exists.
+        """
         return path.exists()
 
     def glob(self, root: Path, pattern: str) -> Iterable[Path]:
-        """Yield paths below ``root`` matching ``pattern``."""
+        """Yield matching paths below a root.
+
+        Args:
+            root: Directory to search below.
+            pattern: Glob pattern relative to ``root``.
+
+        Returns:
+            Matching paths.
+        """
         return root.glob(pattern)
 
 
 def is_md_file(path: Path) -> bool:
-    """Returns True if path is an existing file with a .md extension."""
+    """Return whether a path is an existing Markdown file.
+
+    Args:
+        path: Candidate file path.
+
+    Returns:
+        Whether the path exists and has a ``.md`` suffix.
+    """
     return path.is_file() and path.suffix.lower() == _MD_SUFFIX
 
 
