@@ -149,10 +149,17 @@ What it creates:
   dd1/scribpy.toml
   dd1/README.md
   dd1/doc/index.md
-  dd1/doc/guide/setup.md
-  dd1/doc/guide/workflow.md
+  dd1/doc/guide/getting-started/*.md
+  dd1/doc/guide/workflows/*.md
+  dd1/doc/concepts/*.md
+  dd1/doc/architecture/*.md
   dd1/doc/reference/diagnostics.md
+  dd1/doc/tutorials/*.md
+  dd1/doc/operations/*.md
+  dd1/doc/appendix/*.md
   dd1/doc/assets/*.png
+
+The valid variant contains 33 Markdown documents across a nested manual tree.
 
 Next steps:
   scribpy index check --root dd1

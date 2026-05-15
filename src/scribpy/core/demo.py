@@ -10,8 +10,46 @@ from scribpy.utils import has_errors
 
 DemoVariant = Literal["valid", "invalid"]
 
-_VALID_DEMO_FILES: dict[Path, str] = {
-    Path("scribpy.toml"): """\
+_VALID_DEMO_PAGES: tuple[tuple[str, str], ...] = (
+    ("guide/getting-started/overview.md", "Getting Started Overview"),
+    ("guide/getting-started/installation.md", "Installation Guide"),
+    ("guide/getting-started/quickstart.md", "Quickstart"),
+    ("guide/workflows/authoring.md", "Authoring Workflow"),
+    ("guide/workflows/review.md", "Review Workflow"),
+    ("guide/workflows/release.md", "Release Workflow"),
+    ("guide/workflows/troubleshooting.md", "Troubleshooting Workflow"),
+    ("concepts/docs-as-code.md", "Docs as Code"),
+    ("concepts/functional-chains.md", "Functional Chains"),
+    ("concepts/semantic-model.md", "Semantic Model"),
+    ("concepts/transforms.md", "Transforms"),
+    ("architecture/overview.md", "Architecture Overview"),
+    ("architecture/pipeline.md", "Pipeline Architecture"),
+    ("architecture/data-model.md", "Data Model"),
+    ("architecture/extensions.md", "Extension Architecture"),
+    ("reference/cli.md", "CLI Reference"),
+    ("reference/configuration.md", "Configuration Reference"),
+    ("reference/diagnostics.md", "Diagnostics Reference"),
+    ("reference/lint-rules.md", "Lint Rules Reference"),
+    ("reference/transforms.md", "Transform Reference"),
+    ("reference/builders.md", "Builder Reference"),
+    ("tutorials/first-project.md", "First Project Tutorial"),
+    ("tutorials/multi-file-book.md", "Multi-file Book Tutorial"),
+    ("tutorials/custom-index.md", "Custom Index Tutorial"),
+    ("tutorials/build-markdown.md", "Build Markdown Tutorial"),
+    ("operations/ci.md", "CI Operations"),
+    ("operations/release.md", "Release Operations"),
+    ("operations/migration.md", "Migration Operations"),
+    ("operations/faq.md", "Operations FAQ"),
+    ("appendix/glossary.md", "Glossary"),
+    ("appendix/roadmap.md", "Roadmap"),
+    ("appendix/changelog.md", "Changelog"),
+)
+
+
+def _valid_demo_config() -> str:
+    indexed_files = ("index.md", *(path for path, _ in _VALID_DEMO_PAGES))
+    entries = "\n".join(f'  "{path}",' for path in indexed_files)
+    return f"""\
 [project]
 name = "scribpy-demo"
 
@@ -21,13 +59,13 @@ source = "doc"
 [index]
 mode = "explicit"
 files = [
-  "index.md",
-  "guide/setup.md",
-  "guide/workflow.md",
-  "reference/diagnostics.md",
+{entries}
 ]
-""",
-    Path("doc/index.md"): """\
+"""
+
+
+def _valid_demo_index() -> str:
+    return """\
 ---
 title: Scribpy Demo
 author: Demo Author
@@ -41,113 +79,104 @@ tags:
 
 Welcome to the Scribpy demo project.
 
-This document exercises the **phase 4 lint-first chain** on top of project
-loading and semantic extraction.
+This document exercises the complete project preparation, lint, transform, and
+Markdown build chains on a non-trivial documentation tree.
 
-## What Scribpy Does
+## Start Here
 
-Scribpy converts Markdown sources into structured output formats.
-See the [setup guide](guide/setup.md) for the next steps.
-Then continue with the [workflow guide](guide/workflow.md#daily-workflow).
+Begin with the [overview](guide/getting-started/overview.md), continue with the
+[quickstart](guide/getting-started/quickstart.md), then inspect the
+[pipeline architecture](architecture/pipeline.md#processing-stages).
+
+## Explore the Manual
+
+- [Docs as Code](concepts/docs-as-code.md)
+- [Functional Chains](concepts/functional-chains.md)
+- [CLI Reference](reference/cli.md)
+- [First Project Tutorial](tutorials/first-project.md)
+- [CI Operations](operations/ci.md)
+- [Glossary](appendix/glossary.md)
 
 Visit the [Scribpy project](https://github.com/example/scribpy) for more
 information.
 
 ## Project Structure
 
-The document index is declared in `scribpy.toml`.
-Order is explicit and deterministic across four documents.
+The explicit index spans more than thirty Markdown documents across nested
+sections, so ordering and link resolution remain deterministic at realistic
+scale.
 
 ![Scribpy architecture overview](assets/architecture.png)
-""",
-    Path("doc/guide/setup.md"): """\
+"""
+
+
+def _valid_demo_page(index: int, relative_path: str, title: str) -> str:
+    previous_path = "index.md" if index == 0 else _VALID_DEMO_PAGES[index - 1][0]
+    next_path = (
+        "index.md"
+        if index == len(_VALID_DEMO_PAGES) - 1
+        else _VALID_DEMO_PAGES[index + 1][0]
+    )
+    current = Path(relative_path)
+    previous_link = _relative_link(current, previous_path)
+    next_link = _relative_link(current, next_path)
+    index_link = _relative_link(current, "index.md")
+    extra = _valid_demo_extra(relative_path)
+    return f"""\
 ---
-title: Setup Guide
-author: Demo Author
-draft: false
----
-
-# Setup Guide
-
-This is the second document in the explicit index.
-
-## Prerequisites
-
-Before you start, make sure you have Python 3.12 or later installed.
-See the [index](../index.md) for the project overview.
-
-## Installation
-
-Install Scribpy with pip:
-
-```bash
-pip install scribpy
-```
-
-## Verification
-
-Run the full semantic check to verify parsing works:
-
-```bash
-scribpy parse check --root .
-```
-
-Then run the lint chain:
-
-```bash
-scribpy lint --root .
-```
-
-Continue with the [workflow guide](workflow.md).
-
-![Setup diagram](../assets/setup.png)
-""",
-    Path("doc/guide/workflow.md"): """\
----
-title: Workflow Guide
+title: {title}
 author: Demo Author
 ---
 
-# Workflow Guide
+# {title}
 
-This document demonstrates valid heading structure and cross-document links.
+This page belongs to the complex Scribpy demo manual.
 
-## Daily Workflow
+## Overview
 
-1. Edit Markdown sources.
-2. Run `scribpy index check --root .`.
-3. Run `scribpy parse check --root .`.
-4. Run `scribpy lint --root .`.
+Use this page to exercise deterministic indexing, semantic extraction, and
+assembled output across nested documentation sections.
 
-For the list of emitted diagnostics, see the
-[diagnostics reference](../reference/diagnostics.md#lint-diagnostics).
+## Navigation
 
-## Review Checklist
+Return to the [manual index]({index_link}), visit the [previous page]({previous_link}),
+or continue to the [next page]({next_link}).
+{extra}"""
 
-Before sharing docs, confirm headings, local links, and image assets are valid.
-""",
-    Path("doc/reference/diagnostics.md"): """\
----
-title: Diagnostics Reference
-author: Demo Author
----
 
-# Diagnostics Reference
+def _valid_demo_extra(relative_path: str) -> str:
+    if relative_path == "guide/getting-started/overview.md":
+        return (
+            "\nSee the [installation guide](installation.md) before the quickstart.\n"
+        )
+    if relative_path == "guide/getting-started/installation.md":
+        return "\n![Setup diagram](../../assets/setup.png)\n"
+    if relative_path == "architecture/pipeline.md":
+        return (
+            "\n## Processing Stages\n\n"
+            "Configure, scan, parse, lint, transform, assemble, then build.\n"
+        )
+    if relative_path == "reference/diagnostics.md":
+        return (
+            "\n## Lint Diagnostics\n\n"
+            "- `LINT001`\n"
+            "- `LINT002`\n"
+            "- `LINT003`\n"
+            "- `LINT004`\n"
+        )
+    return ""
 
-Scribpy exposes stable diagnostic codes for each chain.
 
-## Lint Diagnostics
+def _relative_link(current: Path, target: str) -> str:
+    import posixpath
 
-- `LINT001`: document without H1.
-- `LINT002`: invalid heading hierarchy.
-- `LINT003`: broken internal link.
-- `LINT004`: missing local asset.
+    current_dir = current.parent.as_posix()
+    start = current_dir if current_dir != "." else "."
+    return posixpath.relpath(target, start=start)
 
-Return to the [workflow guide](../guide/workflow.md#daily-workflow).
-""",
-    Path("doc/assets/architecture.png"): "demo asset: architecture\n",
-    Path("doc/assets/setup.png"): "demo asset: setup\n",
-    Path("README.md"): """\
+
+def _valid_demo_readme() -> str:
+    return """\
 # Scribpy Demo Project
 
 Generated by:
@@ -156,13 +185,15 @@ Generated by:
 scribpy demo create
 ```
 
+The generated manual contains 33 Markdown documents under `doc/`, arranged in a
+nested tree that exercises explicit indexing, link resolution, transforms, and
+assembled Markdown builds.
+
 ## Phase 2 — Project context
 
 ```bash
 scribpy index check --root .
 ```
-
-Validates configuration, source discovery, and document index.
 
 ## Phase 3 — Parse and semantic extraction
 
@@ -170,24 +201,35 @@ Validates configuration, source discovery, and document index.
 scribpy parse check --root .
 ```
 
-Parses every Markdown file and extracts frontmatter, headings, links,
-and image references. Reports diagnostics for any file that cannot be read
-or parsed.
-
 ## Phase 4 — Lint-first user value
 
 ```bash
 scribpy lint --root .
 ```
 
-Checks heading structure, local links, and local assets before any build output
-exists.
+## Phases 5–6 — Markdown build and transforms
+
+```bash
+scribpy build markdown --root .
+```
 
 ## Next steps
 
-Re-run checks after editing the files under `doc/` and observe how diagnostics
-change.
-""",
+Re-run checks after editing the files under `doc/` and observe how diagnostics,
+section numbering, generated table of contents, and link rewrites change.
+"""
+
+
+_VALID_DEMO_FILES: dict[Path, str] = {
+    Path("scribpy.toml"): _valid_demo_config(),
+    Path("doc/index.md"): _valid_demo_index(),
+    **{
+        Path("doc") / relative_path: _valid_demo_page(index, relative_path, title)
+        for index, (relative_path, title) in enumerate(_VALID_DEMO_PAGES)
+    },
+    Path("doc/assets/architecture.png"): "demo asset: architecture\n",
+    Path("doc/assets/setup.png"): "demo asset: setup\n",
+    Path("README.md"): _valid_demo_readme(),
 }
 
 _INVALID_DEMO_FILES: dict[Path, str] = {
