@@ -51,6 +51,9 @@ details_for() {
         docstrings-strict)
             tail -n 1 "$log" 2>/dev/null || true
             ;;
+        init-modules)
+            tail -n 1 "$log" 2>/dev/null || true
+            ;;
         type-check)
             grep -E '^Success:|^Found [0-9]+ errors?' "$log" | tail -n 1 || true
             ;;
@@ -79,6 +82,7 @@ set_detail() {
         lint) DETAIL_LINT=$value ;;
         docstrings) DETAIL_DOCSTRINGS=$value ;;
         docstrings-strict) DETAIL_DOCSTRINGS_STRICT=$value ;;
+        init-modules) DETAIL_INIT_MODULES=$value ;;
         type-check) DETAIL_TYPE_CHECK=$value ;;
         metrics) DETAIL_METRICS=$value ;;
         tests) DETAIL_TESTS=$value ;;
@@ -92,6 +96,7 @@ get_detail() {
         lint) printf "%s" "$DETAIL_LINT" ;;
         docstrings) printf "%s" "$DETAIL_DOCSTRINGS" ;;
         docstrings-strict) printf "%s" "$DETAIL_DOCSTRINGS_STRICT" ;;
+        init-modules) printf "%s" "$DETAIL_INIT_MODULES" ;;
         type-check) printf "%s" "$DETAIL_TYPE_CHECK" ;;
         metrics) printf "%s" "$DETAIL_METRICS" ;;
         tests) printf "%s" "$DETAIL_TESTS" ;;
@@ -116,7 +121,7 @@ print_summary() {
     printf "${B} %-20s  %-10s  %s${N}\n" "Check" "Status" "Details"
     printf "${B}%s${N}\n" "$SEP"
 
-    for name in format lint docstrings docstrings-strict type-check metrics tests; do
+    for name in format lint docstrings docstrings-strict init-modules type-check metrics tests; do
         local status
         if contains "$name" "${FAIL_NAMES[@]+"${FAIL_NAMES[@]}"}"; then
             status="${R}✘ FAIL${N}"
@@ -140,6 +145,7 @@ run "format"            work/format.log            uv run ruff format src/ scrip
 run "lint"              work/lint.log              uv run ruff check src/ scripts/
 run "docstrings"        work/docstrings.log        uv run ruff check src/ --select D --ignore D100,D104
 run "docstrings-strict" work/docstrings-strict.log uv run python scripts/check_google_docstrings.py
+run "init-modules"      work/init-modules.log      uv run python scripts/check_init_modules.py
 run "type-check"        work/type-check.log        uv run mypy src/
 run "metrics"           work/metrics.log           uv run python scripts/code_metrics.py
 
