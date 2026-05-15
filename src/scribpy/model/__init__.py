@@ -33,6 +33,7 @@ from scribpy.model.protocols import (
 )
 from scribpy.model.results import BuildArtifact, BuildResult, LintResult, ParseResult
 from scribpy.model.source import SourceFile
+from scribpy.model.transformed import TransformedDocument
 
 __all__ = [
     "AssetKind",
@@ -57,4 +58,5 @@ __all__ = [
     "Reference",
     "ReferenceKind",
     "SourceFile",
+    "TransformedDocument",
 ]
