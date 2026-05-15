@@ -276,6 +276,46 @@ def test_lint_help_documents_examples(capsys) -> None:
     assert "scribpy lint --root dd1" in captured.out
 
 
+
+def test_build_markdown_returns_zero_and_prints_artifact_path(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n")
+
+    exit_code = main(["build", "markdown", "--root", str(tmp_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "Built markdown artifact:" in captured.out
+    assert "build/markdown/document.md" in captured.out
+    assert captured.err == ""
+
+
+def test_build_markdown_returns_one_when_lint_fails(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "## Missing H1\n")
+
+    exit_code = main(["build", "markdown", "--root", str(tmp_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "error LINT001" in captured.err
+    assert "error BLD002" in captured.err
+    assert captured.out == ""
+
+
+def test_build_markdown_help_documents_examples(capsys) -> None:
+    exit_code = main(["build", "markdown", "-h"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "scribpy build markdown --root dd1" in captured.out
+
 def _write_config(root: Path, content: str) -> Path:
     config_path = root / "scribpy.toml"
     config_path.write_text(content, encoding="utf-8")

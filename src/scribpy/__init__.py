@@ -40,11 +40,6 @@ Quick start
         print(h.level, h.title)
 """
 
-from importlib.metadata import PackageNotFoundError, version
-
-try:
-    __version__: str = version("scribpy")
-except PackageNotFoundError:
-    __version__ = "0.0.0.dev0"
+from scribpy._version import __version__
 
 __all__ = ["__version__"]

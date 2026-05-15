@@ -21,12 +21,16 @@ def test_create_demo_project_writes_tutorial_files(tmp_path: Path) -> None:
     assert result.diagnostics == ()
     assert (target / "scribpy.toml").is_file()
     assert (target / "doc/index.md").is_file()
-    assert (target / "doc/guide/setup.md").is_file()
-    assert (target / "doc/guide/workflow.md").is_file()
+    assert (target / "doc/guide/getting-started/overview.md").is_file()
+    assert (target / "doc/guide/workflows/review.md").is_file()
+    assert (target / "doc/architecture/pipeline.md").is_file()
     assert (target / "doc/reference/diagnostics.md").is_file()
+    assert (target / "doc/tutorials/build-markdown.md").is_file()
+    assert (target / "doc/appendix/changelog.md").is_file()
     assert (target / "doc/assets/architecture.png").is_file()
     assert (target / "doc/assets/setup.png").is_file()
     assert (target / "README.md").is_file()
+    assert len(tuple((target / "doc").rglob("*.md"))) == 33
 
 
 def test_created_demo_project_passes_index_check(tmp_path: Path) -> None:
@@ -121,7 +125,7 @@ def test_created_demo_project_passes_parse_check(tmp_path: Path) -> None:
     result = parse_project_documents(target)
 
     assert result.failed is False
-    assert len(result.documents) == 4
+    assert len(result.documents) == 33
 
 
 def test_created_demo_project_documents_in_index_order(tmp_path: Path) -> None:
@@ -131,12 +135,13 @@ def test_created_demo_project_documents_in_index_order(tmp_path: Path) -> None:
     result = parse_project_documents(target)
 
     titles = [d.title for d in result.documents]
-    assert titles == [
+    assert titles[:4] == [
         "Scribpy Demo",
-        "Setup Guide",
-        "Workflow Guide",
-        "Diagnostics Reference",
+        "Getting Started Overview",
+        "Installation Guide",
+        "Quickstart",
     ]
+    assert titles[-3:] == ["Glossary", "Roadmap", "Changelog"]
 
 
 def test_created_demo_project_frontmatter_extracted(tmp_path: Path) -> None:
@@ -159,7 +164,7 @@ def test_created_demo_project_links_extracted(tmp_path: Path) -> None:
 
     index_doc = result.documents[0]
     all_targets = [link.target for link in index_doc.links]
-    assert any("guide/setup.md" in t for t in all_targets)
+    assert any("guide/getting-started/overview.md" in t for t in all_targets)
     assert any("github.com" in t for t in all_targets)
 
 

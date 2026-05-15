@@ -1,4 +1,4 @@
-.PHONY: format lint docstrings docstrings-strict format-check typecheck metrics test check ci clean-dist build check-dist publish-test publish
+.PHONY: format lint docstrings docstrings-strict init-modules format-check typecheck metrics test check ci clean-dist build check-dist publish-test publish
 
 format:
 	uv run ruff format src/ scripts/
@@ -14,6 +14,9 @@ docstrings:
 
 docstrings-strict:
 	uv run python scripts/check_google_docstrings.py
+
+init-modules:
+	uv run python scripts/check_init_modules.py
 
 typecheck:
 	uv run mypy src/

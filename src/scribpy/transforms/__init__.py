@@ -1,19 +1,33 @@
-"""Document transformation engine for scribpy.
+"""Document transformation pipeline for target-ready outputs."""
 
-A transform is a plain callable:
-    Transform = Callable[[TransformContext], TransformResult]
+from scribpy.transforms.markdown import (
+    apply_section_numbering,
+    generate_toc_transform,
+    resolve_cross_references,
+    rewrite_links_for_target,
+)
+from scribpy.transforms.pipeline import (
+    apply_transforms,
+    native_html_transforms,
+    native_markdown_transforms,
+)
+from scribpy.transforms.types import (
+    BuildTarget,
+    Transform,
+    TransformContext,
+    TransformResult,
+)
 
-Transforms receive the full document map and return a new map plus
-diagnostics. They are applied in explicit order by apply_transforms.
-
-Built-in transforms:
-    resolve_includes          — expand !include directives
-    resolve_cross_references  — resolve [[ref]] cross-references
-    apply_section_numbering   — prefix headings with section numbers
-    render_diagrams           — render Mermaid / PlantUML blocks
-    rewrite_links_for_target  — adapt links for markdown/html/pdf output
-    generate_toc_transform    — inject table of contents
-
-Main functions:
-    apply_transforms(context, transforms) -> TransformResult
-"""
+__all__ = [
+    "BuildTarget",
+    "Transform",
+    "TransformContext",
+    "TransformResult",
+    "apply_section_numbering",
+    "apply_transforms",
+    "generate_toc_transform",
+    "native_html_transforms",
+    "native_markdown_transforms",
+    "resolve_cross_references",
+    "rewrite_links_for_target",
+]
