@@ -14,11 +14,27 @@ from scribpy.config.loader import (
     parse_config,
     validate_config,
 )
-from scribpy.config.types import Config, IndexConfig, PathConfig, ProjectConfig
+from scribpy.config.types import (
+    Config,
+    DocumentConfig,
+    IndexConfig,
+    NumberingConfig,
+    PathConfig,
+    ProjectConfig,
+    TocConfig,
+)
 
 
 def test_config_objects_are_frozen_dataclasses() -> None:
-    config_types = (ProjectConfig, PathConfig, IndexConfig, Config)
+    config_types = (
+        ProjectConfig,
+        PathConfig,
+        IndexConfig,
+        TocConfig,
+        NumberingConfig,
+        DocumentConfig,
+        Config,
+    )
 
     for config_type in config_types:
         assert is_dataclass(config_type)
@@ -32,6 +48,9 @@ def test_default_config_matches_phase_2_conventions() -> None:
     assert config.paths.source == Path("doc")
     assert config.index.mode == "filesystem"
     assert config.index.files == ()
+    assert config.document.title is None
+    assert config.document.toc == TocConfig()
+    assert config.document.numbering == NumberingConfig()
 
     with pytest.raises(FrozenInstanceError):
         config.paths.source = Path("docs")
@@ -43,6 +62,15 @@ def test_parse_config_reads_minimal_toml_shape() -> None:
             "project": {"name": "scribpy-docs"},
             "paths": {"source": "docs"},
             "index": {"mode": "explicit", "files": ["intro.md", "guide/setup.md"]},
+            "document": {
+                "title": "Manual",
+                "toc": {"enabled": False, "max_level": 3, "style": "numbered"},
+                "numbering": {
+                    "enabled": True,
+                    "max_level": 4,
+                    "style": "roman",
+                },
+            },
         }
     )
 
@@ -50,6 +78,11 @@ def test_parse_config_reads_minimal_toml_shape() -> None:
     assert config.paths.source == Path("docs")
     assert config.index.mode == "explicit"
     assert config.index.files == (Path("intro.md"), Path("guide/setup.md"))
+    assert config.document == DocumentConfig(
+        title="Manual",
+        toc=TocConfig(enabled=False, max_level=3, style="numbered"),
+        numbering=NumberingConfig(enabled=True, max_level=4, style="roman"),
+    )
 
 
 def test_parse_config_accepts_hybrid_index_mode_for_later_diagnostics() -> None:
@@ -208,6 +241,42 @@ def test_load_config_returns_cfg004_for_unsafe_but_parseable_path(
         (
             {"index": {"files": [42]}},
             "Every index.files entry must be a string.",
+        ),
+        (
+            {"document": {"title": 42}},
+            "Configuration value document.title must be a string.",
+        ),
+        (
+            {"document": {"toc": []}},
+            "Configuration section [document.toc] must be a table.",
+        ),
+        (
+            {"document": {"toc": {"enabled": "yes"}}},
+            "Configuration value document.toc.enabled must be a boolean.",
+        ),
+        (
+            {"document": {"toc": {"max_level": 7}}},
+            "Configuration value document.toc.max_level must be an integer from 1 to 6.",
+        ),
+        (
+            {"document": {"toc": {"style": "tree"}}},
+            "Configuration value document.toc.style must be 'bullet' or 'numbered'.",
+        ),
+        (
+            {"document": {"numbering": []}},
+            "Configuration section [document.numbering] must be a table.",
+        ),
+        (
+            {"document": {"numbering": {"enabled": "yes"}}},
+            "Configuration value document.numbering.enabled must be a boolean.",
+        ),
+        (
+            {"document": {"numbering": {"max_level": 0}}},
+            "Configuration value document.numbering.max_level must be an integer from 1 to 6.",
+        ),
+        (
+            {"document": {"numbering": {"style": "greek"}}},
+            "Configuration value document.numbering.style must be 'decimal', 'alpha', or 'roman'.",
         ),
     ),
 )

@@ -16,6 +16,7 @@ from scribpy.transforms.types import (
     BuildTarget,
     Transform,
     TransformContext,
+    TransformOptions,
     TransformResult,
 )
 
@@ -25,7 +26,7 @@ def apply_transforms(
     *,
     target: BuildTarget,
     transforms: Iterable[Transform],
-    document_title: str | None = None,
+    options: TransformOptions | None = None,
 ) -> TransformResult:
     """Apply ordered transforms and return target-ready documents.
 
@@ -33,7 +34,7 @@ def apply_transforms(
         documents: Parsed source documents in deterministic order.
         target: Build target currently being prepared.
         transforms: Ordered transformation functions.
-        document_title: Optional global title for assembled target outputs.
+        options: Optional transform execution options.
 
     Returns:
         Final transformed documents plus accumulated diagnostics.
@@ -41,6 +42,7 @@ def apply_transforms(
     transformed = tuple(
         TransformedDocument.from_document(document) for document in documents
     )
+    active_options = options if options is not None else TransformOptions()
     diagnostics: list[Diagnostic] = []
     for transform in transforms:
         result = transform(
@@ -48,7 +50,7 @@ def apply_transforms(
                 target=target,
                 documents=documents,
                 transformed_documents=transformed,
-                document_title=document_title,
+                options=active_options,
             )
         )
         transformed = result.documents

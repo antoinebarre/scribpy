@@ -106,6 +106,46 @@ Pour l'artefact Markdown assemble, Scribpy produira un seul titre de niveau 1 :
 - la numerotation est calculee apres cette normalisation, sur la hierarchie
   finale effectivement rendue.
 
+La table des matieres et la numerotation seront configurables par projet via la
+section `[document]` de `scribpy.toml` :
+
+```toml
+[document]
+title = "My Manual"
+
+[document.toc]
+enabled = true
+max_level = 3
+style = "bullet"
+
+[document.numbering]
+enabled = true
+max_level = 6
+style = "decimal"
+```
+
+Les styles MVP retenus sont :
+
+- TOC : `bullet`, `numbered` ;
+- numerotation : `decimal`, `alpha`, `roman`.
+
+Le reglage `document.toc.max_level` conserve explicitement le controle de
+profondeur de la table des matieres. Dans l'artefact assemble, le H1 est reserve
+au titre global ; la TOC porte donc sur les niveaux `##` et suivants, jusqu'au
+niveau maximal configure.
+
+Exemple :
+
+```toml
+[document.toc]
+enabled = true
+max_level = 3
+style = "bullet"
+```
+
+Avec une hierarchie finale contenant `## Chapitre`, `### Section` et
+`#### Detail`, la TOC inclut `Chapitre` et `Section`, mais exclut `Detail`.
+
 Le choix d'un pipeline ordonne est prefere a une serie d'appels implicites dans
 le builder, car la phase 6 introduit un comportement qui :
 
@@ -153,11 +193,19 @@ le builder, car la phase 6 introduit un comportement qui :
   - propagation des diagnostics de transformation dans `BuildResult` ;
   - arret du build si une transformation retourne un diagnostic bloquant.
 
+- `scribpy.config`
+  - `DocumentConfig` ;
+  - `TocConfig` ;
+  - `NumberingConfig` ;
+  - parsing et validation de `[document]`, `[document.toc]` et
+    `[document.numbering]`.
+
 - Comportements MVP
   - H1 global unique dans l'artefact Markdown assemble ;
   - abaissement d'un niveau des titres sources pour construire la vue assemblee ;
-  - numerotation deterministe des titres ;
-  - generation d'une table des matieres a partir des titres transformes ;
+  - numerotation deterministe des titres, activable et parametree par projet ;
+  - generation d'une table des matieres a partir des titres transformes,
+    activable et parametree par projet ;
   - reecriture des liens inter-documents Markdown vers des ancres du document
     assemble ;
   - reecriture des liens `.md` vers `.html` pour la future cible HTML.
@@ -227,6 +275,8 @@ A creer, completer ou durcir :
 | Ordre | l'ordre est explicite, stable et fourni par le registre |
 | Markdown | `assembled heading normalization -> section numbering -> cross-reference resolution -> TOC` |
 | Structure Markdown assemblee | un seul H1 global, puis titres sources abaisses d'un niveau |
+| TOC | activable, profondeur (`max_level`) et style de liste configures par `[document.toc]` |
+| Numerotation | activable, profondeur et style configures par `[document.numbering]` |
 | HTML prepare | `section numbering -> target link rewriting -> TOC` |
 | Diagnostics | chaque transform peut produire des diagnostics accumules dans le resultat final |
 | Echec | une erreur de transformation empeche l'ecriture de l'artefact |
@@ -283,10 +333,12 @@ A faire :
 
 - injecter un H1 global unique dans l'artefact assemble ;
 - abaisser d'un niveau les titres des documents sources dans la vue assemblee ;
-- numeroter les titres de maniere deterministe ;
+- numeroter les titres de maniere deterministe selon la configuration projet ;
 - resoudre les references croisees entre documents vers des ancres compatibles
   avec l'artefact assemble ;
-- generer une table des matieres a partir des titres transformes ;
+- generer une table des matieres configurable a partir des titres transformes ;
+- conserver un reglage explicite de profondeur de TOC via
+  `document.toc.max_level` ;
 - verifier que le contenu produit reste stable a ordre documentaire identique.
 
 ### Etape 4 — Preparer les transforms cible-specifiques
@@ -368,11 +420,15 @@ La phase 6 est consideree terminee lorsque :
    et une table des matieres ;
 4. l'artefact Markdown contient un seul H1 global, puis une hierarchie finale
    renumerotee ;
-5. le registre fournit les transforms natifs par cible ;
-6. les diagnostics de transformation sont propages dans `BuildResult` ;
-7. une erreur de transformation empeche l'ecriture d'un artefact ;
-8. les tests couvrent la logique pure, le registre et l'integration build ;
-9. `make check` passe avec 100% de couverture.
+5. `[document.toc]` permet d'activer ou non la TOC et de regler sa profondeur
+   et son style ;
+6. `[document.numbering]` permet d'activer ou non la numerotation et de regler
+   sa profondeur et son style ;
+7. le registre fournit les transforms natifs par cible ;
+8. les diagnostics de transformation sont propages dans `BuildResult` ;
+9. une erreur de transformation empeche l'ecriture d'un artefact ;
+10. les tests couvrent la logique pure, le registre et l'integration build ;
+11. `make check` passe avec 100% de couverture.
 
 ---
 
@@ -383,8 +439,7 @@ Les decisions suivantes sont explicitement repoussees a la phase 7 ou au-dela :
 - le rendu HTML complet ;
 - la copie d'assets et le rendu de diagrammes ;
 - la resolution d'includes ;
-- l'exposition d'une configuration utilisateur pour activer, desactiver ou
-  reordonner les transforms ;
+- l'exposition d'une configuration utilisateur pour reordonner les transforms ;
 - la separation eventuelle entre `project.name` et un futur titre de livrable
   dedie ;
 - la forme finale de l'API d'enregistrement des transforms HTML ;

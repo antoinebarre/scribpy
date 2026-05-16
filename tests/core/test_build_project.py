@@ -113,3 +113,24 @@ def test_build_project_reports_artifact_write_failure(tmp_path: Path) -> None:
 
     assert result.success is False
     assert [diagnostic.code for diagnostic in result.diagnostics] == ["BLD003"]
+
+
+def test_build_project_uses_document_transform_configuration(tmp_path: Path) -> None:
+    _write_config(
+        tmp_path,
+        '[project]\nname = "Project Name"\n\n'
+        '[paths]\nsource = "doc"\n\n'
+        '[document]\ntitle = "Configured Manual"\n\n'
+        '[document.toc]\nenabled = false\n\n'
+        '[document.numbering]\nstyle = "roman"\nmax_level = 2\n',
+    )
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n## Setup\n")
+
+    result = build_project(tmp_path)
+
+    assert result.success is True
+    assert result.artifacts[0].path.read_text(encoding="utf-8") == (
+        "# Configured Manual\n\n"
+        "## I Home\n\n"
+        "### Setup\n"
+    )

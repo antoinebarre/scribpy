@@ -32,7 +32,7 @@ def normalize_assembled_markdown_headings(context: TransformContext) -> Transfor
         replace(document, content=_demote_headings(document.content))
         for document in context.transformed_documents
     )
-    title = context.document_title or "Document"
+    title = context.options.document_title or "Document"
     first, *rest = normalized
     updated_first = replace(first, content=f"# {title}\n\n{first.content.lstrip()}")
     return TransformResult(documents=(updated_first, *rest))
@@ -47,6 +47,9 @@ def apply_section_numbering(context: TransformContext) -> TransformResult:
     Returns:
         Documents with numbered Markdown headings.
     """
+    if not context.options.numbering_enabled:
+        return TransformResult(documents=context.transformed_documents)
+
     counters = [0] * 6
     transformed: list[TransformedDocument] = []
     for document in context.transformed_documents:
@@ -67,12 +70,19 @@ def generate_toc_transform(context: TransformContext) -> TransformResult:
         Documents with one generated TOC placed after the first H1 when headings
         beyond level 1 exist.
     """
+    if not context.options.toc_enabled:
+        return TransformResult(documents=context.transformed_documents)
+
     headings = _extract_transformed_headings(context.transformed_documents)
-    toc_items = [heading for heading in headings if heading.level >= 2]
+    toc_items = [
+        heading
+        for heading in headings
+        if 2 <= heading.level <= context.options.toc_max_level
+    ]
     if not context.transformed_documents or not toc_items:
         return TransformResult(documents=context.transformed_documents)
 
-    toc = _render_toc(toc_items)
+    toc = _render_toc(toc_items, context.options.toc_style)
     first, *rest = context.transformed_documents
     updated_first = replace(first, content=_insert_toc(first.content, toc))
     return TransformResult(documents=(updated_first, *rest))
@@ -130,10 +140,16 @@ def _number_heading(
         for index in range(len(counters)):
             counters[index] = 0
         return match.group(0)
+    if level > context.options.numbering_max_level:
+        return match.group(0)
     counters[level - 1] += 1
     for index in range(level, len(counters)):
         counters[index] = 0
-    prefix = ".".join(str(value) for value in counters[:level] if value)
+    prefix = ".".join(
+        _format_number(value, context.options.numbering_style)
+        for value in counters[:level]
+        if value
+    )
     return f"{marks} {prefix} {title}"
 
 
@@ -150,11 +166,15 @@ def _extract_transformed_headings(
     return tuple(headings)
 
 
-def _render_toc(headings: list[Heading]) -> str:
+def _render_toc(headings: list[Heading], style: str) -> str:
     lines = ["## Table of Contents"]
     for heading in headings:
         indent = "  " * (heading.level - 2)
-        lines.append(f"{indent}- [{heading.title}](#{heading.anchor})")
+        if style == "numbered":
+            marker = "1."
+        else:
+            marker = "-"
+        lines.append(f"{indent}{marker} [{heading.title}](#{heading.anchor})")
     return "\n".join(lines)
 
 
@@ -240,6 +260,45 @@ def _anchor(title: str) -> str:
     lowered = title.lower()
     stripped = re.sub(r"[^\w\s-]", "", lowered)
     return re.sub(r"\s+", "-", stripped).strip("-")
+
+
+def _format_number(value: int, style: str) -> str:
+    if style == "alpha":
+        return _to_alpha(value)
+    if style == "roman":
+        return _to_roman(value)
+    return str(value)
+
+
+def _to_alpha(value: int) -> str:
+    letters: list[str] = []
+    while value:
+        value, remainder = divmod(value - 1, 26)
+        letters.append(chr(ord("A") + remainder))
+    return "".join(reversed(letters))
+
+
+def _to_roman(value: int) -> str:
+    numerals = (
+        (1000, "M"),
+        (900, "CM"),
+        (500, "D"),
+        (400, "CD"),
+        (100, "C"),
+        (90, "XC"),
+        (50, "L"),
+        (40, "XL"),
+        (10, "X"),
+        (9, "IX"),
+        (5, "V"),
+        (4, "IV"),
+        (1, "I"),
+    )
+    parts: list[str] = []
+    for magnitude, numeral in numerals:
+        count, value = divmod(value, magnitude)
+        parts.append(numeral * count)
+    return "".join(parts)
 
 
 def _demote_headings(content: str) -> str:

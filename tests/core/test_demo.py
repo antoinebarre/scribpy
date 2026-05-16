@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from scribpy.core import (
+    build_project,
     create_demo_project,
     lint_project,
     parse_project_documents,
@@ -41,6 +42,20 @@ def test_created_demo_project_passes_index_check(tmp_path: Path) -> None:
 
     assert result.failed is False
     assert result.diagnostics == ()
+
+
+def test_created_demo_project_exposes_transform_configuration(tmp_path: Path) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target)
+
+    config = (target / "scribpy.toml").read_text(encoding="utf-8")
+
+    assert '[document]\ntitle = "Scribpy Demo Manual"' in config
+    assert '[document.toc]\nenabled = true\nmax_level = 3\nstyle = "bullet"' in config
+    assert (
+        '[document.numbering]\nenabled = true\nmax_level = 3\nstyle = "decimal"'
+        in config
+    )
 
 
 def test_create_invalid_demo_project_passes_index_check(
@@ -208,6 +223,26 @@ def test_created_demo_project_passes_lint(tmp_path: Path) -> None:
 
     assert result.failed is False
     assert result.diagnostics == ()
+
+
+def test_created_demo_project_builds_with_configured_document_transforms(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target)
+
+    result = build_project(target)
+
+    assert result.success is True
+    artifact = result.artifacts[0]
+    content = artifact.path.read_text(encoding="utf-8")
+    assert content.startswith(
+        "# Scribpy Demo Manual\n\n"
+        "## Table of Contents\n"
+        "- [1 Scribpy Demo](#1-scribpy-demo)\n"
+    )
+    assert "  - [2.1 Overview](#21-overview)" in content
+    assert "### 2.1 Overview" in content
 
 
 def test_invalid_demo_reports_phase_4_lint_diagnostics(tmp_path: Path) -> None:

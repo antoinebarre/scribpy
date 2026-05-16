@@ -56,6 +56,19 @@ name = "scribpy-demo"
 [paths]
 source = "doc"
 
+[document]
+title = "Scribpy Demo Manual"
+
+[document.toc]
+enabled = true
+max_level = 3
+style = "bullet"
+
+[document.numbering]
+enabled = true
+max_level = 3
+style = "decimal"
+
 [index]
 mode = "explicit"
 files = [
@@ -213,10 +226,29 @@ scribpy lint --root .
 scribpy build markdown --root .
 ```
 
+The demo `scribpy.toml` configures the assembled document title, generated table
+of contents, TOC depth, and section-numbering style:
+
+```toml
+[document]
+title = "Scribpy Demo Manual"
+
+[document.toc]
+enabled = true
+max_level = 3
+style = "bullet"
+
+[document.numbering]
+enabled = true
+max_level = 3
+style = "decimal"
+```
+
 ## Next steps
 
 Re-run checks after editing the files under `doc/` and observe how diagnostics,
-section numbering, generated table of contents, and link rewrites change.
+section numbering, generated table of contents, TOC depth, and link rewrites
+change.
 """
 
 
@@ -239,6 +271,19 @@ name = "scribpy-invalid-demo"
 
 [paths]
 source = "doc"
+
+[document]
+title = "Scribpy Invalid Demo Manual"
+
+[document.toc]
+enabled = true
+max_level = 3
+style = "bullet"
+
+[document.numbering]
+enabled = true
+max_level = 3
+style = "decimal"
 
 [index]
 mode = "explicit"

@@ -14,15 +14,21 @@ from scribpy.transforms.pipeline import (
 )
 from scribpy.transforms.types import (
     BuildTarget,
+    NumberingStyle,
+    TocStyle,
     Transform,
     TransformContext,
+    TransformOptions,
     TransformResult,
 )
 
 __all__ = [
     "BuildTarget",
+    "NumberingStyle",
+    "TocStyle",
     "Transform",
     "TransformContext",
+    "TransformOptions",
     "TransformResult",
     "apply_section_numbering",
     "apply_transforms",

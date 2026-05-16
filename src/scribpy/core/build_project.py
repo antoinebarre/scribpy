@@ -13,7 +13,7 @@ from scribpy.extensions import ExtensionRegistry
 from scribpy.lint import LintContext, run_lint_rules
 from scribpy.model import BuildResult, Diagnostic
 from scribpy.model.protocols import FileSystem, MarkdownParser
-from scribpy.transforms import apply_transforms
+from scribpy.transforms import TransformOptions, apply_transforms
 from scribpy.utils import has_errors
 
 
@@ -95,7 +95,17 @@ def _write_markdown_build(
         state.documents,
         target="markdown",
         transforms=registry.markdown_transforms,
-        document_title=state.config.project.name or "Document",
+        options=TransformOptions(
+            document_title=state.config.document.title
+            or state.config.project.name
+            or "Document",
+            toc_enabled=state.config.document.toc.enabled,
+            toc_max_level=state.config.document.toc.max_level,
+            toc_style=state.config.document.toc.style,
+            numbering_enabled=state.config.document.numbering.enabled,
+            numbering_max_level=state.config.document.numbering.max_level,
+            numbering_style=state.config.document.numbering.style,
+        ),
     )
     transformed_diagnostics = (*diagnostics, *transform_result.diagnostics)
     if has_errors(transformed_diagnostics):
