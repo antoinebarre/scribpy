@@ -4,8 +4,10 @@ from pathlib import Path
 
 import pytest
 
+from scribpy.config.types import HtmlBuilderConfig
 from scribpy.core import build_project
-from scribpy.model import BuildArtifact
+from scribpy.core.build_html import build_html_project
+from scribpy.model import BuildArtifact, Diagnostic
 
 
 @pytest.fixture(autouse=True)
@@ -224,6 +226,22 @@ def test_build_html_stops_when_project_preparation_fails(
     assert "CFG001" in codes
 
 
+def test_build_html_project_blocks_when_preparation_fails(tmp_path: Path) -> None:
+    result = build_html_project(
+        tmp_path,
+        html_config=HtmlBuilderConfig(),
+        filesystem=None,
+        parser=None,
+        registry=None,
+    )
+
+    assert result.success is False
+    assert [diagnostic.code for diagnostic in result.diagnostics] == [
+        "CFG001",
+        "BLD002",
+    ]
+
+
 def test_build_html_stops_when_lint_fails(tmp_path: Path) -> None:
     _write_config(tmp_path, '[paths]\nsource = "doc"\n')
     _write_source(tmp_path, "doc/index.md", "## No H1\n")
@@ -385,6 +403,23 @@ def test_build_html_site_write_failure_returns_error(tmp_path: Path) -> None:
     assert result.success is False
     codes = [d.code for d in result.diagnostics]
     assert "SITE001" in codes
+
+
+def test_build_html_site_mkdocs_failure_returns_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n")
+
+    monkeypatch.setattr(
+        "scribpy.core.build_html.run_mkdocs_build",
+        lambda *_args: (None, (Diagnostic(severity="error", code="SITE003", message="failed"),)),
+    )
+
+    result = build_project(tmp_path, target="html", html_mode="site")
+
+    assert result.success is False
+    assert "SITE003" in [diagnostic.code for diagnostic in result.diagnostics]
 
 
 def test_build_html_single_page_asset_copy_error_returns_error(

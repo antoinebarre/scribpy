@@ -75,6 +75,24 @@ def test_collect_asset_paths_ignores_external_urls(tmp_path: Path) -> None:
     assert paths == ()
 
 
+def test_collect_asset_paths_ignores_external_path_values(tmp_path: Path) -> None:
+    source_root = tmp_path / "doc"
+    assets = (AssetRef(kind="image", target="//cdn.example/image.png", path=Path("//cdn.example/image.png")),)
+    doc = Document(
+        path=source_root / "index.md",
+        relative_path=Path("index.md"),
+        source="",
+        frontmatter={},
+        ast=MarkdownAst(backend="test", tokens=()),
+        title=None,
+        headings=(),
+        links=(),
+        assets=assets,
+    )
+
+    assert collect_asset_paths((doc,), source_root) == ()
+
+
 def test_collect_asset_paths_deduplicates(tmp_path: Path) -> None:
     source_root = tmp_path / "doc"
     doc1 = _document_with_assets("a.md", ["shared.png"], source_root)
@@ -227,6 +245,57 @@ def test_rewrite_asset_links_single_page_flattens_document_relative_paths(
     rewritten = rewrite_asset_links_single_page(transformed, source_root)
 
     assert rewritten[0].content == "![photo](assets/img/photo.png)\n"
+
+
+def test_rewrite_asset_links_single_page_keeps_external_or_unparsed_assets(
+    tmp_path: Path,
+) -> None:
+    source_root = tmp_path / "doc"
+    assets = (
+        AssetRef(kind="image", target="https://example.com/photo.png", path=None),
+        AssetRef(kind="image", target="raw.png", path=None),
+    )
+    doc = Document(
+        path=source_root / "index.md",
+        relative_path=Path("index.md"),
+        source="",
+        frontmatter={},
+        ast=MarkdownAst(backend="test", tokens=()),
+        title=None,
+        headings=(),
+        links=(),
+        assets=assets,
+    )
+    transformed = (
+        TransformedDocument(
+            relative_path=doc.relative_path,
+            content="![a](https://example.com/photo.png) ![b](raw.png)\n",
+            source_document=doc,
+        ),
+    )
+
+    rewritten = rewrite_asset_links_single_page(transformed, source_root)
+
+    assert rewritten[0].content == transformed[0].content
+
+
+def test_rewrite_asset_links_single_page_uses_name_for_assets_outside_source_root(
+    tmp_path: Path,
+) -> None:
+    source_root = tmp_path / "doc"
+    other_root = tmp_path / "other"
+    doc = _document_with_assets("../other/page.md", ["photo.png"], source_root)
+    transformed = (
+        TransformedDocument(
+            relative_path=doc.relative_path,
+            content="![photo](photo.png)\n",
+            source_document=doc,
+        ),
+    )
+
+    rewritten = rewrite_asset_links_single_page(transformed, source_root)
+
+    assert rewritten[0].content == "![photo](assets/photo.png)\n"
 
 
 def test_collect_asset_paths_with_path_none_and_relative_target(

@@ -316,6 +316,14 @@ def test_build_markdown_help_documents_examples(capsys) -> None:
     assert exit_code == 0
     assert "scribpy build markdown --root dd1" in captured.out
 
+
+def test_build_without_subcommand_returns_usage_error(capsys) -> None:
+    exit_code = main(["build"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert "usage:" in captured.err
+
 def test_build_html_single_page_returns_zero_and_prints_artifact(
     tmp_path: Path,
     capsys,

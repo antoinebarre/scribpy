@@ -303,3 +303,18 @@ def test_run_mkdocs_build_reports_failure(tmp_path: Path, monkeypatch) -> None:
 
     assert artifact is None
     assert diagnostics[0].code == "SITE003"
+
+
+def test_run_mkdocs_build_reports_execution_error(
+    tmp_path: Path, monkeypatch
+) -> None:
+    def fail(*args, **kwargs):
+        raise OSError("missing executable")
+
+    monkeypatch.setattr("scribpy.builders.html_site.subprocess.run", fail)
+
+    artifact, diagnostics = run_mkdocs_build(tmp_path, Path("build/site"))
+
+    assert artifact is None
+    assert diagnostics[0].code == "SITE003"
+    assert "Cannot execute MkDocs" in diagnostics[0].message
