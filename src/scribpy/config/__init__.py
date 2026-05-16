@@ -12,6 +12,8 @@ from scribpy.config.loader import (
 from scribpy.config.types import (
     Config,
     DocumentConfig,
+    HtmlBuilderConfig,
+    HtmlMode,
     IndexConfig,
     NumberingConfig,
     NumberingStyle,
@@ -26,6 +28,8 @@ __all__ = [
     "Config",
     "ConfigParseError",
     "DocumentConfig",
+    "HtmlBuilderConfig",
+    "HtmlMode",
     "IndexConfig",
     "NumberingConfig",
     "NumberingStyle",

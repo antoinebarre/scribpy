@@ -64,7 +64,7 @@ def test_build_project_stops_when_project_preparation_fails(tmp_path: Path) -> N
 
 
 def test_build_project_rejects_unknown_target(tmp_path: Path) -> None:
-    result = build_project(tmp_path, target="html")
+    result = build_project(tmp_path, target="docx")
 
     assert result.success is False
     assert [diagnostic.code for diagnostic in result.diagnostics] == ["BLD001"]

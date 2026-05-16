@@ -11,6 +11,8 @@ from typing import TextIO
 from scribpy.cli.build_help import (
     BUILD_DESCRIPTION,
     BUILD_EPILOG,
+    BUILD_HTML_DESCRIPTION,
+    BUILD_HTML_EPILOG,
     BUILD_MARKDOWN_DESCRIPTION,
     BUILD_MARKDOWN_EPILOG,
 )
@@ -43,6 +45,11 @@ from scribpy.core import (
 from scribpy.utils import format_diagnostics
 
 _VALID_DEMO_VARIANTS = ("valid", "invalid")
+_VALID_HTML_MODES = ("single-page", "site")
+_ROOT_HELP = (
+    "Project root, any path inside a project, or a direct path to "
+    "scribpy.toml. Defaults to the current working directory."
+)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -82,16 +89,22 @@ def _dispatch(args: argparse.Namespace, stdout: TextIO, stderr: TextIO) -> int |
         return _run_parse_check_command(args.root, stdout, stderr)
     if args.command == "lint":
         return _run_lint_command(args.root, stderr)
-    if args.command == "build" and args.build_command == "markdown":
-        return _run_build_markdown_command(args.root, stdout, stderr)
+    if args.command == "build":
+        return _dispatch_build(args, stdout, stderr)
     if args.command == "demo" and args.demo_command == "create":
         return _run_demo_create_command(
-            args.target,
-            args.force,
-            args.variant,
-            stdout,
-            stderr,
+            args.target, args.force, args.variant, stdout, stderr
         )
+    return None
+
+
+def _dispatch_build(
+    args: argparse.Namespace, stdout: TextIO, stderr: TextIO
+) -> int | None:
+    if args.build_command == "markdown":
+        return _run_build_markdown_command(args.root, stdout, stderr)
+    if args.build_command == "html":
+        return _run_build_html_command(args.root, args.mode, stdout, stderr)
     return None
 
 
@@ -104,9 +117,19 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command")
 
+    _add_parse_command(subparsers)
+    _add_lint_command(subparsers)
+    _add_build_command(subparsers)
+    _add_index_command(subparsers)
+    _add_demo_command(subparsers)
+
+    return parser
+
+
+def _add_parse_command(subparsers: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
     parse_parser = subparsers.add_parser(
         "parse",
-        help="Parse Markdown sources and report semantic extraction diagnostics",
+        help=("Parse Markdown sources and report semantic extraction diagnostics"),
         description=_PARSE_DESCRIPTION,
         epilog=_PARSE_EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -119,16 +142,10 @@ def _build_parser() -> argparse.ArgumentParser:
         epilog=_PARSE_CHECK_EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parse_check_parser.add_argument(
-        "--root",
-        type=Path,
-        default=None,
-        help=(
-            "Project root, any path inside a project, or a direct path to "
-            "scribpy.toml. Defaults to the current working directory."
-        ),
-    )
+    parse_check_parser.add_argument("--root", type=Path, default=None, help=_ROOT_HELP)
 
+
+def _add_lint_command(subparsers: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
     lint_parser = subparsers.add_parser(
         "lint",
         help="Check documentation quality",
@@ -136,16 +153,10 @@ def _build_parser() -> argparse.ArgumentParser:
         epilog=_LINT_EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    lint_parser.add_argument(
-        "--root",
-        type=Path,
-        default=None,
-        help=(
-            "Project root, any path inside a project, or a direct path to "
-            "scribpy.toml. Defaults to the current working directory."
-        ),
-    )
+    lint_parser.add_argument("--root", type=Path, default=None, help=_ROOT_HELP)
 
+
+def _add_build_command(subparsers: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
     build_parser = subparsers.add_parser(
         "build",
         help="Build documentation artifacts",
@@ -154,6 +165,7 @@ def _build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     build_subparsers = build_parser.add_subparsers(dest="build_command")
+
     build_markdown_parser = build_subparsers.add_parser(
         "markdown",
         help="Build assembled Markdown",
@@ -162,15 +174,29 @@ def _build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     build_markdown_parser.add_argument(
-        "--root",
-        type=Path,
-        default=None,
+        "--root", type=Path, default=None, help=_ROOT_HELP
+    )
+
+    build_html_parser = build_subparsers.add_parser(
+        "html",
+        help="Build HTML output (single-page or MkDocs site scaffold)",
+        description=BUILD_HTML_DESCRIPTION,
+        epilog=BUILD_HTML_EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    build_html_parser.add_argument("--root", type=Path, default=None, help=_ROOT_HELP)
+    build_html_parser.add_argument(
+        "--mode",
+        choices=_VALID_HTML_MODES,
+        default="single-page",
         help=(
-            "Project root, any path inside a project, or a direct path to "
-            "scribpy.toml. Defaults to the current working directory."
+            "Output mode: 'single-page' for a self-contained HTML file, "
+            "'site' for a MkDocs scaffold. Defaults to 'single-page'."
         ),
     )
 
+
+def _add_index_command(subparsers: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
     index_parser = subparsers.add_parser(
         "index",
         help="Manage and validate the document index",
@@ -179,24 +205,17 @@ def _build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     index_subparsers = index_parser.add_subparsers(dest="index_command")
-
     check_parser = index_subparsers.add_parser(
         "check",
-        help="Validate project source discovery and document index configuration",
+        help=("Validate project source discovery and document index configuration"),
         description=_INDEX_CHECK_DESCRIPTION,
         epilog=_INDEX_CHECK_EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    check_parser.add_argument(
-        "--root",
-        type=Path,
-        default=None,
-        help=(
-            "Project root, any path inside a project, or a direct path to "
-            "scribpy.toml. Defaults to the current working directory."
-        ),
-    )
+    check_parser.add_argument("--root", type=Path, default=None, help=_ROOT_HELP)
 
+
+def _add_demo_command(subparsers: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
     demo_parser = subparsers.add_parser(
         "demo",
         help="Create tutorial projects",
@@ -205,7 +224,6 @@ def _build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     demo_subparsers = demo_parser.add_subparsers(dest="demo_command")
-
     create_parser = demo_subparsers.add_parser(
         "create",
         help="Create a small Scribpy demo project",
@@ -219,8 +237,8 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("scribpy-demo"),
         help=(
-            "Directory where the demo project should be created. Defaults to "
-            "'scribpy-demo'."
+            "Directory where the demo project should be created. "
+            "Defaults to 'scribpy-demo'."
         ),
     )
     create_parser.add_argument(
@@ -236,12 +254,10 @@ def _build_parser() -> argparse.ArgumentParser:
         "--force",
         action="store_true",
         help=(
-            "Overwrite files managed by the selected demo template. Existing "
-            "unrelated files are left untouched."
+            "Overwrite files managed by the selected demo template. "
+            "Existing unrelated files are left untouched."
         ),
     )
-
-    return parser
 
 
 def _run_parse_check_command(root: Path | None, stdout: TextIO, stderr: TextIO) -> int:
@@ -277,6 +293,22 @@ def _run_build_markdown_command(
     stderr: TextIO,
 ) -> int:
     result = build_project(root, target="markdown")
+    if result.diagnostics:
+        print(format_diagnostics(result.diagnostics), file=stderr)
+    if not result.success:
+        return 1
+    for artifact in result.artifacts:
+        print(f"Built {artifact.target} artifact: {artifact.path}", file=stdout)
+    return 0
+
+
+def _run_build_html_command(
+    root: Path | None,
+    mode: str,
+    stdout: TextIO,
+    stderr: TextIO,
+) -> int:
+    result = build_project(root, target="html", html_mode=mode)
     if result.diagnostics:
         print(format_diagnostics(result.diagnostics), file=stderr)
     if not result.success:

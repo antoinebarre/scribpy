@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
@@ -10,6 +10,7 @@ from scribpy.model import IndexMode
 
 TocStyle = Literal["bullet", "numbered"]
 NumberingStyle = Literal["decimal", "alpha", "roman"]
+HtmlMode = Literal["single-page", "site"]
 
 
 @dataclass(frozen=True)
@@ -94,6 +95,37 @@ class DocumentConfig:
 
 
 @dataclass(frozen=True)
+class HtmlBuilderConfig:
+    """HTML builder configuration.
+
+    Attributes:
+        mode: Output mode — ``"single-page"`` for a self-contained HTML file or
+            ``"site"`` for a MkDocs project scaffold.
+        css_files: Stylesheet paths relative to the project root, applied to
+            the output in the order given.
+        site_name: Site name written into ``mkdocs.yml`` when ``mode`` is
+            ``"site"``. Falls back to the project name when omitted.
+        output_dir: Output directory relative to the project root. Defaults to
+            ``build/html`` for ``single-page`` and ``build/site`` for ``site``.
+    """
+
+    mode: HtmlMode = "single-page"
+    css_files: tuple[Path, ...] = ()
+    site_name: str | None = None
+    output_dir: Path | None = None
+
+    def resolve_output_dir(self) -> Path:
+        """Return the effective output directory for the configured mode.
+
+        Returns:
+            Resolved output directory path.
+        """
+        if self.output_dir is not None:
+            return self.output_dir
+        return Path("build/html") if self.mode == "single-page" else Path("build/site")
+
+
+@dataclass(frozen=True)
 class Config:
     """Minimal project configuration required by the project context chain.
 
@@ -102,17 +134,21 @@ class Config:
         paths: Filesystem paths.
         index: Document index settings.
         document: Document output settings.
+        html: HTML builder settings.
     """
 
-    project: ProjectConfig = ProjectConfig()
-    paths: PathConfig = PathConfig()
-    index: IndexConfig = IndexConfig()
-    document: DocumentConfig = DocumentConfig()
+    project: ProjectConfig = field(default_factory=ProjectConfig)
+    paths: PathConfig = field(default_factory=PathConfig)
+    index: IndexConfig = field(default_factory=IndexConfig)
+    document: DocumentConfig = field(default_factory=DocumentConfig)
+    html: HtmlBuilderConfig = field(default_factory=HtmlBuilderConfig)
 
 
 __all__ = [
     "Config",
     "DocumentConfig",
+    "HtmlBuilderConfig",
+    "HtmlMode",
     "IndexConfig",
     "NumberingConfig",
     "NumberingStyle",
