@@ -21,11 +21,13 @@ class TransformContext:
         target: Output target currently being prepared.
         documents: Parsed source documents in deterministic build order.
         transformed_documents: Current target-ready values.
+        document_title: Global title to use for assembled outputs when relevant.
     """
 
     target: BuildTarget
     documents: tuple[Document, ...]
     transformed_documents: tuple[TransformedDocument, ...]
+    document_title: str | None = None
 
     @property
     def source_documents_by_path(self) -> dict[Path, Document]:

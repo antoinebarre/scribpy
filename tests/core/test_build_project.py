@@ -30,7 +30,14 @@ def test_build_project_writes_markdown_in_explicit_index_order(tmp_path: Path) -
     assert len(result.artifacts) == 1
     artifact = result.artifacts[0]
     assert artifact.path == tmp_path / "build/markdown/document.md"
-    assert artifact.path.read_text(encoding="utf-8") == "# 1 B\n\n# 2 A\n"
+    assert artifact.path.read_text(encoding="utf-8") == (
+        "# Document\n\n"
+        "## Table of Contents\n"
+        "- [1 B](#1-b)\n"
+        "- [2 A](#2-a)\n\n"
+        "## 1 B\n\n"
+        "## 2 A\n"
+    )
 
 
 def test_build_project_stops_before_writing_when_lint_fails(tmp_path: Path) -> None:

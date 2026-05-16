@@ -43,16 +43,20 @@ def test_markdown_transforms_number_headings_generate_toc_and_rewrite_links() ->
         (index, guide),
         target="markdown",
         transforms=native_markdown_transforms(),
+        document_title="Manual",
     )
 
     assert result.diagnostics == ()
     assert result.documents[0].content == (
-        "# 1 Home\n\n"
+        "# Manual\n\n"
         "## Table of Contents\n"
-        "- [2.1 Setup](#21-setup)\n\n"
+        "- [1 Home](#1-home)\n"
+        "- [2 Guide](#2-guide)\n"
+        "  - [2.1 Setup](#21-setup)\n\n"
+        "## 1 Home\n\n"
         "[Guide](#21-setup)\n"
     )
-    assert result.documents[1].content == "# 2 Guide\n\n## 2.1 Setup\n"
+    assert result.documents[1].content == "## 2 Guide\n\n### 2.1 Setup\n"
 
 
 def test_html_transforms_rewrite_markdown_links_to_html() -> None:
@@ -130,6 +134,7 @@ def test_markdown_transforms_keep_unresolved_and_non_document_links() -> None:
         (index,),
         target="markdown",
         transforms=native_markdown_transforms(),
+        document_title="Manual",
     )
 
     assert "[Anchor](#home)" in result.documents[0].content
@@ -137,7 +142,7 @@ def test_markdown_transforms_keep_unresolved_and_non_document_links() -> None:
     assert "[Missing](ghost.md#x)" in result.documents[0].content
 
 
-def test_toc_is_prepended_when_document_has_no_h1() -> None:
+def test_toc_is_inserted_after_global_title_when_source_has_no_h1() -> None:
     index = _document(
         "index.md",
         "## Setup\n",
@@ -148,9 +153,10 @@ def test_toc_is_prepended_when_document_has_no_h1() -> None:
         (index,),
         target="markdown",
         transforms=native_markdown_transforms(),
+        document_title="Manual",
     )
 
-    assert result.documents[0].content.startswith("## Table of Contents\n")
+    assert result.documents[0].content.startswith("# Manual\n\n## Table of Contents\n")
 
 
 def test_html_transforms_keep_external_and_anchor_links() -> None:

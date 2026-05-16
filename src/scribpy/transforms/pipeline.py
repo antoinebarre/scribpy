@@ -8,6 +8,7 @@ from scribpy.model import Diagnostic, Document, TransformedDocument
 from scribpy.transforms.markdown import (
     apply_section_numbering,
     generate_toc_transform,
+    normalize_assembled_markdown_headings,
     resolve_cross_references,
     rewrite_links_for_target,
 )
@@ -24,6 +25,7 @@ def apply_transforms(
     *,
     target: BuildTarget,
     transforms: Iterable[Transform],
+    document_title: str | None = None,
 ) -> TransformResult:
     """Apply ordered transforms and return target-ready documents.
 
@@ -31,6 +33,7 @@ def apply_transforms(
         documents: Parsed source documents in deterministic order.
         target: Build target currently being prepared.
         transforms: Ordered transformation functions.
+        document_title: Optional global title for assembled target outputs.
 
     Returns:
         Final transformed documents plus accumulated diagnostics.
@@ -45,6 +48,7 @@ def apply_transforms(
                 target=target,
                 documents=documents,
                 transformed_documents=transformed,
+                document_title=document_title,
             )
         )
         transformed = result.documents
@@ -59,6 +63,7 @@ def native_markdown_transforms() -> tuple[Transform, ...]:
         Ordered built-in Markdown transforms.
     """
     return (
+        normalize_assembled_markdown_headings,
         apply_section_numbering,
         resolve_cross_references,
         generate_toc_transform,

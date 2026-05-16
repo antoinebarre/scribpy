@@ -90,10 +90,12 @@ def _write_markdown_build(
     registry: ExtensionRegistry,
 ) -> BuildResult:
     assert state.project_root is not None
+    assert state.config is not None
     transform_result = apply_transforms(
         state.documents,
         target="markdown",
         transforms=registry.markdown_transforms,
+        document_title=state.config.project.name or "Document",
     )
     transformed_diagnostics = (*diagnostics, *transform_result.diagnostics)
     if has_errors(transformed_diagnostics):
