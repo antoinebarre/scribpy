@@ -7,12 +7,24 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import cast
 
-from scribpy.config.types import Config, IndexConfig, PathConfig, ProjectConfig
+from scribpy.config.types import (
+    Config,
+    DocumentConfig,
+    IndexConfig,
+    NumberingConfig,
+    NumberingStyle,
+    PathConfig,
+    ProjectConfig,
+    TocConfig,
+    TocStyle,
+)
 from scribpy.model import Diagnostic, IndexMode
 from scribpy.utils.toml import load_toml
 
 CONFIG_FILENAME = "scribpy.toml"
 _KNOWN_INDEX_MODES = frozenset[IndexMode]({"explicit", "filesystem", "hybrid"})
+_KNOWN_TOC_STYLES = frozenset[TocStyle]({"bullet", "numbered"})
+_KNOWN_NUMBERING_STYLES = frozenset[NumberingStyle]({"decimal", "alpha", "roman"})
 
 type RawSection = Mapping[str, object]
 
@@ -71,7 +83,8 @@ def parse_config(raw: Mapping[str, object]) -> Config:
     project = _parse_project_config(_section(raw, "project"))
     paths = _parse_path_config(_section(raw, "paths"))
     index = _parse_index_config(_section(raw, "index"))
-    return Config(project=project, paths=paths, index=index)
+    document = _parse_document_config(_section(raw, "document"))
+    return Config(project=project, paths=paths, index=index, document=document)
 
 
 def validate_config(config: Config) -> tuple[Diagnostic, ...]:
@@ -220,6 +233,65 @@ def _parse_index_config(raw: RawSection) -> IndexConfig:
         parsed_files.append(Path(item))
 
     return IndexConfig(mode=mode, files=tuple(parsed_files))
+
+
+def _parse_document_config(raw: RawSection) -> DocumentConfig:
+    title = raw.get("title")
+    if title is not None and not isinstance(title, str):
+        raise ConfigParseError("Configuration value document.title must be a string.")
+    toc = _parse_toc_config(_nested_section(raw, "toc", "document"))
+    numbering = _parse_numbering_config(_nested_section(raw, "numbering", "document"))
+    return DocumentConfig(title=title, toc=toc, numbering=numbering)
+
+
+def _parse_toc_config(raw: RawSection) -> TocConfig:
+    enabled = _parse_bool(raw, "enabled", "document.toc", True)
+    max_level = _parse_heading_level(raw, "max_level", "document.toc", 6)
+    style = raw.get("style", "bullet")
+    if not isinstance(style, str) or style not in _KNOWN_TOC_STYLES:
+        raise ConfigParseError(
+            "Configuration value document.toc.style must be 'bullet' or 'numbered'."
+        )
+    return TocConfig(enabled=enabled, max_level=max_level, style=style)
+
+
+def _parse_numbering_config(raw: RawSection) -> NumberingConfig:
+    enabled = _parse_bool(raw, "enabled", "document.numbering", True)
+    max_level = _parse_heading_level(raw, "max_level", "document.numbering", 6)
+    style = raw.get("style", "decimal")
+    if not isinstance(style, str) or style not in _KNOWN_NUMBERING_STYLES:
+        raise ConfigParseError(
+            "Configuration value document.numbering.style must be "
+            "'decimal', 'alpha', or 'roman'."
+        )
+    return NumberingConfig(enabled=enabled, max_level=max_level, style=style)
+
+
+def _nested_section(raw: RawSection, name: str, parent: str) -> RawSection:
+    value = raw.get(name, {})
+    if not isinstance(value, Mapping):
+        raise ConfigParseError(
+            f"Configuration section [{parent}.{name}] must be a table."
+        )
+    return cast("RawSection", value)
+
+
+def _parse_bool(raw: RawSection, key: str, section: str, default: bool) -> bool:
+    value = raw.get(key, default)
+    if not isinstance(value, bool):
+        raise ConfigParseError(
+            f"Configuration value {section}.{key} must be a boolean."
+        )
+    return value
+
+
+def _parse_heading_level(raw: RawSection, key: str, section: str, default: int) -> int:
+    value = raw.get(key, default)
+    if not isinstance(value, int) or isinstance(value, bool) or not 1 <= value <= 6:
+        raise ConfigParseError(
+            f"Configuration value {section}.{key} must be an integer from 1 to 6."
+        )
+    return value
 
 
 def _is_safe_relative_path(path: Path) -> bool:

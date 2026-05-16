@@ -30,7 +30,14 @@ def test_build_project_writes_markdown_in_explicit_index_order(tmp_path: Path) -
     assert len(result.artifacts) == 1
     artifact = result.artifacts[0]
     assert artifact.path == tmp_path / "build/markdown/document.md"
-    assert artifact.path.read_text(encoding="utf-8") == "# 1 B\n\n# 2 A\n"
+    assert artifact.path.read_text(encoding="utf-8") == (
+        "# Document\n\n"
+        "## Table of Contents\n"
+        "- [1 B](#1-b)\n"
+        "- [2 A](#2-a)\n\n"
+        "## 1 B\n\n"
+        "## 2 A\n"
+    )
 
 
 def test_build_project_stops_before_writing_when_lint_fails(tmp_path: Path) -> None:
@@ -106,3 +113,24 @@ def test_build_project_reports_artifact_write_failure(tmp_path: Path) -> None:
 
     assert result.success is False
     assert [diagnostic.code for diagnostic in result.diagnostics] == ["BLD003"]
+
+
+def test_build_project_uses_document_transform_configuration(tmp_path: Path) -> None:
+    _write_config(
+        tmp_path,
+        '[project]\nname = "Project Name"\n\n'
+        '[paths]\nsource = "doc"\n\n'
+        '[document]\ntitle = "Configured Manual"\n\n'
+        '[document.toc]\nenabled = false\n\n'
+        '[document.numbering]\nstyle = "roman"\nmax_level = 2\n',
+    )
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n## Setup\n")
+
+    result = build_project(tmp_path)
+
+    assert result.success is True
+    assert result.artifacts[0].path.read_text(encoding="utf-8") == (
+        "# Configured Manual\n\n"
+        "## I Home\n\n"
+        "### Setup\n"
+    )

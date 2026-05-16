@@ -24,7 +24,7 @@ def test_with_lint_rule_returns_extended_registry() -> None:
 def test_native_registry_loads_built_in_transforms() -> None:
     registry = ExtensionRegistry.native()
 
-    assert len(registry.markdown_transforms) == 3
+    assert len(registry.markdown_transforms) == 4
     assert len(registry.html_transforms) == 3
 
 

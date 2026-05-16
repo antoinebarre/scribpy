@@ -6,6 +6,7 @@ from scribpy.model import Document, Heading, MarkdownAst
 from scribpy.transforms import (
     apply_transforms,
     native_html_transforms,
+    TransformOptions,
     native_markdown_transforms,
 )
 
@@ -43,16 +44,20 @@ def test_markdown_transforms_number_headings_generate_toc_and_rewrite_links() ->
         (index, guide),
         target="markdown",
         transforms=native_markdown_transforms(),
+        options=TransformOptions(document_title="Manual"),
     )
 
     assert result.diagnostics == ()
     assert result.documents[0].content == (
-        "# 1 Home\n\n"
+        "# Manual\n\n"
         "## Table of Contents\n"
-        "- [2.1 Setup](#21-setup)\n\n"
+        "- [1 Home](#1-home)\n"
+        "- [2 Guide](#2-guide)\n"
+        "  - [2.1 Setup](#21-setup)\n\n"
+        "## 1 Home\n\n"
         "[Guide](#21-setup)\n"
     )
-    assert result.documents[1].content == "# 2 Guide\n\n## 2.1 Setup\n"
+    assert result.documents[1].content == "## 2 Guide\n\n### 2.1 Setup\n"
 
 
 def test_html_transforms_rewrite_markdown_links_to_html() -> None:
@@ -93,6 +98,7 @@ def test_target_specific_transforms_are_noops_for_other_targets() -> None:
     from scribpy.model import TransformedDocument
     from scribpy.transforms import (
         TransformContext,
+        normalize_assembled_markdown_headings,
         resolve_cross_references,
         rewrite_links_for_target,
     )
@@ -117,6 +123,22 @@ def test_target_specific_transforms_are_noops_for_other_targets() -> None:
 
     assert rewrite_links_for_target(markdown_context).documents == transformed
     assert resolve_cross_references(html_context).documents == transformed
+    assert normalize_assembled_markdown_headings(html_context).documents == transformed
+
+
+def test_heading_normalization_is_noop_for_empty_markdown_input() -> None:
+    from scribpy.transforms import (
+        TransformContext,
+        normalize_assembled_markdown_headings,
+    )
+
+    context = TransformContext(
+        target="markdown",
+        documents=(),
+        transformed_documents=(),
+    )
+
+    assert normalize_assembled_markdown_headings(context).documents == ()
 
 
 def test_markdown_transforms_keep_unresolved_and_non_document_links() -> None:
@@ -130,6 +152,7 @@ def test_markdown_transforms_keep_unresolved_and_non_document_links() -> None:
         (index,),
         target="markdown",
         transforms=native_markdown_transforms(),
+        options=TransformOptions(document_title="Manual"),
     )
 
     assert "[Anchor](#home)" in result.documents[0].content
@@ -137,7 +160,7 @@ def test_markdown_transforms_keep_unresolved_and_non_document_links() -> None:
     assert "[Missing](ghost.md#x)" in result.documents[0].content
 
 
-def test_toc_is_prepended_when_document_has_no_h1() -> None:
+def test_toc_is_inserted_after_global_title_when_source_has_no_h1() -> None:
     index = _document(
         "index.md",
         "## Setup\n",
@@ -148,9 +171,10 @@ def test_toc_is_prepended_when_document_has_no_h1() -> None:
         (index,),
         target="markdown",
         transforms=native_markdown_transforms(),
+        options=TransformOptions(document_title="Manual"),
     )
 
-    assert result.documents[0].content.startswith("## Table of Contents\n")
+    assert result.documents[0].content.startswith("# Manual\n\n## Table of Contents\n")
 
 
 def test_html_transforms_keep_external_and_anchor_links() -> None:
@@ -168,3 +192,114 @@ def test_html_transforms_keep_external_and_anchor_links() -> None:
 
     assert "[External](https://example.com)" in result.documents[0].content
     assert "[Anchor](#home)" in result.documents[0].content
+
+
+def test_toc_is_prepended_when_no_h1_exists_before_normalization() -> None:
+    from scribpy.model import TransformedDocument
+    from scribpy.transforms import TransformContext, generate_toc_transform
+
+    index = _document(
+        "index.md",
+        "## Setup\n",
+        (Heading(level=2, title="Setup", anchor="setup"),),
+    )
+    transformed = (
+        TransformedDocument(
+            relative_path=Path("index.md"),
+            content="## Setup\n",
+            source_document=index,
+        ),
+    )
+
+    result = generate_toc_transform(
+        TransformContext(
+            target="markdown",
+            documents=(index,),
+            transformed_documents=transformed,
+        )
+    )
+
+    assert result.documents[0].content.startswith("## Table of Contents\n")
+
+
+def test_markdown_transforms_can_disable_toc_and_numbering() -> None:
+    index = _document(
+        "index.md",
+        "# Home\n\n## Setup\n",
+        (
+            Heading(level=1, title="Home", anchor="home"),
+            Heading(level=2, title="Setup", anchor="setup"),
+        ),
+    )
+
+    result = apply_transforms(
+        (index,),
+        target="markdown",
+        transforms=native_markdown_transforms(),
+        options=TransformOptions(
+            document_title="Manual",
+            toc_enabled=False,
+            numbering_enabled=False,
+        ),
+    )
+
+    assert result.documents[0].content == "# Manual\n\n## Home\n\n### Setup\n"
+
+
+def test_markdown_transforms_support_toc_depth_and_numbering_styles() -> None:
+    index = _document(
+        "index.md",
+        "# Home\n\n## Setup\n\n### Deep\n",
+        (
+            Heading(level=1, title="Home", anchor="home"),
+            Heading(level=2, title="Setup", anchor="setup"),
+            Heading(level=3, title="Deep", anchor="deep"),
+        ),
+    )
+
+    result = apply_transforms(
+        (index,),
+        target="markdown",
+        transforms=native_markdown_transforms(),
+        options=TransformOptions(
+            document_title="Manual",
+            toc_max_level=3,
+            toc_style="numbered",
+            numbering_max_level=3,
+            numbering_style="alpha",
+        ),
+    )
+
+    assert result.documents[0].content == (
+        "# Manual\n\n"
+        "## Table of Contents\n"
+        "1. [A Home](#a-home)\n"
+        "  1. [A.A Setup](#aa-setup)\n\n"
+        "## A Home\n\n"
+        "### A.A Setup\n\n"
+        "#### Deep\n"
+    )
+
+
+def test_markdown_transforms_support_roman_numbering() -> None:
+    index = _document(
+        "index.md",
+        "# Home\n\n## Setup\n",
+        (
+            Heading(level=1, title="Home", anchor="home"),
+            Heading(level=2, title="Setup", anchor="setup"),
+        ),
+    )
+
+    result = apply_transforms(
+        (index,),
+        target="markdown",
+        transforms=native_markdown_transforms(),
+        options=TransformOptions(
+            document_title="Manual",
+            numbering_style="roman",
+        ),
+    )
+
+    assert "## I Home" in result.documents[0].content
+    assert "### I.I Setup" in result.documents[0].content

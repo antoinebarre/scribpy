@@ -3,6 +3,7 @@
 from scribpy.transforms.markdown import (
     apply_section_numbering,
     generate_toc_transform,
+    normalize_assembled_markdown_headings,
     resolve_cross_references,
     rewrite_links_for_target,
 )
@@ -13,19 +14,26 @@ from scribpy.transforms.pipeline import (
 )
 from scribpy.transforms.types import (
     BuildTarget,
+    NumberingStyle,
+    TocStyle,
     Transform,
     TransformContext,
+    TransformOptions,
     TransformResult,
 )
 
 __all__ = [
     "BuildTarget",
+    "NumberingStyle",
+    "TocStyle",
     "Transform",
     "TransformContext",
+    "TransformOptions",
     "TransformResult",
     "apply_section_numbering",
     "apply_transforms",
     "generate_toc_transform",
+    "normalize_assembled_markdown_headings",
     "native_html_transforms",
     "native_markdown_transforms",
     "resolve_cross_references",

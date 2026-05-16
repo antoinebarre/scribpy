@@ -15,6 +15,29 @@ _HEADING_RE = re.compile(r"^(#{1,6})[ \t]+(.+?)[ \t]*$", re.MULTILINE)
 _LINK_RE = re.compile(r"(?<!!)\[([^\]]+)\]\(([^)]+)\)")
 
 
+def normalize_assembled_markdown_headings(context: TransformContext) -> TransformResult:
+    """Prepare one assembled Markdown hierarchy with a single global H1.
+
+    Args:
+        context: Current transform inputs.
+
+    Returns:
+        Documents whose source headings are demoted by one level, with the
+        configured global H1 prepended to the first Markdown document.
+    """
+    if context.target != "markdown" or not context.transformed_documents:
+        return TransformResult(documents=context.transformed_documents)
+
+    normalized = tuple(
+        replace(document, content=_demote_headings(document.content))
+        for document in context.transformed_documents
+    )
+    title = context.options.document_title or "Document"
+    first, *rest = normalized
+    updated_first = replace(first, content=f"# {title}\n\n{first.content.lstrip()}")
+    return TransformResult(documents=(updated_first, *rest))
+
+
 def apply_section_numbering(context: TransformContext) -> TransformResult:
     """Prefix headings with deterministic section numbers.
 
@@ -24,11 +47,14 @@ def apply_section_numbering(context: TransformContext) -> TransformResult:
     Returns:
         Documents with numbered Markdown headings.
     """
+    if not context.options.numbering_enabled:
+        return TransformResult(documents=context.transformed_documents)
+
     counters = [0] * 6
     transformed: list[TransformedDocument] = []
     for document in context.transformed_documents:
         content = _HEADING_RE.sub(
-            lambda match: _number_heading(match, counters), document.content
+            lambda match: _number_heading(match, counters, context), document.content
         )
         transformed.append(replace(document, content=content))
     return TransformResult(documents=tuple(transformed))
@@ -44,12 +70,19 @@ def generate_toc_transform(context: TransformContext) -> TransformResult:
         Documents with one generated TOC placed after the first H1 when headings
         beyond level 1 exist.
     """
+    if not context.options.toc_enabled:
+        return TransformResult(documents=context.transformed_documents)
+
     headings = _extract_transformed_headings(context.transformed_documents)
-    toc_items = [heading for heading in headings if heading.level >= 2]
+    toc_items = [
+        heading
+        for heading in headings
+        if 2 <= heading.level <= context.options.toc_max_level
+    ]
     if not context.transformed_documents or not toc_items:
         return TransformResult(documents=context.transformed_documents)
 
-    toc = _render_toc(toc_items)
+    toc = _render_toc(toc_items, context.options.toc_style)
     first, *rest = context.transformed_documents
     updated_first = replace(first, content=_insert_toc(first.content, toc))
     return TransformResult(documents=(updated_first, *rest))
@@ -98,13 +131,25 @@ def rewrite_links_for_target(context: TransformContext) -> TransformResult:
     return TransformResult(documents=transformed)
 
 
-def _number_heading(match: re.Match[str], counters: list[int]) -> str:
+def _number_heading(
+    match: re.Match[str], counters: list[int], context: TransformContext
+) -> str:
     marks, title = match.groups()
     level = len(marks)
+    if context.target == "markdown" and level == 1:
+        for index in range(len(counters)):
+            counters[index] = 0
+        return match.group(0)
+    if level > context.options.numbering_max_level:
+        return match.group(0)
     counters[level - 1] += 1
     for index in range(level, len(counters)):
         counters[index] = 0
-    prefix = ".".join(str(value) for value in counters[:level] if value)
+    prefix = ".".join(
+        _format_number(value, context.options.numbering_style)
+        for value in counters[:level]
+        if value
+    )
     return f"{marks} {prefix} {title}"
 
 
@@ -121,11 +166,15 @@ def _extract_transformed_headings(
     return tuple(headings)
 
 
-def _render_toc(headings: list[Heading]) -> str:
+def _render_toc(headings: list[Heading], style: str) -> str:
     lines = ["## Table of Contents"]
     for heading in headings:
         indent = "  " * (heading.level - 2)
-        lines.append(f"{indent}- [{heading.title}](#{heading.anchor})")
+        if style == "numbered":
+            marker = "1."
+        else:
+            marker = "-"
+        lines.append(f"{indent}{marker} [{heading.title}](#{heading.anchor})")
     return "\n".join(lines)
 
 
@@ -146,11 +195,14 @@ def _anchor_lookup(
     lookup: dict[tuple[Path, str | None], str | None] = {}
     for source, transformed in zip(documents, transformed_documents, strict=True):
         transformed_headings = _extract_transformed_headings((transformed,))
+        source_aligned_headings = (
+            transformed_headings[-len(source.headings) :] if source.headings else ()
+        )
         lookup[(source.relative_path, None)] = (
-            transformed_headings[0].anchor if transformed_headings else None
+            source_aligned_headings[0].anchor if source_aligned_headings else None
         )
         for original, updated in zip(
-            source.headings, transformed_headings, strict=False
+            source.headings, source_aligned_headings, strict=False
         ):
             lookup[(source.relative_path, original.anchor)] = updated.anchor
     return lookup
@@ -210,9 +262,65 @@ def _anchor(title: str) -> str:
     return re.sub(r"\s+", "-", stripped).strip("-")
 
 
+def _format_number(value: int, style: str) -> str:
+    if style == "alpha":
+        return _to_alpha(value)
+    if style == "roman":
+        return _to_roman(value)
+    return str(value)
+
+
+def _to_alpha(value: int) -> str:
+    letters: list[str] = []
+    while value:
+        value, remainder = divmod(value - 1, 26)
+        letters.append(chr(ord("A") + remainder))
+    return "".join(reversed(letters))
+
+
+def _to_roman(value: int) -> str:
+    numerals = (
+        (1000, "M"),
+        (900, "CM"),
+        (500, "D"),
+        (400, "CD"),
+        (100, "C"),
+        (90, "XC"),
+        (50, "L"),
+        (40, "XL"),
+        (10, "X"),
+        (9, "IX"),
+        (5, "V"),
+        (4, "IV"),
+        (1, "I"),
+    )
+    parts: list[str] = []
+    for magnitude, numeral in numerals:
+        count, value = divmod(value, magnitude)
+        parts.append(numeral * count)
+    return "".join(parts)
+
+
+def _demote_headings(content: str) -> str:
+    def replace_heading(match: re.Match[str]) -> str:
+        """Demote one Markdown heading by a single level.
+
+        Args:
+            match: Heading match containing marks and title.
+
+        Returns:
+            Markdown heading with one additional marker, capped at level six.
+        """
+        marks, title = match.groups()
+        return f"{'#' * min(len(marks) + 1, 6)} {title}"
+
+    return _HEADING_RE.sub(replace_heading, content)
+
+
 __all__ = [
     "apply_section_numbering",
     "generate_toc_transform",
+    "normalize_assembled_markdown_headings",
     "resolve_cross_references",
     "rewrite_links_for_target",
 ]
