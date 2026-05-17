@@ -48,6 +48,7 @@ def lint_project(
 
 
 def _build_lint_context(state: ProjectPipelineState) -> LintContext:
+    """Build lint context."""
     assert state.project_root is not None
     assert state.config is not None
     assert state.index is not None

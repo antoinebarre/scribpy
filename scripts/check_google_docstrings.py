@@ -16,7 +16,7 @@ class DocstringIssue:
     Attributes:
         path: Source file containing the violation.
         line: One-based line number of the public declaration.
-        name: Public declaration name.
+        name: Declaration name.
         missing_sections: Required Google-style sections that are absent.
     """
 
@@ -27,7 +27,7 @@ class DocstringIssue:
 
 
 def main() -> int:
-    """Check public declarations and print strict docstring violations.
+    """Check declarations and print strict docstring violations.
 
     Returns:
         Process exit code. ``0`` means the strict contract is satisfied and
@@ -62,14 +62,15 @@ def collect_issues(root: Path) -> tuple[DocstringIssue, ...]:
     return tuple(issues)
 
 
-def _module_issues(path: Path, module: ast.Module) -> tuple[DocstringIssue, ...]:
+def _module_issues(
+    path: Path,
+    module: ast.Module,
+) -> tuple[DocstringIssue, ...]:
     issues: list[DocstringIssue] = []
     for node in ast.walk(module):
         if isinstance(node, ast.ClassDef) and _is_public(node.name):
             missing = _missing_class_sections(node)
-        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and _is_public(
-            node.name
-        ):
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             missing = _missing_function_sections(node)
         else:
             continue
@@ -91,6 +92,10 @@ def _missing_function_sections(
 ) -> tuple[str, ...]:
     docstring = ast.get_docstring(node) or ""
     missing: list[str] = []
+    if not docstring:
+        missing.append("Summary")
+    if not _is_public(node.name):
+        return tuple(missing)
     if _documented_parameters(node) and "Args:" not in docstring:
         missing.append("Args")
     if _returns_value(node) and "Returns:" not in docstring:

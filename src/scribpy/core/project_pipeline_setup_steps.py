@@ -51,7 +51,8 @@ def load_config_step(
     next_state = replace(state, config=config)
     if config is None or has_errors(diagnostics):
         logger.error(
-            "Configuration loading failed with %d diagnostic(s)", len(diagnostics)
+            "Configuration loading failed with %d diagnostic(s)",
+            len(diagnostics),
         )
         return PipelineResult.fail(diagnostics, next_state)
     logger.info("Loaded configuration")
@@ -87,12 +88,14 @@ def scan_sources_step(
 
 
 def _resolve_config_path(start: Path) -> Path | None:
+    """Resolve config path."""
     if start.name == CONFIG_FILENAME:
         return start if start.is_file() else None
     return find_config(start)
 
 
 def _missing_config_diagnostic(start: Path) -> Diagnostic:
+    """Create config diagnostic."""
     return Diagnostic(
         severity="error",
         code="CFG001",

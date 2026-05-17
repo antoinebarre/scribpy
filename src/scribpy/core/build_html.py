@@ -15,7 +15,10 @@ from scribpy.builders.html_single_page import (
     render_markdown_to_html,
     write_single_page_support_artifacts,
 )
-from scribpy.builders.html_site import run_mkdocs_build, write_site_artifacts_with_css
+from scribpy.builders.html_site import (
+    run_mkdocs_build,
+    write_site_artifacts_with_css,
+)
 from scribpy.builders.markdown import merge_documents
 from scribpy.config.types import HtmlBuilderConfig
 from scribpy.core.project_pipeline import ProjectPipelineState
@@ -74,6 +77,7 @@ def _lint(
     diagnostics: tuple[Diagnostic, ...],
     registry: ExtensionRegistry,
 ) -> tuple[Diagnostic, ...]:
+    """Lint ."""
     assert state.project_root is not None
     assert state.config is not None
     assert state.index is not None
@@ -92,13 +96,17 @@ def _build_single_page(
     html_config: HtmlBuilderConfig,
     registry: ExtensionRegistry,
 ) -> BuildResult:
+    """Build single page."""
     assert state.project_root is not None
     assert state.config is not None
 
     transform_result = apply_transforms(
         state.documents,
         target="markdown",
-        transforms=(*_custom_html_transforms(registry), *registry.markdown_transforms),
+        transforms=(
+            *_custom_html_transforms(registry),
+            *registry.markdown_transforms,
+        ),
         options=_transform_options(state),
     )
     diagnostics = (*diagnostics, *transform_result.diagnostics)
@@ -157,6 +165,7 @@ def _build_site(
     html_config: HtmlBuilderConfig,
     registry: ExtensionRegistry,
 ) -> BuildResult:
+    """Build site."""
     assert state.project_root is not None
     assert state.config is not None
 
@@ -212,6 +221,7 @@ def _build_site(
 
 
 def _transform_options(state: ProjectPipelineState) -> TransformOptions:
+    """Handle transform options."""
     assert state.config is not None
     return TransformOptions(
         document_title=state.config.document.title
@@ -226,7 +236,10 @@ def _transform_options(state: ProjectPipelineState) -> TransformOptions:
     )
 
 
-def _custom_html_transforms(registry: ExtensionRegistry) -> tuple[Transform, ...]:
+def _custom_html_transforms(
+    registry: ExtensionRegistry,
+) -> tuple[Transform, ...]:
+    """Return custom html transforms."""
     native = native_html_transforms()
     return tuple(
         transform for transform in registry.html_transforms if transform not in native
@@ -234,6 +247,7 @@ def _custom_html_transforms(registry: ExtensionRegistry) -> tuple[Transform, ...
 
 
 def _blocked(diagnostics: tuple[Diagnostic, ...]) -> BuildResult:
+    """Create a blocked ."""
     return BuildResult(
         success=False,
         artifacts=(),

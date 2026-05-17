@@ -7,7 +7,11 @@ from pathlib import Path
 from scribpy.config import CONFIG_FILENAME, find_config, load_config
 from scribpy.logging import get_logger, prepare_logging
 from scribpy.model import Diagnostic, LintResult
-from scribpy.project import build_document_index, resolve_project_root, scan_project
+from scribpy.project import (
+    build_document_index,
+    resolve_project_root,
+    scan_project,
+)
 from scribpy.utils import has_errors
 
 logger = get_logger(__name__)
@@ -65,6 +69,7 @@ def run_index_check(root: Path | None = None) -> LintResult:
 
 
 def _resolve_config_path(start: Path) -> Path | None:
+    """Resolve config path."""
     if start.name == CONFIG_FILENAME:
         return start if start.is_file() else None
     return find_config(start)

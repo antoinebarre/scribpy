@@ -2,7 +2,11 @@
 
 from pathlib import Path
 
-from scribpy.builders import AssembledDocument, merge_documents, write_markdown_artifact
+from scribpy.builders import (
+    AssembledDocument,
+    merge_documents,
+    write_markdown_artifact,
+)
 from scribpy.model import Document, MarkdownAst, TransformedDocument
 from scribpy.utils.file_utils import RealFileSystem
 
@@ -23,7 +27,9 @@ def _document(path: str, source: str) -> Document:
 
 def _transformed(path: str, content: str) -> TransformedDocument:
     source = _document(path, content)
-    return TransformedDocument(relative_path=Path(path), content=content, source_document=source)
+    return TransformedDocument(
+        relative_path=Path(path), content=content, source_document=source
+    )
 
 
 def test_merge_documents_normalizes_boundaries() -> None:
@@ -59,7 +65,9 @@ def test_write_markdown_artifact_creates_output(tmp_path: Path) -> None:
     assert artifact.path.read_text(encoding="utf-8") == "# Built\n"
 
 
-def test_write_markdown_artifact_reports_write_failures(tmp_path: Path) -> None:
+def test_write_markdown_artifact_reports_write_failures(
+    tmp_path: Path,
+) -> None:
     class FailingFileSystem(RealFileSystem):
         def write_text(self, path: Path, content: str) -> None:
             raise OSError("read-only")

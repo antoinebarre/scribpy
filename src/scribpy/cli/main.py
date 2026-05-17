@@ -35,7 +35,10 @@ from scribpy.cli.help_text import (
     _ROOT_DESCRIPTION,
     _ROOT_EPILOG,
 )
-from scribpy.cli.logging_options import add_logging_arguments, run_with_optional_logging
+from scribpy.cli.logging_options import (
+    add_logging_arguments,
+    run_with_optional_logging,
+)
 from scribpy.cli.reporting import (
     print_build_report,
     print_index_report,
@@ -76,6 +79,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 def _main(argv: Sequence[str] | None, stdout: TextIO, stderr: TextIO) -> int:
+    """Handle main."""
     parser = _build_parser()
     try:
         args = parser.parse_args(argv)
@@ -94,6 +98,7 @@ def _main(argv: Sequence[str] | None, stdout: TextIO, stderr: TextIO) -> int:
 
 
 def _dispatch(args: argparse.Namespace, stdout: TextIO, stderr: TextIO) -> int | None:
+    """Dispatch ."""
     if args.command == "index" and args.index_command == "check":
         return _run_index_check_command(args.root, stdout, stderr)
     if args.command == "parse" and args.parse_command == "check":
@@ -112,6 +117,7 @@ def _dispatch(args: argparse.Namespace, stdout: TextIO, stderr: TextIO) -> int |
 def _dispatch_build(
     args: argparse.Namespace, stdout: TextIO, stderr: TextIO
 ) -> int | None:
+    """Dispatch build."""
     if args.build_command == "markdown":
         return _run_build_markdown_command(args.root, args.output_dir, stdout, stderr)
     if args.build_command == "html":
@@ -122,6 +128,7 @@ def _dispatch_build(
 
 
 def _build_parser() -> argparse.ArgumentParser:
+    """Build parser."""
     parser = argparse.ArgumentParser(
         prog="scribpy",
         description=_ROOT_DESCRIPTION,
@@ -141,6 +148,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _add_parse_command(subparsers: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
+    """Add parse command."""
     parse_parser = subparsers.add_parser(
         "parse",
         help=("Parse Markdown sources and report semantic extraction diagnostics"),
@@ -160,6 +168,7 @@ def _add_parse_command(subparsers: argparse._SubParsersAction) -> None:  # type:
 
 
 def _add_lint_command(subparsers: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
+    """Add lint command."""
     lint_parser = subparsers.add_parser(
         "lint",
         help="Check documentation quality",
@@ -171,6 +180,7 @@ def _add_lint_command(subparsers: argparse._SubParsersAction) -> None:  # type: 
 
 
 def _add_build_command(subparsers: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
+    """Add build command."""
     build_parser = subparsers.add_parser(
         "build",
         help="Build documentation artifacts",
@@ -213,6 +223,7 @@ def _add_build_command(subparsers: argparse._SubParsersAction) -> None:  # type:
 
 
 def _add_index_command(subparsers: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
+    """Add index command."""
     index_parser = subparsers.add_parser(
         "index",
         help="Manage and validate the document index",
@@ -232,6 +243,7 @@ def _add_index_command(subparsers: argparse._SubParsersAction) -> None:  # type:
 
 
 def _add_demo_command(subparsers: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
+    """Add demo command."""
     demo_parser = subparsers.add_parser(
         "demo",
         help="Create tutorial projects",
@@ -277,6 +289,7 @@ def _add_demo_command(subparsers: argparse._SubParsersAction) -> None:  # type: 
 
 
 def _run_parse_check_command(root: Path | None, stdout: TextIO, stderr: TextIO) -> int:
+    """Run parse check command."""
     result = parse_project_documents(root)
     if result.diagnostics:
         print(format_diagnostics(result.diagnostics), file=stderr)
@@ -289,6 +302,7 @@ def _run_index_check_command(
     stdout: TextIO,
     stderr: TextIO,
 ) -> int:
+    """Run index check command."""
     result = run_index_check(root)
     if result.diagnostics:
         print(format_diagnostics(result.diagnostics), file=stderr)
@@ -297,6 +311,7 @@ def _run_index_check_command(
 
 
 def _run_lint_command(root: Path | None, stdout: TextIO, stderr: TextIO) -> int:
+    """Run lint command."""
     result = lint_project(root)
     if result.diagnostics:
         print(format_diagnostics(result.diagnostics), file=stderr)
@@ -310,6 +325,7 @@ def _run_build_markdown_command(
     stdout: TextIO,
     stderr: TextIO,
 ) -> int:
+    """Run build markdown command."""
     result = build_project(root, target="markdown", output_dir=output_dir)
     if result.diagnostics:
         print(format_diagnostics(result.diagnostics), file=stderr)
@@ -324,6 +340,7 @@ def _run_build_html_command(
     stdout: TextIO,
     stderr: TextIO,
 ) -> int:
+    """Run build html command."""
     result = build_project(root, target="html", html_mode=mode, output_dir=output_dir)
     if result.diagnostics:
         print(format_diagnostics(result.diagnostics), file=stderr)
@@ -338,6 +355,7 @@ def _run_demo_create_command(
     stdout: TextIO,
     stderr: TextIO,
 ) -> int:
+    """Run demo create command."""
     result = create_demo_project(target, force=force, variant=variant)
     if result.diagnostics:
         print(format_diagnostics(result.diagnostics), file=stderr)
@@ -357,6 +375,7 @@ def _run_demo_create_command(
 
 
 def _exit_code(error: SystemExit) -> int:
+    """Handle exit code."""
     if isinstance(error.code, int):
         return error.code
     return 2

@@ -50,6 +50,7 @@ _VALID_DEMO_PAGES: tuple[tuple[str, str], ...] = (
 
 
 def _valid_demo_config() -> str:
+    """Return valid demo config."""
     indexed_files = ("index.md", *(path for path, _ in _VALID_DEMO_PAGES))
     entries = "\n".join(f'  "{path}",' for path in indexed_files)
     return f"""\
@@ -86,6 +87,7 @@ files = [
 
 
 def _valid_demo_index() -> str:
+    """Return valid demo index."""
     return """\
 ---
 title: Scribpy Demo
@@ -132,6 +134,7 @@ scale.
 
 
 def _valid_demo_page(index: int, relative_path: str, title: str) -> str:
+    """Return valid demo page."""
     extra = _valid_demo_extra(relative_path)
     return f"""\
 ---
@@ -158,6 +161,7 @@ contents, and resolved cross-references.
 
 
 def _valid_demo_extra(relative_path: str) -> str:
+    """Return valid demo extra."""
     if relative_path == "guide/getting-started/overview.md":
         return (
             "\nSee the [installation guide](installation.md) before the quickstart.\n"
@@ -180,15 +184,8 @@ def _valid_demo_extra(relative_path: str) -> str:
     return ""
 
 
-def _relative_link(current: Path, target: str) -> str:
-    import posixpath
-
-    current_dir = current.parent.as_posix()
-    start = current_dir if current_dir != "." else "."
-    return posixpath.relpath(target, start=start)
-
-
 def _valid_demo_readme() -> str:
+    """Return valid demo readme."""
     return """\
 # Scribpy Demo Project
 
@@ -570,6 +567,18 @@ def create_demo_project(
         Lint-style result containing user-facing diagnostics. A successful
         creation returns no diagnostics.
     """
+    if variant not in _DEMO_FILES_BY_VARIANT:
+        return LintResult(
+            diagnostics=(
+                Diagnostic(
+                    severity="error",
+                    code="DEMO003",
+                    message=f"Unsupported demo variant: {variant}",
+                    hint="Use variant='valid' or variant='invalid'.",
+                ),
+            ),
+            failed=True,
+        )
     files = _DEMO_FILES_BY_VARIANT[variant]
     prepare_logging(target)
     logger.info("Creating %s demo project at %s", variant, target)
@@ -604,6 +613,7 @@ def _validate_target(
     files: dict[Path, str],
     force: bool,
 ) -> tuple[Diagnostic, ...]:
+    """Validate target."""
     if target.exists() and not target.is_dir():
         return (
             Diagnostic(
@@ -637,6 +647,7 @@ def _validate_target(
 
 
 def _planned_paths(target: Path, *, files: dict[Path, str]) -> tuple[Path, ...]:
+    """Return planned paths."""
     return tuple(target / relative_path for relative_path in files)
 
 

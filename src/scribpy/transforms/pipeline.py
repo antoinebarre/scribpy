@@ -85,4 +85,8 @@ def native_html_transforms() -> tuple[Transform, ...]:
     )
 
 
-__all__ = ["apply_transforms", "native_html_transforms", "native_markdown_transforms"]
+__all__ = [
+    "apply_transforms",
+    "native_html_transforms",
+    "native_markdown_transforms",
+]

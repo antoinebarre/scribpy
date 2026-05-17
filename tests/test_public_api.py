@@ -5,11 +5,15 @@ from pathlib import Path
 import scribpy
 
 
-def _write_config(root: Path, content: str = '[paths]\nsource = "doc"\n') -> None:
+def _write_config(
+    root: Path, content: str = '[paths]\nsource = "doc"\n'
+) -> None:
     (root / "scribpy.toml").write_text(content, encoding="utf-8")
 
 
-def _write_source(root: Path, relative_path: str, content: str = "# Home\n") -> None:
+def _write_source(
+    root: Path, relative_path: str, content: str = "# Home\n"
+) -> None:
     path = root / relative_path
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
@@ -26,7 +30,9 @@ def test_top_level_api_exposes_main_workflows(tmp_path: Path) -> None:
     assert scribpy.build_html(str(tmp_path)).success is True
 
 
-def test_top_level_api_build_html_supports_site_mode(tmp_path: Path, monkeypatch) -> None:
+def test_top_level_api_build_html_supports_site_mode(
+    tmp_path: Path, monkeypatch
+) -> None:
     _write_config(tmp_path)
     _write_source(tmp_path, "doc/index.md")
 
@@ -40,7 +46,9 @@ def test_top_level_api_build_html_supports_site_mode(tmp_path: Path, monkeypatch
     result = scribpy.build_html(tmp_path, mode="site")
 
     assert result.success is True
-    assert any(artifact.artifact_type == "site" for artifact in result.artifacts)
+    assert any(
+        artifact.artifact_type == "site" for artifact in result.artifacts
+    )
 
 
 def test_top_level_api_builds_support_output_directory_overrides(
@@ -49,7 +57,9 @@ def test_top_level_api_builds_support_output_directory_overrides(
     _write_config(tmp_path)
     _write_source(tmp_path, "doc/index.md")
 
-    markdown_result = scribpy.build_markdown(tmp_path, output_dir="ci/markdown")
+    markdown_result = scribpy.build_markdown(
+        tmp_path, output_dir="ci/markdown"
+    )
     html_result = scribpy.build_html(tmp_path, output_dir="ci/html")
 
     assert markdown_result.success is True

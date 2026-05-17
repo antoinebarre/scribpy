@@ -288,7 +288,10 @@ def test_run_mkdocs_build_returns_site_artifact(
         stdout = ""
         stderr = ""
 
-    monkeypatch.setattr("scribpy.builders.html_site.subprocess.run", lambda *a, **k: Completed())
+    monkeypatch.setattr(
+        "scribpy.builders.html_site.subprocess.run",
+        lambda *a, **k: Completed(),
+    )
 
     artifact, diagnostics = run_mkdocs_build(tmp_path, Path("build/site"))
 
@@ -304,7 +307,10 @@ def test_run_mkdocs_build_reports_failure(tmp_path: Path, monkeypatch) -> None:
         stdout = ""
         stderr = "No module named mkdocs"
 
-    monkeypatch.setattr("scribpy.builders.html_site.subprocess.run", lambda *a, **k: Completed())
+    monkeypatch.setattr(
+        "scribpy.builders.html_site.subprocess.run",
+        lambda *a, **k: Completed(),
+    )
 
     artifact, diagnostics = run_mkdocs_build(tmp_path, Path("build/site"))
 

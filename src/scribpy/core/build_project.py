@@ -83,6 +83,7 @@ def _dispatch_html_build(
     parser: MarkdownParser | None,
     registry: ExtensionRegistry | None,
 ) -> BuildResult:
+    """Dispatch html build."""
     from scribpy.config.types import HtmlBuilderConfig, HtmlMode
     from scribpy.core.build_html import build_html_project
 
@@ -138,6 +139,7 @@ def _prepare_build_state(
     filesystem: FileSystem | None,
     parser: MarkdownParser | None,
 ) -> tuple[ProjectPipelineState | None, tuple[Diagnostic, ...]]:
+    """Handle prepare build state."""
     prepared = run_project_parse_pipeline(root, filesystem, parser)
     if prepared.failed or prepared.value is None or has_errors(prepared.diagnostics):
         return None, prepared.diagnostics
@@ -149,6 +151,7 @@ def _lint_state(
     diagnostics: tuple[Diagnostic, ...],
     registry: ExtensionRegistry,
 ) -> tuple[Diagnostic, ...]:
+    """Lint state."""
     assert state.project_root is not None
     assert state.config is not None
     assert state.index is not None
@@ -167,6 +170,7 @@ def _write_markdown_build(
     registry: ExtensionRegistry,
     output_dir: Path | None,
 ) -> BuildResult:
+    """Write markdown build."""
     assert state.project_root is not None
     assert state.config is not None
     transform_result = apply_transforms(
@@ -204,7 +208,8 @@ def _write_markdown_build(
     final_diagnostics = (*transformed_diagnostics, *write_diagnostics)
     if artifact is None or has_errors(final_diagnostics):
         logger.error(
-            "Markdown build failed with %d diagnostic(s)", len(final_diagnostics)
+            "Markdown build failed with %d diagnostic(s)",
+            len(final_diagnostics),
         )
         return BuildResult(success=False, artifacts=(), diagnostics=final_diagnostics)
     logger.info("Built Markdown artifact: %s", artifact.path)
@@ -214,6 +219,7 @@ def _write_markdown_build(
 
 
 def _unsupported_target_diagnostic(target: str) -> Diagnostic:
+    """Handle unsupported target diagnostic."""
     return Diagnostic(
         severity="error",
         code="BLD001",
@@ -223,6 +229,7 @@ def _unsupported_target_diagnostic(target: str) -> Diagnostic:
 
 
 def _blocked_build(diagnostics: tuple[Diagnostic, ...]) -> BuildResult:
+    """Create a blocked build."""
     return BuildResult(
         success=False,
         artifacts=(),
@@ -231,6 +238,7 @@ def _blocked_build(diagnostics: tuple[Diagnostic, ...]) -> BuildResult:
 
 
 def _blocked_build_diagnostic() -> Diagnostic:
+    """Create a blocked build diagnostic."""
     return Diagnostic(
         severity="error",
         code="BLD002",

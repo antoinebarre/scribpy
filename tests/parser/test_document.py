@@ -37,7 +37,9 @@ class InMemoryFileSystem:
         return []
 
 
-def _source(relative: str, content: str) -> tuple[SourceFile, InMemoryFileSystem]:
+def _source(
+    relative: str, content: str
+) -> tuple[SourceFile, InMemoryFileSystem]:
     """Build a SourceFile + matching InMemoryFileSystem for one file."""
     abs_path = Path("/project") / relative
     fs = InMemoryFileSystem({str(abs_path): content})
@@ -154,13 +156,17 @@ class TestParseDocumentFileHappyPath:
 
 class TestParseDocumentFileErrors:
     def test_unreadable_file_returns_none_document(self) -> None:
-        sf = SourceFile(path=Path("/missing/file.md"), relative_path=Path("file.md"))
+        sf = SourceFile(
+            path=Path("/missing/file.md"), relative_path=Path("file.md")
+        )
         fs = InMemoryFileSystem({})
         doc, diags = parse_document_file(sf, fs)
         assert doc is None
 
     def test_unreadable_file_emits_prs001(self) -> None:
-        sf = SourceFile(path=Path("/missing/file.md"), relative_path=Path("file.md"))
+        sf = SourceFile(
+            path=Path("/missing/file.md"), relative_path=Path("file.md")
+        )
         fs = InMemoryFileSystem({})
         _, diags = parse_document_file(sf, fs)
         assert len(diags) == 1
@@ -168,7 +174,9 @@ class TestParseDocumentFileErrors:
         assert diags[0].severity == "error"
         assert diags[0].path == sf.path
 
-    def test_invalid_yaml_frontmatter_emits_prs002_and_returns_document(self) -> None:
+    def test_invalid_yaml_frontmatter_emits_prs002_and_returns_document(
+        self,
+    ) -> None:
         sf, fs = _source("a.md", "---\nkey: [unclosed\n---\n# Title\n")
         doc, diags = parse_document_file(sf, fs)
         # PRS002 is non-blocking: document is returned with empty frontmatter
@@ -176,14 +184,18 @@ class TestParseDocumentFileErrors:
         assert any(d.code == "PRS002" for d in diags)
         assert doc.frontmatter == {}
 
-    def test_invalid_toml_frontmatter_emits_prs002_and_returns_document(self) -> None:
+    def test_invalid_toml_frontmatter_emits_prs002_and_returns_document(
+        self,
+    ) -> None:
         sf, fs = _source("a.md", "+++\nnot valid toml !!!\n+++\n# Title\n")
         doc, diags = parse_document_file(sf, fs)
         assert doc is not None
         assert any(d.code == "PRS002" for d in diags)
         assert doc.frontmatter == {}
 
-    def test_unclosed_frontmatter_block_returns_document_with_empty_frontmatter(self) -> None:
+    def test_unclosed_frontmatter_block_returns_document_with_empty_frontmatter(
+        self,
+    ) -> None:
         sf, fs = _source("a.md", "---\ntitle: Broken\n# Title\n")
         doc, diags = parse_document_file(sf, fs)
         assert doc is not None
@@ -218,7 +230,9 @@ class TestParseDocuments:
         for relative, content in entries:
             abs_path = Path("/project") / relative
             files[str(abs_path)] = content
-            source_files.append(SourceFile(path=abs_path, relative_path=Path(relative)))
+            source_files.append(
+                SourceFile(path=abs_path, relative_path=Path(relative))
+            )
         return InMemoryFileSystem(files), source_files
 
     def test_returns_parse_result(self) -> None:
@@ -237,7 +251,11 @@ class TestParseDocuments:
 
     def test_order_preserved(self) -> None:
         fs, sfs = self._make_fs_and_files(
-            [("first.md", "# First\n"), ("second.md", "# Second\n"), ("third.md", "# Third\n")]
+            [
+                ("first.md", "# First\n"),
+                ("second.md", "# Second\n"),
+                ("third.md", "# Third\n"),
+            ]
         )
         result = parse_documents(sfs, fs)
         assert [d.relative_path for d in result.documents] == [
@@ -248,24 +266,34 @@ class TestParseDocuments:
 
     def test_missing_file_excluded_from_documents(self) -> None:
         fs, sfs = self._make_fs_and_files([("a.md", "# A\n")])
-        missing = SourceFile(path=Path("/project/missing.md"), relative_path=Path("missing.md"))
+        missing = SourceFile(
+            path=Path("/project/missing.md"), relative_path=Path("missing.md")
+        )
         result = parse_documents([sfs[0], missing], fs)
         assert len(result.documents) == 1
         assert result.documents[0].relative_path == Path("a.md")
 
     def test_missing_file_sets_failed(self) -> None:
-        missing = SourceFile(path=Path("/project/x.md"), relative_path=Path("x.md"))
+        missing = SourceFile(
+            path=Path("/project/x.md"), relative_path=Path("x.md")
+        )
         result = parse_documents([missing], InMemoryFileSystem({}))
         assert result.failed is True
 
     def test_missing_file_produces_prs001_diagnostic(self) -> None:
-        missing = SourceFile(path=Path("/project/x.md"), relative_path=Path("x.md"))
+        missing = SourceFile(
+            path=Path("/project/x.md"), relative_path=Path("x.md")
+        )
         result = parse_documents([missing], InMemoryFileSystem({}))
         assert any(d.code == "PRS001" for d in result.diagnostics)
 
     def test_valid_files_still_parsed_when_one_missing(self) -> None:
-        fs, sfs = self._make_fs_and_files([("a.md", "# A\n"), ("b.md", "# B\n")])
-        missing = SourceFile(path=Path("/project/x.md"), relative_path=Path("x.md"))
+        fs, sfs = self._make_fs_and_files(
+            [("a.md", "# A\n"), ("b.md", "# B\n")]
+        )
+        missing = SourceFile(
+            path=Path("/project/x.md"), relative_path=Path("x.md")
+        )
         result = parse_documents([sfs[0], missing, sfs[1]], fs)
         assert len(result.documents) == 2
         assert result.failed is True
@@ -296,7 +324,9 @@ class TestParseDocuments:
         mock_parser = MagicMock()
         mock_parser.parse.return_value = fake_ast
 
-        fs, sfs = self._make_fs_and_files([("a.md", "# A\n"), ("b.md", "# B\n")])
+        fs, sfs = self._make_fs_and_files(
+            [("a.md", "# A\n"), ("b.md", "# B\n")]
+        )
         result = parse_documents(sfs, fs, parser=mock_parser)
 
         assert mock_parser.parse.call_count == 2
@@ -332,16 +362,24 @@ class TestOrderByIndex:
 
     def test_returns_files_in_index_order(self) -> None:
         sfs = (self._sf("a.md"), self._sf("b.md"), self._sf("c.md"))
-        index = DocumentIndex(paths=(Path("c.md"), Path("a.md"), Path("b.md")), mode="explicit")
+        index = DocumentIndex(
+            paths=(Path("c.md"), Path("a.md"), Path("b.md")), mode="explicit"
+        )
 
         ordered, diags = order_by_index(index, sfs)
 
-        assert [sf.relative_path for sf in ordered] == [Path("c.md"), Path("a.md"), Path("b.md")]
+        assert [sf.relative_path for sf in ordered] == [
+            Path("c.md"),
+            Path("a.md"),
+            Path("b.md"),
+        ]
         assert diags == ()
 
     def test_missing_index_entry_produces_prs001(self) -> None:
         sfs = (self._sf("a.md"),)
-        index = DocumentIndex(paths=(Path("a.md"), Path("ghost.md")), mode="explicit")
+        index = DocumentIndex(
+            paths=(Path("a.md"), Path("ghost.md")), mode="explicit"
+        )
 
         ordered, diags = order_by_index(index, sfs)
 
@@ -360,8 +398,12 @@ class TestOrderByIndex:
         assert ordered == []
         assert diags == ()
 
-    def test_empty_source_files_produces_diagnostic_for_each_index_entry(self) -> None:
-        index = DocumentIndex(paths=(Path("a.md"), Path("b.md")), mode="explicit")
+    def test_empty_source_files_produces_diagnostic_for_each_index_entry(
+        self,
+    ) -> None:
+        index = DocumentIndex(
+            paths=(Path("a.md"), Path("b.md")), mode="explicit"
+        )
 
         ordered, diags = order_by_index(index, ())
 
@@ -370,9 +412,14 @@ class TestOrderByIndex:
 
     def test_filesystem_index_order_preserved(self) -> None:
         sfs = (self._sf("a.md"), self._sf("b.md"))
-        index = DocumentIndex(paths=(Path("b.md"), Path("a.md")), mode="filesystem")
+        index = DocumentIndex(
+            paths=(Path("b.md"), Path("a.md")), mode="filesystem"
+        )
 
         ordered, diags = order_by_index(index, sfs)
 
-        assert [sf.relative_path for sf in ordered] == [Path("b.md"), Path("a.md")]
+        assert [sf.relative_path for sf in ordered] == [
+            Path("b.md"),
+            Path("a.md"),
+        ]
         assert diags == ()

@@ -74,6 +74,7 @@ def _parse_delimited_block(
     adapter: Any,
     path: Path | None,
 ) -> FrontmatterResult:
+    """Parse delimited block."""
     closing_index = _find_closing_delimiter(lines, delimiter)
     if closing_index is None:
         return FrontmatterResult(
@@ -109,6 +110,7 @@ def _parse_delimited_block(
 
 
 def _find_closing_delimiter(lines: list[str], delimiter: str) -> int | None:
+    """Handle find closing delimiter."""
     for index, line in enumerate(lines[1:], start=1):
         if line.strip() == delimiter:
             return index
@@ -120,6 +122,7 @@ def _yaml_adapter(
     *,
     path: Path | None,
 ) -> tuple[dict[str, Any], tuple[Diagnostic, ...]]:
+    """Quote a YAML adapter."""
     import yaml  # noqa: PLC0415
 
     try:
@@ -157,6 +160,7 @@ def _toml_adapter(
     *,
     path: Path | None,
 ) -> tuple[dict[str, Any], tuple[Diagnostic, ...]]:
+    """Handle toml adapter."""
     import tomlkit  # noqa: PLC0415
     import tomlkit.exceptions  # noqa: PLC0415
 
@@ -177,6 +181,7 @@ def _toml_adapter(
 
 
 def _yaml_error_line(exc: Any) -> int | None:
+    """Quote a YAML error line."""
     mark = getattr(exc, "problem_mark", None)
     if mark is None:
         return None

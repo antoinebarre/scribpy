@@ -7,6 +7,7 @@ from scribpy.builders.html_single_page import (
     render_markdown_to_html,
     write_single_page_artifact,
     write_single_page_script_artifact,
+    write_single_page_support_artifacts,
 )
 from scribpy.utils.file_utils import RealFileSystem
 
@@ -123,7 +124,9 @@ def test_write_single_page_artifact_creates_file(tmp_path: Path) -> None:
     assert artifact.path.read_text(encoding="utf-8") == html
 
 
-def test_write_single_page_artifact_reports_write_failure(tmp_path: Path) -> None:
+def test_write_single_page_artifact_reports_write_failure(
+    tmp_path: Path,
+) -> None:
     class FailFS(RealFileSystem):
         def write_text(self, path: Path, content: str) -> None:
             raise OSError("disk full")
@@ -137,7 +140,9 @@ def test_write_single_page_artifact_reports_write_failure(tmp_path: Path) -> Non
     assert diagnostics[0].code == "BLD005"
 
 
-def test_write_single_page_script_artifact_creates_file(tmp_path: Path) -> None:
+def test_write_single_page_script_artifact_creates_file(
+    tmp_path: Path,
+) -> None:
     artifact, diagnostics = write_single_page_script_artifact(
         tmp_path, Path("build/html"), RealFileSystem()
     )
@@ -148,3 +153,40 @@ def test_write_single_page_script_artifact_creates_file(tmp_path: Path) -> None:
     assert artifact.artifact_type == "script"
     assert "IntersectionObserver" in artifact.path.read_text(encoding="utf-8")
     assert "toc-collapse" in artifact.path.read_text(encoding="utf-8")
+
+
+def test_write_single_page_script_artifact_reports_write_failure(
+    tmp_path: Path,
+) -> None:
+    class FailFS(RealFileSystem):
+        def write_text(self, path: Path, content: str) -> None:
+            raise OSError("disk full")
+
+    artifact, diagnostics = write_single_page_script_artifact(
+        tmp_path,
+        Path("build/html"),
+        FailFS(),
+    )
+
+    assert artifact is None
+    assert diagnostics[0].code == "BLD006"
+
+
+def test_write_support_artifacts_stops_when_script_write_fails(
+    tmp_path: Path,
+) -> None:
+    class FailScriptFS(RealFileSystem):
+        def write_text(self, path: Path, content: str) -> None:
+            if path.name == "toc.js":
+                raise OSError("disk full")
+            super().write_text(path, content)
+
+    artifacts, diagnostics = write_single_page_support_artifacts(
+        tmp_path,
+        "<html></html>",
+        Path("build/html"),
+        FailScriptFS(),
+    )
+
+    assert artifacts == ()
+    assert diagnostics[0].code == "BLD006"

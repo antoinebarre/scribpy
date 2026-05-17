@@ -4,7 +4,13 @@ from pathlib import Path
 
 import pytest
 
-from scribpy.utils import RealFileSystem, is_md_file, list_md_files, read_md_file, write_md_file
+from scribpy.utils import (
+    RealFileSystem,
+    is_md_file,
+    list_md_files,
+    read_md_file,
+    write_md_file,
+)
 
 # --- is_md_file ---
 
@@ -50,7 +56,9 @@ def test_list_md_files_returns_md_files_recursive(tmp_path: Path) -> None:
     assert result == sorted([tmp_path / "a.md", sub / "c.md"])
 
 
-def test_list_md_files_non_recursive_skips_subdirectories(tmp_path: Path) -> None:
+def test_list_md_files_non_recursive_skips_subdirectories(
+    tmp_path: Path,
+) -> None:
     (tmp_path / "a.md").write_text("# A")
     sub = tmp_path / "sub"
     sub.mkdir()

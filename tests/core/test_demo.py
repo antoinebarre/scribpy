@@ -45,22 +45,26 @@ def test_created_demo_project_passes_index_check(tmp_path: Path) -> None:
     assert result.diagnostics == ()
 
 
-def test_created_demo_project_exposes_transform_configuration(tmp_path: Path) -> None:
+def test_created_demo_project_exposes_transform_configuration(
+    tmp_path: Path,
+) -> None:
     target = tmp_path / "external-demo"
     create_demo_project(target)
 
     config = (target / "scribpy.toml").read_text(encoding="utf-8")
 
     assert '[document]\ntitle = "Scribpy Demo Manual"' in config
-    assert '[document.toc]\nenabled = true\nmax_level = 3\nstyle = "bullet"' in config
+    assert (
+        '[document.toc]\nenabled = true\nmax_level = 3\nstyle = "bullet"'
+        in config
+    )
     assert (
         '[document.numbering]\nenabled = true\nmax_level = 3\nstyle = "decimal"'
         in config
     )
     assert (
         '[builders.html]\nmode = "single-page"\ncss_files = ["theme/demo.css"]\n'
-        'theme = "readthedocs"'
-        in config
+        'theme = "readthedocs"' in config
     )
 
 
@@ -91,7 +95,9 @@ def test_create_demo_project_refuses_existing_demo_files_without_force(
     assert result.diagnostics[0].path == target / "doc/index.md"
 
 
-def test_create_demo_project_overwrites_demo_files_with_force(tmp_path: Path) -> None:
+def test_create_demo_project_overwrites_demo_files_with_force(
+    tmp_path: Path,
+) -> None:
     target = tmp_path / "external-demo"
     (target / "doc").mkdir(parents=True)
     existing = target / "doc/index.md"
@@ -101,6 +107,13 @@ def test_create_demo_project_overwrites_demo_files_with_force(tmp_path: Path) ->
 
     assert result.failed is False
     assert "# Scribpy Demo" in existing.read_text(encoding="utf-8")
+
+
+def test_create_demo_project_rejects_unknown_variant(tmp_path: Path) -> None:
+    result = create_demo_project(tmp_path, variant="broken")  # type: ignore[arg-type]
+
+    assert result.failed is True
+    assert result.diagnostics[0].code == "DEMO003"
 
 
 def test_create_demo_project_refuses_file_target(tmp_path: Path) -> None:
@@ -165,13 +178,15 @@ def test_created_demo_project_documents_in_index_order(tmp_path: Path) -> None:
     assert titles[-3:] == ["Glossary", "Roadmap", "Changelog"]
 
 
-def test_created_demo_project_uses_document_oriented_copy(tmp_path: Path) -> None:
+def test_created_demo_project_uses_document_oriented_copy(
+    tmp_path: Path,
+) -> None:
     target = tmp_path / "external-demo"
     create_demo_project(target)
 
-    page = (
-        target / "doc/guide/getting-started/overview.md"
-    ).read_text(encoding="utf-8")
+    page = (target / "doc/guide/getting-started/overview.md").read_text(
+        encoding="utf-8"
+    )
 
     assert "This section belongs" in page
     assert "## In the assembled manual" in page
@@ -276,10 +291,13 @@ def test_created_demo_project_readme_documents_end_to_end_html_flow(
     assert "## End-to-end walkthrough" in readme
     assert "scribpy build html --mode single-page --root ." in readme
     assert "scribpy build html --mode site --root ." in readme
-    assert "Scribpy prepares the MkDocs inputs and wraps `mkdocs build` itself." in readme
+    assert (
+        "Scribpy prepares the MkDocs inputs and wraps `mkdocs build` itself."
+        in readme
+    )
     assert "build/site/site/index.html" in readme
     assert "scribpy build markdown --root ." in readme
-    assert 'builders.html.theme' in readme
+    assert "builders.html.theme" in readme
     assert "## Execution logs" in readme
     assert "scribpy --log-level INFO build html --mode site --root ." in readme
     assert "with scribpy.logging_context" in readme

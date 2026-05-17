@@ -31,7 +31,12 @@ from scribpy.model.protocols import (
     MarkdownParser,
     PdfRenderer,
 )
-from scribpy.model.results import BuildArtifact, BuildResult, LintResult, ParseResult
+from scribpy.model.results import (
+    BuildArtifact,
+    BuildResult,
+    LintResult,
+    ParseResult,
+)
 from scribpy.model.source import SourceFile
 from scribpy.model.transformed import TransformedDocument
 

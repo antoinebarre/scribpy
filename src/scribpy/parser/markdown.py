@@ -52,6 +52,7 @@ def parse_markdown(body: str, parser: MarkdownParser | None = None) -> MarkdownA
 
 
 def _markdown_adapter(body: str) -> MarkdownAst:
+    """Handle markdown adapter."""
     from markdown_it import MarkdownIt  # noqa: PLC0415
 
     md = MarkdownIt()
@@ -61,6 +62,7 @@ def _markdown_adapter(body: str) -> MarkdownAst:
 
 
 def _convert_token(token: Any) -> Mapping[str, object]:
+    """Convert token."""
     result: dict[str, object] = {
         "type": token.type,
         "tag": token.tag,
@@ -75,6 +77,7 @@ def _convert_token(token: Any) -> Mapping[str, object]:
 
 
 def _convert_child(token: Any) -> Mapping[str, object]:
+    """Convert child."""
     return {
         "type": token.type,
         "tag": token.tag,

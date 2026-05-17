@@ -46,7 +46,9 @@ def test_collect_asset_paths_resolves_relative_to_source_document(
     tmp_path: Path,
 ) -> None:
     source_root = tmp_path / "doc"
-    doc = _document_with_assets("guide/page.md", ["../img/photo.png"], source_root)
+    doc = _document_with_assets(
+        "guide/page.md", ["../img/photo.png"], source_root
+    )
 
     paths = collect_asset_paths((doc,), source_root)
 
@@ -56,7 +58,9 @@ def test_collect_asset_paths_resolves_relative_to_source_document(
 def test_collect_asset_paths_ignores_external_urls(tmp_path: Path) -> None:
     source_root = tmp_path / "doc"
     assets = (
-        AssetRef(kind="image", target="https://example.com/img.png", path=None),
+        AssetRef(
+            kind="image", target="https://example.com/img.png", path=None
+        ),
     )
     doc = Document(
         path=source_root / "index.md",
@@ -75,9 +79,17 @@ def test_collect_asset_paths_ignores_external_urls(tmp_path: Path) -> None:
     assert paths == ()
 
 
-def test_collect_asset_paths_ignores_external_path_values(tmp_path: Path) -> None:
+def test_collect_asset_paths_ignores_external_path_values(
+    tmp_path: Path,
+) -> None:
     source_root = tmp_path / "doc"
-    assets = (AssetRef(kind="image", target="//cdn.example/image.png", path=Path("//cdn.example/image.png")),)
+    assets = (
+        AssetRef(
+            kind="image",
+            target="//cdn.example/image.png",
+            path=Path("//cdn.example/image.png"),
+        ),
+    )
     doc = Document(
         path=source_root / "index.md",
         relative_path=Path("index.md"),
@@ -233,7 +245,9 @@ def test_rewrite_asset_links_single_page_flattens_document_relative_paths(
     tmp_path: Path,
 ) -> None:
     source_root = tmp_path / "doc"
-    doc = _document_with_assets("guide/page.md", ["../img/photo.png"], source_root)
+    doc = _document_with_assets(
+        "guide/page.md", ["../img/photo.png"], source_root
+    )
     transformed = (
         TransformedDocument(
             relative_path=doc.relative_path,
@@ -252,7 +266,9 @@ def test_rewrite_asset_links_single_page_keeps_external_or_unparsed_assets(
 ) -> None:
     source_root = tmp_path / "doc"
     assets = (
-        AssetRef(kind="image", target="https://example.com/photo.png", path=None),
+        AssetRef(
+            kind="image", target="https://example.com/photo.png", path=None
+        ),
         AssetRef(kind="image", target="raw.png", path=None),
     )
     doc = Document(

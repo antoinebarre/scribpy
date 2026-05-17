@@ -274,9 +274,30 @@ class TestDefensiveBranches:
         ast = MarkdownAst(
             backend="test",
             tokens=(
-                {"type": "heading_open", "tag": "", "level": 0, "content": "", "map": [0, 1], "attrs": {}},
-                {"type": "inline", "tag": "", "level": 1, "content": "Title", "map": [0, 1], "attrs": {}},
-                {"type": "heading_close", "tag": "", "level": 0, "content": "", "map": None, "attrs": {}},
+                {
+                    "type": "heading_open",
+                    "tag": "",
+                    "level": 0,
+                    "content": "",
+                    "map": [0, 1],
+                    "attrs": {},
+                },
+                {
+                    "type": "inline",
+                    "tag": "",
+                    "level": 1,
+                    "content": "Title",
+                    "map": [0, 1],
+                    "attrs": {},
+                },
+                {
+                    "type": "heading_close",
+                    "tag": "",
+                    "level": 0,
+                    "content": "",
+                    "map": None,
+                    "attrs": {},
+                },
             ),
         )
         headings = extract_headings(ast)
@@ -286,9 +307,30 @@ class TestDefensiveBranches:
         ast = MarkdownAst(
             backend="test",
             tokens=(
-                {"type": "heading_open", "tag": "hx", "level": 0, "content": "", "map": [0, 1], "attrs": {}},
-                {"type": "inline", "tag": "", "level": 1, "content": "Title", "map": [0, 1], "attrs": {}},
-                {"type": "heading_close", "tag": "", "level": 0, "content": "", "map": None, "attrs": {}},
+                {
+                    "type": "heading_open",
+                    "tag": "hx",
+                    "level": 0,
+                    "content": "",
+                    "map": [0, 1],
+                    "attrs": {},
+                },
+                {
+                    "type": "inline",
+                    "tag": "",
+                    "level": 1,
+                    "content": "Title",
+                    "map": [0, 1],
+                    "attrs": {},
+                },
+                {
+                    "type": "heading_close",
+                    "tag": "",
+                    "level": 0,
+                    "content": "",
+                    "map": None,
+                    "attrs": {},
+                },
             ),
         )
         headings = extract_headings(ast)
@@ -299,9 +341,30 @@ class TestDefensiveBranches:
         ast = MarkdownAst(
             backend="test",
             tokens=(
-                {"type": "heading_open", "tag": "h1", "level": 0, "content": "", "map": ["bad", 1], "attrs": {}},
-                {"type": "inline", "tag": "", "level": 1, "content": "Title", "map": ["bad", 1], "attrs": {}},
-                {"type": "heading_close", "tag": "", "level": 0, "content": "", "map": None, "attrs": {}},
+                {
+                    "type": "heading_open",
+                    "tag": "h1",
+                    "level": 0,
+                    "content": "",
+                    "map": ["bad", 1],
+                    "attrs": {},
+                },
+                {
+                    "type": "inline",
+                    "tag": "",
+                    "level": 1,
+                    "content": "Title",
+                    "map": ["bad", 1],
+                    "attrs": {},
+                },
+                {
+                    "type": "heading_close",
+                    "tag": "",
+                    "level": 0,
+                    "content": "",
+                    "map": None,
+                    "attrs": {},
+                },
             ),
         )
         headings = extract_headings(ast)
@@ -312,9 +375,30 @@ class TestDefensiveBranches:
         ast = MarkdownAst(
             backend="test",
             tokens=(
-                {"type": "heading_open", "tag": "h1", "level": 0, "content": "", "map": None, "attrs": {}},
-                {"type": "inline", "tag": "", "level": 1, "content": "Title", "map": None, "attrs": {}},
-                {"type": "heading_close", "tag": "", "level": 0, "content": "", "map": None, "attrs": {}},
+                {
+                    "type": "heading_open",
+                    "tag": "h1",
+                    "level": 0,
+                    "content": "",
+                    "map": None,
+                    "attrs": {},
+                },
+                {
+                    "type": "inline",
+                    "tag": "",
+                    "level": 1,
+                    "content": "Title",
+                    "map": None,
+                    "attrs": {},
+                },
+                {
+                    "type": "heading_close",
+                    "tag": "",
+                    "level": 0,
+                    "content": "",
+                    "map": None,
+                    "attrs": {},
+                },
             ),
         )
         headings = extract_headings(ast)
@@ -333,9 +417,24 @@ class TestDefensiveBranches:
                     "map": ["bad", 1],
                     "attrs": {},
                     "children": [
-                        {"type": "link_open", "tag": "a", "content": "", "attrs": {"href": "https://x.com"}},
-                        {"type": "text", "tag": "", "content": "x", "attrs": {}},
-                        {"type": "link_close", "tag": "a", "content": "", "attrs": {}},
+                        {
+                            "type": "link_open",
+                            "tag": "a",
+                            "content": "",
+                            "attrs": {"href": "https://x.com"},
+                        },
+                        {
+                            "type": "text",
+                            "tag": "",
+                            "content": "x",
+                            "attrs": {},
+                        },
+                        {
+                            "type": "link_close",
+                            "tag": "a",
+                            "content": "",
+                            "attrs": {},
+                        },
                     ],
                 },
             ),
@@ -375,9 +474,24 @@ class TestDefensiveBranches:
                     "map": None,
                     "attrs": {},
                     "children": [
-                        {"type": "link_open", "tag": "a", "content": "", "attrs": {"href": "https://x.com"}},
-                        {"type": "text", "tag": "", "content": "x", "attrs": {}},
-                        {"type": "link_close", "tag": "a", "content": "", "attrs": {}},
+                        {
+                            "type": "link_open",
+                            "tag": "a",
+                            "content": "",
+                            "attrs": {"href": "https://x.com"},
+                        },
+                        {
+                            "type": "text",
+                            "tag": "",
+                            "content": "x",
+                            "attrs": {},
+                        },
+                        {
+                            "type": "link_close",
+                            "tag": "a",
+                            "content": "",
+                            "attrs": {},
+                        },
                     ],
                 },
             ),
@@ -398,8 +512,18 @@ class TestDefensiveBranches:
                     "map": [0, 1],
                     "attrs": {},
                     "children": [
-                        {"type": "link_open", "tag": "a", "content": "", "attrs": {"href": ""}},
-                        {"type": "link_close", "tag": "a", "content": "", "attrs": {}},
+                        {
+                            "type": "link_open",
+                            "tag": "a",
+                            "content": "",
+                            "attrs": {"href": ""},
+                        },
+                        {
+                            "type": "link_close",
+                            "tag": "a",
+                            "content": "",
+                            "attrs": {},
+                        },
                     ],
                 },
             ),

@@ -152,6 +152,7 @@ def logging_enabled() -> bool:
 
 
 def _attach_handler(handler: logging.Handler) -> None:
+    """Handle attach handler."""
     logger = logging.getLogger(_LOGGER_NAME)
     settings = _SETTINGS.get()
     assert settings is not None
@@ -162,6 +163,7 @@ def _attach_handler(handler: logging.Handler) -> None:
 
 
 def _effective_log_path(project_root: Path, settings: LoggingSettings) -> Path:
+    """Return the effective log path."""
     configured = settings.file_path or _DEFAULT_LOG_RELATIVE_PATH
     return configured if configured.is_absolute() else project_root / configured
 

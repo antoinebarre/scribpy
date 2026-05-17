@@ -224,6 +224,7 @@ def _write_pages(
     docs_dir: Path,
     filesystem: FileSystem,
 ) -> tuple[tuple[BuildArtifact, ...], tuple[Diagnostic, ...], list[dict[str, str]]]:
+    """Write pages."""
     artifacts: list[BuildArtifact] = []
     nav_entries: list[dict[str, str]] = []
 
@@ -262,6 +263,7 @@ def _copy_css_files(
     docs_dir: Path,
     filesystem: FileSystem,
 ) -> tuple[tuple[BuildArtifact, ...], tuple[Diagnostic, ...], list[str]]:
+    """Copy css files."""
     artifacts: list[BuildArtifact] = []
     hrefs: list[str] = []
 
@@ -313,12 +315,14 @@ def _copy_css_files(
 
 
 def _page_title(document: TransformedDocument) -> str:
+    """Return the page title."""
     if document.source_document.title:
         return document.source_document.title
     return document.relative_path.stem.replace("-", " ").replace("_", " ").title()
 
 
 def _yaml_str(value: str) -> str:
+    """Quote a YAML str."""
     if any(c in value for c in (":", "#", "'", '"', "[", "]", "{", "}")):
         escaped = value.replace("'", "''")
         return f"'{escaped}'"
@@ -326,6 +330,7 @@ def _yaml_str(value: str) -> str:
 
 
 def _mkdocs_diagnostic(code: str, message: str) -> Diagnostic:
+    """Handle mkdocs diagnostic."""
     return Diagnostic(
         severity="error",
         code=code,

@@ -40,7 +40,10 @@ def print_result(result: PublicResult, *, file: TextIO | None = None) -> None:
             location += " — "
         console.print(
             Text.assemble(
-                (diagnostic.severity.upper(), _severity_style(diagnostic.severity)),
+                (
+                    diagnostic.severity.upper(),
+                    _severity_style(diagnostic.severity),
+                ),
                 f" {diagnostic.code} — {location}{diagnostic.message}",
             )
         )
@@ -49,6 +52,7 @@ def print_result(result: PublicResult, *, file: TextIO | None = None) -> None:
 
 
 def _summary(result: PublicResult) -> Text:
+    """Build the top-level result summary."""
     if isinstance(result, BuildResult):
         status = "success" if result.success else "failed"
         return Text(
@@ -71,6 +75,7 @@ def _summary(result: PublicResult) -> Text:
 
 
 def _severity_style(severity: str) -> str:
+    """Return the Rich style for one diagnostic severity."""
     return {"error": "bold red", "warning": "yellow", "info": "cyan"}[severity]
 
 

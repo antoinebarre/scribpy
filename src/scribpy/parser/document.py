@@ -22,7 +22,11 @@ from scribpy.model.markdown import Heading, MarkdownAst
 from scribpy.model.protocols import FileSystem, MarkdownParser
 from scribpy.model.results import ParseResult
 from scribpy.model.source import SourceFile
-from scribpy.parser.extractors import extract_assets, extract_headings, extract_links
+from scribpy.parser.extractors import (
+    extract_assets,
+    extract_headings,
+    extract_links,
+)
 from scribpy.parser.frontmatter import parse_frontmatter
 from scribpy.parser.markdown import parse_markdown
 
@@ -185,6 +189,7 @@ def _read_source(
     path: Path,
     filesystem: FileSystem,
 ) -> tuple[str | None, tuple[Diagnostic, ...]]:
+    """Read source."""
     try:
         return filesystem.read_text(path), ()
     except Exception as exc:
@@ -204,6 +209,7 @@ def _parse_body(
     path: Path,
     parser: MarkdownParser | None,
 ) -> tuple[MarkdownAst | None, tuple[Diagnostic, ...]]:
+    """Parse body."""
     try:
         return parse_markdown(body, parser=parser), ()
     except Exception as exc:
@@ -222,6 +228,7 @@ def _resolve_title(
     frontmatter: dict[str, object],
     headings: tuple[Heading, ...],
 ) -> str | None:
+    """Resolve title."""
     if "title" in frontmatter:
         return str(frontmatter["title"])
     for heading in headings:

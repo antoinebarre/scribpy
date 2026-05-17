@@ -22,7 +22,9 @@ class AssembledDocument:
     content: str
 
 
-def merge_documents(documents: tuple[TransformedDocument, ...]) -> AssembledDocument:
+def merge_documents(
+    documents: tuple[TransformedDocument, ...],
+) -> AssembledDocument:
     """Merge documents into deterministic assembled Markdown content.
 
     Args:

@@ -38,7 +38,9 @@ def has_errors(diagnostics: Iterable[Diagnostic]) -> bool:
     return any(diagnostic.severity == "error" for diagnostic in diagnostics)
 
 
-def sort_diagnostics(diagnostics: Iterable[Diagnostic]) -> tuple[Diagnostic, ...]:
+def sort_diagnostics(
+    diagnostics: Iterable[Diagnostic],
+) -> tuple[Diagnostic, ...]:
     """Return diagnostics sorted by stable display fields.
 
     Args:
@@ -108,7 +110,10 @@ def format_diagnostics(
     return "\n".join(format_diagnostic(diagnostic) for diagnostic in items)
 
 
-def _diagnostic_sort_key(diagnostic: Diagnostic) -> tuple[str, int, int, str, str]:
+def _diagnostic_sort_key(
+    diagnostic: Diagnostic,
+) -> tuple[str, int, int, str, str]:
+    """Handle diagnostic sort key."""
     path_key = "" if diagnostic.path is None else diagnostic.path.as_posix()
     line_key = -1 if diagnostic.line is None else diagnostic.line
     return (
@@ -121,6 +126,7 @@ def _diagnostic_sort_key(diagnostic: Diagnostic) -> tuple[str, int, int, str, st
 
 
 def _path_group_key(item: tuple[Path | None, object]) -> tuple[str, str]:
+    """Return path group key."""
     path = item[0]
     if path is None:
         return ("", "")
@@ -128,6 +134,7 @@ def _path_group_key(item: tuple[Path | None, object]) -> tuple[str, str]:
 
 
 def _format_location(diagnostic: Diagnostic) -> str:
+    """Format location."""
     if diagnostic.path is None:
         return ""
 

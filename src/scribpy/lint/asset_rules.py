@@ -36,6 +36,7 @@ class MissingLocalAssetRule:
         document: Document,
         context: LintContext,
     ) -> tuple[Diagnostic, ...]:
+        """Lint document."""
         diagnostics: list[Diagnostic] = []
         for asset in document.assets:
             if is_external_target(asset.target):

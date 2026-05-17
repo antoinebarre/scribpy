@@ -34,9 +34,16 @@ def test_html_config_invalid_mode_raises() -> None:
 
 def test_html_config_css_files() -> None:
     config = parse_config(
-        {"builders": {"html": {"css_files": ["assets/style.css", "custom.css"]}}}
+        {
+            "builders": {
+                "html": {"css_files": ["assets/style.css", "custom.css"]}
+            }
+        }
     )
-    assert config.html.css_files == (Path("assets/style.css"), Path("custom.css"))
+    assert config.html.css_files == (
+        Path("assets/style.css"),
+        Path("custom.css"),
+    )
 
 
 def test_html_config_css_files_not_a_list_raises() -> None:
@@ -50,9 +57,7 @@ def test_html_config_css_files_non_string_entry_raises() -> None:
 
 
 def test_html_config_site_name() -> None:
-    config = parse_config(
-        {"builders": {"html": {"site_name": "My Docs"}}}
-    )
+    config = parse_config({"builders": {"html": {"site_name": "My Docs"}}})
     assert config.html.site_name == "My Docs"
 
 
@@ -72,9 +77,7 @@ def test_html_config_theme_non_string_raises() -> None:
 
 
 def test_html_config_output_dir() -> None:
-    config = parse_config(
-        {"builders": {"html": {"output_dir": "out/html"}}}
-    )
+    config = parse_config({"builders": {"html": {"output_dir": "out/html"}}})
     assert config.html.output_dir == Path("out/html")
 
 

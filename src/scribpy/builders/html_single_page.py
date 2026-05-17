@@ -245,12 +245,14 @@ def write_single_page_support_artifacts(
 
 
 def _anchor(title: str) -> str:
+    """Build an anchor for ."""
     lowered = title.lower()
     stripped = re.sub(r"[^\w\s-]", "", lowered)
     return re.sub(r"\s+", "-", stripped).strip("-")
 
 
 def _escape(text: str) -> str:
+    """Escape ."""
     return (
         text.replace("&", "&amp;")
         .replace("<", "&lt;")
@@ -260,6 +262,7 @@ def _escape(text: str) -> str:
 
 
 def _inline(text: str) -> str:
+    """Render inline ."""
     text = _IMAGE_RE.sub(
         lambda m: f'<img src="{m.group(2)}" alt="{_escape(m.group(1))}">', text
     )
@@ -271,6 +274,7 @@ def _inline(text: str) -> str:
 
 
 def _remove_generated_markdown_toc(body_html: str) -> str:
+    """Remove generated markdown toc."""
     pattern = re.compile(
         r'\n?<h2 id="table-of-contents">Table of Contents</h2>.*?(?=\n<h2\b|\Z)',
         re.DOTALL,
@@ -279,6 +283,7 @@ def _remove_generated_markdown_toc(body_html: str) -> str:
 
 
 def _toc_script() -> str:
+    """Return the TOC script."""
     return """\
 (() => {
   const toc = document.querySelector("#page-toc");

@@ -47,7 +47,9 @@ def main() -> int:
     return 1
 
 
-def collect_init_module_violations(root: Path) -> tuple[InitModuleViolation, ...]:
+def collect_init_module_violations(
+    root: Path,
+) -> tuple[InitModuleViolation, ...]:
     """Collect non-facade statements from initializer modules.
 
     Args:

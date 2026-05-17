@@ -30,7 +30,8 @@ def build_index_step(
     next_state = replace(state, index=index)
     if index is None or has_errors(diagnostics):
         logger.error(
-            "Document index build failed with %d diagnostic(s)", len(diagnostics)
+            "Document index build failed with %d diagnostic(s)",
+            len(diagnostics),
         )
         return PipelineResult.fail(diagnostics, next_state)
     logger.info("Built document index with %d path(s)", len(index.paths))

@@ -52,7 +52,9 @@ class TestHtmlRenderer:
 class TestPdfRenderer:
     """Test double implementing the PdfRenderer protocol."""
 
-    def render(self, html: str, css_files: Sequence[Path], output_path: Path) -> None:
+    def render(
+        self, html: str, css_files: Sequence[Path], output_path: Path
+    ) -> None:
         _ = html, css_files, output_path
 
 

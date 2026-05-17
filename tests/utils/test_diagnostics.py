@@ -30,7 +30,9 @@ def test_has_errors_returns_true_when_any_diagnostic_is_error() -> None:
 def test_has_errors_returns_false_without_errors() -> None:
     diagnostics = (
         Diagnostic(severity="info", code="INFO001", message="Checked"),
-        Diagnostic(severity="warning", code="LINT007", message="Trailing space"),
+        Diagnostic(
+            severity="warning", code="LINT007", message="Trailing space"
+        ),
     )
 
     assert has_errors(diagnostics) is False
@@ -73,10 +75,14 @@ def test_format_diagnostic_handles_global_diagnostic() -> None:
         message="No Markdown files found",
     )
 
-    assert format_diagnostic(diagnostic) == "info RUN001: No Markdown files found"
+    assert (
+        format_diagnostic(diagnostic) == "info RUN001: No Markdown files found"
+    )
 
 
-def test_sort_diagnostics_is_deterministic_by_path_line_severity_code_message() -> None:
+def test_sort_diagnostics_is_deterministic_by_path_line_severity_code_message() -> (
+    None
+):
     global_error = Diagnostic(
         severity="error",
         code="CFG001",

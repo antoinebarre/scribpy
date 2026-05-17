@@ -213,7 +213,9 @@ def test_yaml_error_line_returns_none_when_problem_mark_absent() -> None:
     assert _yaml_error_line(exc) is None
 
 
-def test_yaml_error_line_returns_none_via_adapter_when_problem_mark_absent() -> None:
+def test_yaml_error_line_returns_none_via_adapter_when_problem_mark_absent() -> (
+    None
+):
     path = Path("doc/index.md")
     exc = yaml.YAMLError("synthetic error without mark")
 

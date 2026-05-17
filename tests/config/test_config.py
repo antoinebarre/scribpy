@@ -61,7 +61,10 @@ def test_parse_config_reads_minimal_toml_shape() -> None:
         {
             "project": {"name": "scribpy-docs"},
             "paths": {"source": "docs"},
-            "index": {"mode": "explicit", "files": ["intro.md", "guide/setup.md"]},
+            "index": {
+                "mode": "explicit",
+                "files": ["intro.md", "guide/setup.md"],
+            },
             "document": {
                 "title": "Manual",
                 "toc": {"enabled": False, "max_level": 3, "style": "numbered"},
@@ -85,7 +88,9 @@ def test_parse_config_reads_minimal_toml_shape() -> None:
     )
 
 
-def test_parse_config_accepts_hybrid_index_mode_for_later_diagnostics() -> None:
+def test_parse_config_accepts_hybrid_index_mode_for_later_diagnostics() -> (
+    None
+):
     config = parse_config({"index": {"mode": "hybrid"}})
 
     assert config.index.mode == "hybrid"
@@ -114,7 +119,9 @@ def test_load_toml_config_reads_raw_data(tmp_path: Path) -> None:
 
 
 def test_validate_config_rejects_absolute_source_path() -> None:
-    diagnostics = validate_config(Config(paths=PathConfig(source=Path("/docs"))))
+    diagnostics = validate_config(
+        Config(paths=PathConfig(source=Path("/docs")))
+    )
 
     assert len(diagnostics) == 1
     assert diagnostics[0].code == "CFG004"
@@ -123,7 +130,9 @@ def test_validate_config_rejects_absolute_source_path() -> None:
 
 def test_validate_config_rejects_parent_segments_in_index_files() -> None:
     diagnostics = validate_config(
-        Config(index=IndexConfig(mode="explicit", files=(Path("../secret.md"),)))
+        Config(
+            index=IndexConfig(mode="explicit", files=(Path("../secret.md"),))
+        )
     )
 
     assert len(diagnostics) == 1
@@ -151,7 +160,9 @@ def test_load_config_returns_cfg002_for_invalid_toml(tmp_path: Path) -> None:
     assert diagnostics[0].path == config_path
 
 
-def test_load_config_returns_cfg003_for_invalid_value_type(tmp_path: Path) -> None:
+def test_load_config_returns_cfg003_for_invalid_value_type(
+    tmp_path: Path,
+) -> None:
     config_path = tmp_path / "scribpy.toml"
     config_path.write_text("[paths]\nsource = 42\n", encoding="utf-8")
 
@@ -220,7 +231,10 @@ def test_load_config_returns_cfg004_for_unsafe_but_parseable_path(
 @pytest.mark.parametrize(
     ("raw", "message"),
     (
-        ({"project": "docs"}, "Configuration section [project] must be a table."),
+        (
+            {"project": "docs"},
+            "Configuration section [project] must be a table.",
+        ),
         (
             {"project": {"name": 42}},
             "Configuration value project.name must be a string.",

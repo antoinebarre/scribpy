@@ -93,7 +93,10 @@ def test_demo_create_help_documents_variants_and_examples(capsys) -> None:
         "valid    creates a project expected to pass index, parse, and lint checks"
         in captured.out
     )
-    assert "invalid  creates a project with intentional lint diagnostics" in captured.out
+    assert (
+        "invalid  creates a project with intentional lint diagnostics"
+        in captured.out
+    )
 
 
 def test_root_help_documents_common_workflows(capsys) -> None:
@@ -276,7 +279,9 @@ def test_lint_returns_zero_for_valid_project(tmp_path: Path, capsys) -> None:
     assert captured.err == ""
 
 
-def test_lint_returns_one_and_prints_diagnostics(tmp_path: Path, capsys) -> None:
+def test_lint_returns_one_and_prints_diagnostics(
+    tmp_path: Path, capsys
+) -> None:
     _write_config(tmp_path, '[paths]\nsource = "doc"\n')
     _write_source(tmp_path, "doc/index.md", "## Missing H1\n")
 
@@ -297,7 +302,6 @@ def test_lint_help_documents_examples(capsys) -> None:
     assert "scribpy lint --root dd1" in captured.out
 
 
-
 def test_build_markdown_returns_zero_and_prints_artifact_path(
     tmp_path: Path,
     capsys,
@@ -315,7 +319,9 @@ def test_build_markdown_returns_zero_and_prints_artifact_path(
     assert captured.err == ""
 
 
-def test_build_markdown_accepts_output_dir_override(tmp_path: Path, capsys) -> None:
+def test_build_markdown_accepts_output_dir_override(
+    tmp_path: Path, capsys
+) -> None:
     _write_config(tmp_path, '[paths]\nsource = "doc"\n')
     _write_source(tmp_path, "doc/index.md", "# Home\n")
 
@@ -366,6 +372,7 @@ def test_build_without_subcommand_returns_usage_error(capsys) -> None:
     captured = capsys.readouterr()
     assert exit_code == 2
     assert "usage:" in captured.err
+
 
 def test_build_html_single_page_returns_zero_and_prints_artifact(
     tmp_path: Path,
@@ -442,7 +449,9 @@ def test_build_html_defaults_to_single_page_mode(
     assert (tmp_path / "build/html/index.html").exists()
 
 
-def test_build_html_accepts_output_dir_override(tmp_path: Path, capsys) -> None:
+def test_build_html_accepts_output_dir_override(
+    tmp_path: Path, capsys
+) -> None:
     _write_config(tmp_path, '[paths]\nsource = "doc"\n')
     _write_source(tmp_path, "doc/index.md", "# Home\n")
 

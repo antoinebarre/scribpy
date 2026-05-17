@@ -89,6 +89,7 @@ def print_build_report(result: BuildResult, target: str, stream: TextIO) -> None
 
 
 def _print_steps(steps: Sequence[tuple[str, bool]], stream: TextIO) -> None:
+    """Print steps."""
     for label, succeeded in steps:
         mark = "✔" if succeeded else "✘"
         status = "done" if succeeded else "failed"
@@ -99,6 +100,7 @@ def _print_artifact_summary(
     artifacts: Sequence[BuildArtifact],
     stream: TextIO,
 ) -> None:
+    """Print artifact summary."""
     if not artifacts:
         return
     primary = _primary_artifact(artifacts)
@@ -109,6 +111,7 @@ def _print_artifact_summary(
 
 
 def _primary_artifact(artifacts: Sequence[BuildArtifact]) -> BuildArtifact:
+    """Select the primary artifact."""
     preferred_types = ("document", "site", "page")
     for artifact_type in preferred_types:
         for artifact in artifacts:
@@ -117,7 +120,10 @@ def _primary_artifact(artifacts: Sequence[BuildArtifact]) -> BuildArtifact:
     return artifacts[0]
 
 
-def _project_preparation_ok(result: BuildResult | LintResult | ParseResult) -> bool:
+def _project_preparation_ok(
+    result: BuildResult | LintResult | ParseResult,
+) -> bool:
+    """Return whether project preparation ok."""
     return not any(
         diagnostic.severity == "error"
         and diagnostic.code.startswith(("CFG", "PRJ", "IDX", "PRS"))
@@ -126,6 +132,7 @@ def _project_preparation_ok(result: BuildResult | LintResult | ParseResult) -> b
 
 
 def _has_blocking_lint(result: BuildResult) -> bool:
+    """Return whether blocking lint."""
     return any(
         diagnostic.severity == "error" and diagnostic.code.startswith("LINT")
         for diagnostic in result.diagnostics

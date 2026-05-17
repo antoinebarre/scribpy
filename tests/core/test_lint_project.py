@@ -15,9 +15,13 @@ def _write_source(root: Path, relative_path: str, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
-def test_lint_project_returns_zero_diagnostics_for_valid_project(tmp_path: Path) -> None:
+def test_lint_project_returns_zero_diagnostics_for_valid_project(
+    tmp_path: Path,
+) -> None:
     _write_config(tmp_path, '[paths]\nsource = "doc"\n')
-    _write_source(tmp_path, "doc/index.md", "# Home\n\n[Guide](guide.md#setup)\n")
+    _write_source(
+        tmp_path, "doc/index.md", "# Home\n\n[Guide](guide.md#setup)\n"
+    )
     _write_source(tmp_path, "doc/guide.md", "# Guide\n\n## Setup\n")
 
     result = lint_project(tmp_path)
@@ -63,7 +67,9 @@ def test_lint_project_stops_on_invalid_config(tmp_path: Path) -> None:
     assert [diagnostic.code for diagnostic in result.diagnostics] == ["CFG003"]
 
 
-def test_lint_project_stops_on_missing_source_directory(tmp_path: Path) -> None:
+def test_lint_project_stops_on_missing_source_directory(
+    tmp_path: Path,
+) -> None:
     _write_config(tmp_path, '[paths]\nsource = "missing"\n')
 
     result = lint_project(tmp_path)

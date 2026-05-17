@@ -17,8 +17,16 @@ Extraction helpers:
 
 from __future__ import annotations
 
-from scribpy.parser.document import order_by_index, parse_document_file, parse_documents
-from scribpy.parser.extractors import extract_assets, extract_headings, extract_links
+from scribpy.parser.document import (
+    order_by_index,
+    parse_document_file,
+    parse_documents,
+)
+from scribpy.parser.extractors import (
+    extract_assets,
+    extract_headings,
+    extract_links,
+)
 from scribpy.parser.frontmatter import FrontmatterResult, parse_frontmatter
 from scribpy.parser.markdown import parse_markdown
 

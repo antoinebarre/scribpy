@@ -29,7 +29,8 @@ def create_demo(
     Args:
         target: Directory where the demo project should be created.
         force: Overwrite demo-managed files when they already exist.
-        variant: Demo variant to create.
+        variant: Demo variant to create. Accepted values are ``"valid"`` and
+            ``"invalid"``.
 
     Returns:
         Lint-style result containing creation diagnostics.
@@ -123,7 +124,8 @@ def build_html(
 
     Args:
         root: Project root, child path, config path, or ``None`` for cwd.
-        mode: HTML output mode.
+        mode: HTML output mode. Accepted values are ``"single-page"`` and
+            ``"site"``.
         output_dir: Optional HTML output directory override. Relative paths are
             resolved from the project root; absolute paths are kept.
 
@@ -143,6 +145,7 @@ def build_html(
 
 
 def _path(value: PathLike | None) -> Path | None:
+    """Convert an optional public path value into ``Path``."""
     return None if value is None else Path(value)
 
 

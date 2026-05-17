@@ -96,13 +96,17 @@ def test_build_html_single_page_copies_css(tmp_path: Path) -> None:
     assert (tmp_path / "build/html/js/toc.js").exists()
 
 
-def test_build_html_single_page_flattens_links_and_assets(tmp_path: Path) -> None:
+def test_build_html_single_page_flattens_links_and_assets(
+    tmp_path: Path,
+) -> None:
     _write_config(
         tmp_path,
         '[paths]\nsource = "doc"\n'
         '[index]\nmode = "explicit"\nfiles = ["index.md", "guide/page.md"]\n',
     )
-    _write_source(tmp_path, "doc/index.md", "# Home\n\n[Guide](guide/page.md#setup)\n")
+    _write_source(
+        tmp_path, "doc/index.md", "# Home\n\n[Guide](guide/page.md#setup)\n"
+    )
     _write_source(
         tmp_path,
         "doc/guide/page.md",
@@ -157,14 +161,18 @@ def test_build_html_site_creates_docs_directory(tmp_path: Path) -> None:
     assert (tmp_path / "build/site/docs/index.md").exists()
 
 
-def test_build_html_site_returns_rendered_site_artifact(tmp_path: Path) -> None:
+def test_build_html_site_returns_rendered_site_artifact(
+    tmp_path: Path,
+) -> None:
     _write_config(tmp_path, '[paths]\nsource = "doc"\n')
     _write_source(tmp_path, "doc/index.md", "# Home\n")
 
     result = build_project(tmp_path, target="html", html_mode="site")
 
     assert result.success is True
-    assert any(artifact.artifact_type == "site" for artifact in result.artifacts)
+    assert any(
+        artifact.artifact_type == "site" for artifact in result.artifacts
+    )
 
 
 def test_build_html_site_nav_order_matches_index(tmp_path: Path) -> None:
@@ -200,8 +208,7 @@ def test_build_html_site_uses_site_name_from_config(tmp_path: Path) -> None:
 def test_build_html_site_uses_theme_from_config(tmp_path: Path) -> None:
     _write_config(
         tmp_path,
-        '[paths]\nsource = "doc"\n'
-        '[builders.html]\ntheme = "readthedocs"\n',
+        '[paths]\nsource = "doc"\n[builders.html]\ntheme = "readthedocs"\n',
     )
     _write_source(tmp_path, "doc/index.md", "# Home\n")
 
@@ -242,7 +249,9 @@ def test_build_html_stops_when_project_preparation_fails(
     assert "CFG001" in codes
 
 
-def test_build_html_project_blocks_when_preparation_fails(tmp_path: Path) -> None:
+def test_build_html_project_blocks_when_preparation_fails(
+    tmp_path: Path,
+) -> None:
     result = build_html_project(
         tmp_path,
         html_config=HtmlBuilderConfig(),
@@ -429,7 +438,10 @@ def test_build_html_site_mkdocs_failure_returns_error(
 
     monkeypatch.setattr(
         "scribpy.core.build_html.run_mkdocs_build",
-        lambda *_args: (None, (Diagnostic(severity="error", code="SITE003", message="failed"),)),
+        lambda *_args: (
+            None,
+            (Diagnostic(severity="error", code="SITE003", message="failed"),),
+        ),
     )
 
     result = build_project(tmp_path, target="html", html_mode="site")
@@ -448,9 +460,7 @@ def test_build_html_single_page_asset_copy_error_returns_error(
     doc_dir.mkdir()
     img = doc_dir / "photo.png"
     img.write_bytes(b"PNG")
-    _write_source(
-        tmp_path, "doc/index.md", "# Home\n\n![photo](photo.png)\n"
-    )
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n![photo](photo.png)\n")
 
     class FailAssetWriteFS(RealFileSystem):
         def write_text(self, path: Path, content: str) -> None:
@@ -480,9 +490,7 @@ def test_build_html_site_asset_copy_error_returns_error(
     doc_dir.mkdir()
     img = doc_dir / "photo.png"
     img.write_bytes(b"PNG")
-    _write_source(
-        tmp_path, "doc/index.md", "# Home\n\n![photo](photo.png)\n"
-    )
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n![photo](photo.png)\n")
 
     class FailAssetWriteFS(RealFileSystem):
         written: list[str] = []
