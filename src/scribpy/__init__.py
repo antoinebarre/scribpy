@@ -51,6 +51,7 @@ from scribpy.api import (
 )
 from scribpy.logging import logging_context
 from scribpy.model import BuildArtifact, BuildResult, LintResult, ParseResult
+from scribpy.rendering import print_result
 
 __all__ = [
     "BuildArtifact",
@@ -65,4 +66,5 @@ __all__ = [
     "create_demo",
     "lint",
     "logging_context",
+    "print_result",
 ]

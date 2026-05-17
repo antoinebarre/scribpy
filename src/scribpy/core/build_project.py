@@ -26,6 +26,7 @@ def build_project(
     *,
     target: str = "markdown",
     html_mode: str | None = None,
+    output_dir: Path | None = None,
     filesystem: FileSystem | None = None,
     parser: MarkdownParser | None = None,
     registry: ExtensionRegistry | None = None,
@@ -38,6 +39,9 @@ def build_project(
             ``"html-single-page"``, or ``"html-site"``.
         html_mode: HTML output mode override — ``"single-page"`` or ``"site"``.
             When set, takes precedence over the project configuration.
+        output_dir: Optional build output directory override. Relative paths are
+            resolved from the project root; absolute paths are preserved. For
+            HTML builds this overrides ``[builders.html].output_dir``.
         filesystem: Optional filesystem service override.
         parser: Optional Markdown parser override.
         registry: Optional lint rule registry override.
@@ -47,7 +51,7 @@ def build_project(
     """
     if target in _HTML_TARGETS:
         return _dispatch_html_build(
-            root, target, html_mode, filesystem, parser, registry
+            root, target, html_mode, output_dir, filesystem, parser, registry
         )
 
     if target != "markdown":
@@ -67,13 +71,14 @@ def build_project(
     if has_errors(diagnostics):
         return _blocked_build(diagnostics)
 
-    return _write_markdown_build(state, diagnostics, active_registry)
+    return _write_markdown_build(state, diagnostics, active_registry, output_dir)
 
 
 def _dispatch_html_build(
     root: Path | None,
     target: str,
     html_mode: str | None,
+    output_dir: Path | None,
     filesystem: FileSystem | None,
     parser: MarkdownParser | None,
     registry: ExtensionRegistry | None,
@@ -114,7 +119,9 @@ def _dispatch_html_build(
         css_files=base_html_config.css_files,
         site_name=base_html_config.site_name,
         theme=base_html_config.theme,
-        output_dir=base_html_config.output_dir,
+        output_dir=output_dir
+        if output_dir is not None
+        else base_html_config.output_dir,
     )
 
     return build_html_project(
@@ -158,6 +165,7 @@ def _write_markdown_build(
     state: ProjectPipelineState,
     diagnostics: tuple[Diagnostic, ...],
     registry: ExtensionRegistry,
+    output_dir: Path | None,
 ) -> BuildResult:
     assert state.project_root is not None
     assert state.config is not None
@@ -191,6 +199,7 @@ def _write_markdown_build(
         state.project_root,
         assembled,
         state.filesystem,
+        output_dir=output_dir if output_dir is not None else Path("build/markdown"),
     )
     final_diagnostics = (*transformed_diagnostics, *write_diagnostics)
     if artifact is None or has_errors(final_diagnostics):

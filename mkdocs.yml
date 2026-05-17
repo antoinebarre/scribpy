@@ -1,0 +1,11 @@
+site_name: Scribpy User Manual
+docs_dir: doc
+nav:
+  - Home: index.md
+  - Getting started: user-manual/getting-started.md
+  - Pipelines: user-manual/pipelines.md
+  - CLI reference: user-manual/cli-reference.md
+  - Python API reference: user-manual/python-api-reference.md
+  - Public classes: user-manual/public-classes.md
+  - Configuration: user-manual/configuration.md
+  - Extensions: user-manual/extensions.md

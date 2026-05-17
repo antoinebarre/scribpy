@@ -48,6 +48,9 @@ def get_logger(name: str) -> logging.Logger:
 
     Returns:
         Standard-library logger.
+
+    Examples:
+        >>> logger = get_logger("scribpy.custom")
     """
     return logging.getLogger(name)
 
@@ -77,6 +80,10 @@ def logging_context(
 
     Returns:
         Context manager controlling the active logging handlers.
+
+    Examples:
+        >>> with logging_context(level="DEBUG", console=True):
+        ...     pass
     """
     logger = logging.getLogger(_LOGGER_NAME)
     old_level = logger.level
@@ -114,6 +121,10 @@ def prepare_logging(project_root: Path) -> Path | None:
 
     Returns:
         Effective log path when file logging is active, otherwise ``None``.
+
+    Examples:
+        >>> with logging_context():
+        ...     prepare_logging(Path("."))
     """
     settings = _SETTINGS.get()
     if settings is None or not settings.file:
@@ -133,6 +144,9 @@ def logging_enabled() -> bool:
 
     Returns:
         Whether logging is currently configured.
+
+    Examples:
+        >>> logging_enabled()
     """
     return _SETTINGS.get() is not None
 

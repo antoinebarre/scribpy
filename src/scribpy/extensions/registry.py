@@ -34,6 +34,9 @@ class ExtensionRegistry:
 
         Returns:
             New registry containing the added rule.
+
+        Examples:
+            >>> ExtensionRegistry.native().with_lint_rule(custom_rule)
         """
         return ExtensionRegistry(
             lint_rules=(*self.lint_rules, rule),
@@ -49,6 +52,9 @@ class ExtensionRegistry:
 
         Returns:
             New registry containing the added transform.
+
+        Examples:
+            >>> ExtensionRegistry.native().with_markdown_transform(custom_transform)
         """
         return ExtensionRegistry(
             lint_rules=self.lint_rules,
@@ -62,6 +68,9 @@ class ExtensionRegistry:
 
         Returns:
             Registry containing Scribpy's built-in extensions.
+
+        Examples:
+            >>> registry = ExtensionRegistry.native()
         """
         return cls(
             lint_rules=native_lint_rules(),

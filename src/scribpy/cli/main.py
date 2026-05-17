@@ -16,6 +16,7 @@ from scribpy.cli.build_help import (
     BUILD_MARKDOWN_DESCRIPTION,
     BUILD_MARKDOWN_EPILOG,
 )
+from scribpy.cli.build_options import add_output_dir_argument
 from scribpy.cli.help_text import (
     _DEMO_CREATE_DESCRIPTION,
     _DEMO_CREATE_EPILOG,
@@ -35,6 +36,12 @@ from scribpy.cli.help_text import (
     _ROOT_EPILOG,
 )
 from scribpy.cli.logging_options import add_logging_arguments, run_with_optional_logging
+from scribpy.cli.reporting import (
+    print_build_report,
+    print_index_report,
+    print_lint_report,
+    print_parse_report,
+)
 from scribpy.core import (
     DemoVariant,
     build_project,
@@ -88,11 +95,11 @@ def _main(argv: Sequence[str] | None, stdout: TextIO, stderr: TextIO) -> int:
 
 def _dispatch(args: argparse.Namespace, stdout: TextIO, stderr: TextIO) -> int | None:
     if args.command == "index" and args.index_command == "check":
-        return _run_index_check_command(args.root, stderr)
+        return _run_index_check_command(args.root, stdout, stderr)
     if args.command == "parse" and args.parse_command == "check":
         return _run_parse_check_command(args.root, stdout, stderr)
     if args.command == "lint":
-        return _run_lint_command(args.root, stderr)
+        return _run_lint_command(args.root, stdout, stderr)
     if args.command == "build":
         return _dispatch_build(args, stdout, stderr)
     if args.command == "demo" and args.demo_command == "create":
@@ -106,9 +113,11 @@ def _dispatch_build(
     args: argparse.Namespace, stdout: TextIO, stderr: TextIO
 ) -> int | None:
     if args.build_command == "markdown":
-        return _run_build_markdown_command(args.root, stdout, stderr)
+        return _run_build_markdown_command(args.root, args.output_dir, stdout, stderr)
     if args.build_command == "html":
-        return _run_build_html_command(args.root, args.mode, stdout, stderr)
+        return _run_build_html_command(
+            args.root, args.mode, args.output_dir, stdout, stderr
+        )
     return None
 
 
@@ -181,6 +190,7 @@ def _add_build_command(subparsers: argparse._SubParsersAction) -> None:  # type:
     build_markdown_parser.add_argument(
         "--root", type=Path, default=None, help=_ROOT_HELP
     )
+    add_output_dir_argument(build_markdown_parser)
 
     build_html_parser = build_subparsers.add_parser(
         "html",
@@ -190,6 +200,7 @@ def _add_build_command(subparsers: argparse._SubParsersAction) -> None:  # type:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     build_html_parser.add_argument("--root", type=Path, default=None, help=_ROOT_HELP)
+    add_output_dir_argument(build_html_parser)
     build_html_parser.add_argument(
         "--mode",
         choices=_VALID_HTML_MODES,
@@ -269,58 +280,55 @@ def _run_parse_check_command(root: Path | None, stdout: TextIO, stderr: TextIO) 
     result = parse_project_documents(root)
     if result.diagnostics:
         print(format_diagnostics(result.diagnostics), file=stderr)
-    if result.failed:
-        return 1
-    print(
-        f"Parsed {len(result.documents)} document(s) successfully.",
-        file=stdout,
-    )
-    return 0
-
-
-def _run_index_check_command(root: Path | None, stderr: TextIO) -> int:
-    result = run_index_check(root)
-    if result.diagnostics:
-        print(format_diagnostics(result.diagnostics), file=stderr)
+    print_parse_report(result, stdout)
     return 1 if result.failed else 0
 
 
-def _run_lint_command(root: Path | None, stderr: TextIO) -> int:
+def _run_index_check_command(
+    root: Path | None,
+    stdout: TextIO,
+    stderr: TextIO,
+) -> int:
+    result = run_index_check(root)
+    if result.diagnostics:
+        print(format_diagnostics(result.diagnostics), file=stderr)
+    print_index_report(result, stdout)
+    return 1 if result.failed else 0
+
+
+def _run_lint_command(root: Path | None, stdout: TextIO, stderr: TextIO) -> int:
     result = lint_project(root)
     if result.diagnostics:
         print(format_diagnostics(result.diagnostics), file=stderr)
+    print_lint_report(result, stdout)
     return 1 if result.failed else 0
 
 
 def _run_build_markdown_command(
     root: Path | None,
+    output_dir: Path | None,
     stdout: TextIO,
     stderr: TextIO,
 ) -> int:
-    result = build_project(root, target="markdown")
+    result = build_project(root, target="markdown", output_dir=output_dir)
     if result.diagnostics:
         print(format_diagnostics(result.diagnostics), file=stderr)
-    if not result.success:
-        return 1
-    for artifact in result.artifacts:
-        print(f"Built {artifact.target} artifact: {artifact.path}", file=stdout)
-    return 0
+    print_build_report(result, "Markdown", stdout)
+    return 0 if result.success else 1
 
 
 def _run_build_html_command(
     root: Path | None,
     mode: str,
+    output_dir: Path | None,
     stdout: TextIO,
     stderr: TextIO,
 ) -> int:
-    result = build_project(root, target="html", html_mode=mode)
+    result = build_project(root, target="html", html_mode=mode, output_dir=output_dir)
     if result.diagnostics:
         print(format_diagnostics(result.diagnostics), file=stderr)
-    if not result.success:
-        return 1
-    for artifact in result.artifacts:
-        print(f"Built {artifact.target} artifact: {artifact.path}", file=stdout)
-    return 0
+    print_build_report(result, f"HTML ({mode})", stdout)
+    return 0 if result.success else 1
 
 
 def _run_demo_create_command(

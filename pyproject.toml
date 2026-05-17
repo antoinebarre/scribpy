@@ -28,6 +28,7 @@ dependencies = [
     "tomlkit>=0.13",
     "markdown-it-py>=3",
     "mkdocs>=1.6",
+    "rich>=13",
 ]
 
 [project.urls]

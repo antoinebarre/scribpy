@@ -21,6 +21,7 @@ build/markdown/document.md only when no blocking diagnostics are present.
 BUILD_MARKDOWN_EPILOG = """\
 Examples:
   scribpy build markdown --root dd1
+  scribpy build markdown --root dd1 --output-dir /tmp/scribpy-artifacts
   scribpy build markdown --root .
 
 Exit codes:
@@ -48,6 +49,7 @@ BUILD_HTML_EPILOG = """\
 Examples:
   scribpy build html --mode single-page
   scribpy build html --mode site --root path/to/project
+  scribpy build html --mode site --root path/to/project --output-dir build/ci-site
 
 Exit codes:
   0  all artifacts written successfully

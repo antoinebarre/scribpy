@@ -43,6 +43,21 @@ def test_top_level_api_build_html_supports_site_mode(tmp_path: Path, monkeypatch
     assert any(artifact.artifact_type == "site" for artifact in result.artifacts)
 
 
+def test_top_level_api_builds_support_output_directory_overrides(
+    tmp_path: Path,
+) -> None:
+    _write_config(tmp_path)
+    _write_source(tmp_path, "doc/index.md")
+
+    markdown_result = scribpy.build_markdown(tmp_path, output_dir="ci/markdown")
+    html_result = scribpy.build_html(tmp_path, output_dir="ci/html")
+
+    assert markdown_result.success is True
+    assert (tmp_path / "ci/markdown/document.md").is_file()
+    assert html_result.success is True
+    assert (tmp_path / "ci/html/index.html").is_file()
+
+
 def test_top_level_api_create_demo(tmp_path: Path) -> None:
     target = tmp_path / "demo"
 

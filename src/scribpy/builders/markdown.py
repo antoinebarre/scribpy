@@ -8,7 +8,7 @@ from pathlib import Path
 from scribpy.model import BuildArtifact, Diagnostic, TransformedDocument
 from scribpy.model.protocols import FileSystem
 
-MARKDOWN_OUTPUT_PATH = Path("build/markdown/document.md")
+MARKDOWN_OUTPUT_DIR = Path("build/markdown")
 
 
 @dataclass(frozen=True)
@@ -46,6 +46,7 @@ def write_markdown_artifact(
     project_root: Path,
     assembled: AssembledDocument,
     filesystem: FileSystem,
+    output_dir: Path = MARKDOWN_OUTPUT_DIR,
 ) -> tuple[BuildArtifact | None, tuple[Diagnostic, ...]]:
     """Write assembled Markdown and return its artifact descriptor.
 
@@ -53,12 +54,15 @@ def write_markdown_artifact(
         project_root: Absolute project root directory.
         assembled: Target-ready Markdown payload.
         filesystem: Filesystem service used for writing.
+        output_dir: Directory that receives ``document.md``. Relative paths are
+            resolved from ``project_root``; absolute paths are used as-is.
 
     Returns:
         Artifact plus diagnostics. On failure the artifact is ``None`` and a
         ``BLD003`` diagnostic explains the write error.
     """
-    artifact_path = project_root / MARKDOWN_OUTPUT_PATH
+    base_dir = output_dir if output_dir.is_absolute() else project_root / output_dir
+    artifact_path = base_dir / "document.md"
     try:
         artifact_path.parent.mkdir(parents=True, exist_ok=True)
         filesystem.write_text(artifact_path, assembled.content)
@@ -85,7 +89,7 @@ def write_markdown_artifact(
 
 __all__ = [
     "AssembledDocument",
-    "MARKDOWN_OUTPUT_PATH",
+    "MARKDOWN_OUTPUT_DIR",
     "merge_documents",
     "write_markdown_artifact",
 ]
