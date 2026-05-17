@@ -171,6 +171,7 @@ def _build_site(
         html_config.resolve_output_dir(),
         html_config.css_files,
         state.filesystem,
+        theme=html_config.theme,
     )
     diagnostics = (*diagnostics, *site_diags)
     if has_errors(diagnostics):

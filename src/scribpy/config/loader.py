@@ -278,12 +278,14 @@ def _parse_html_builder_config(raw: RawSection) -> HtmlBuilderConfig:
     mode = _parse_html_mode(raw)
     css_files = _parse_html_css_files(raw)
     site_name = _parse_optional_str(raw, "site_name", "builders.html")
+    theme = _parse_optional_str(raw, "theme", "builders.html")
     output_dir_raw = _parse_optional_str(raw, "output_dir", "builders.html")
     output_dir = Path(output_dir_raw) if output_dir_raw is not None else None
     return HtmlBuilderConfig(
         mode=mode,
         css_files=tuple(css_files),
         site_name=site_name,
+        theme=theme,
         output_dir=output_dir,
     )
 

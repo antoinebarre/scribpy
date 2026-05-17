@@ -62,14 +62,27 @@ Requires **Python ≥ 3.12**.
 ## Quick Start
 
 ```python
-from scribpy.core import load_markdown, get_headings, build_project
+import scribpy
 
-doc = load_markdown("docs/architecture.md")
+scribpy.check_index(".")
+scribpy.check_parse(".")
+scribpy.lint(".")
 
-for heading in get_headings(doc):
-    print(heading.level, heading.title)
+scribpy.build_markdown(".")
+scribpy.build_html(".", mode="single-page")
+scribpy.build_html(".", mode="site")
+```
 
-result = build_project(".")
+The top-level Python API mirrors the main CLI workflows without requiring users
+to know Scribpy's internal package layout:
+
+```python
+import scribpy
+
+result = scribpy.build_html("docs-project", mode="site")
+if not result.success:
+    for diagnostic in result.diagnostics:
+        print(diagnostic.code, diagnostic.message)
 ```
 
 ---

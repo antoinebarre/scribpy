@@ -54,6 +54,11 @@ def test_build_mkdocs_yaml_with_extra_css() -> None:
     assert "css/style.css" in yaml
 
 
+def test_build_mkdocs_yaml_with_theme() -> None:
+    yaml = build_mkdocs_yaml("Site", [], [], theme="readthedocs")
+    assert "theme: readthedocs" in yaml
+
+
 def test_build_mkdocs_yaml_special_chars_quoted() -> None:
     yaml = build_mkdocs_yaml("Site: Docs", [], [])
     assert "'Site: Docs'" in yaml

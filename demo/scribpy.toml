@@ -20,6 +20,7 @@ style = "decimal"
 [builders.html]
 mode = "single-page"
 css_files = ["theme/demo.css"]
+theme = "readthedocs"
 
 [index]
 mode = "explicit"

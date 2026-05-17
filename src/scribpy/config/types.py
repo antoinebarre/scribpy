@@ -105,6 +105,8 @@ class HtmlBuilderConfig:
             the output in the order given.
         site_name: Site name written into ``mkdocs.yml`` when ``mode`` is
             ``"site"``. Falls back to the project name when omitted.
+        theme: Optional MkDocs theme name written into ``mkdocs.yml`` for site
+            output, for example ``"readthedocs"``.
         output_dir: Output directory relative to the project root. Defaults to
             ``build/html`` for ``single-page`` and ``build/site`` for ``site``.
     """
@@ -112,6 +114,7 @@ class HtmlBuilderConfig:
     mode: HtmlMode = "single-page"
     css_files: tuple[Path, ...] = ()
     site_name: str | None = None
+    theme: str | None = None
     output_dir: Path | None = None
 
     def resolve_output_dir(self) -> Path:

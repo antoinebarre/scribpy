@@ -5,4 +5,4 @@ HTML publication.
 
 Start with the [setup guide](guide/setup.md).
 
-![Architecture placeholder](assets/architecture.png)
+![Architecture placeholder](assets/architecture.svg)

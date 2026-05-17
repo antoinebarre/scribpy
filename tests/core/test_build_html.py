@@ -196,6 +196,21 @@ def test_build_html_site_uses_site_name_from_config(tmp_path: Path) -> None:
     assert "My Project" in content
 
 
+def test_build_html_site_uses_theme_from_config(tmp_path: Path) -> None:
+    _write_config(
+        tmp_path,
+        '[paths]\nsource = "doc"\n'
+        '[builders.html]\ntheme = "readthedocs"\n',
+    )
+    _write_source(tmp_path, "doc/index.md", "# Home\n")
+
+    result = build_project(tmp_path, target="html", html_mode="site")
+
+    assert result.success is True
+    content = (tmp_path / "build/site/mkdocs.yml").read_text(encoding="utf-8")
+    assert "theme: readthedocs" in content
+
+
 def test_build_html_site_copies_css_and_declares_extra_css(
     tmp_path: Path,
 ) -> None:

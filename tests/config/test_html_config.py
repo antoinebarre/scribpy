@@ -13,6 +13,7 @@ def test_html_config_defaults() -> None:
     assert config.html.mode == "single-page"
     assert config.html.css_files == ()
     assert config.html.site_name is None
+    assert config.html.theme is None
     assert config.html.output_dir is None
 
 
@@ -58,6 +59,16 @@ def test_html_config_site_name() -> None:
 def test_html_config_site_name_non_string_raises() -> None:
     with pytest.raises(ConfigParseError, match="site_name"):
         parse_config({"builders": {"html": {"site_name": 42}}})
+
+
+def test_html_config_theme() -> None:
+    config = parse_config({"builders": {"html": {"theme": "readthedocs"}}})
+    assert config.html.theme == "readthedocs"
+
+
+def test_html_config_theme_non_string_raises() -> None:
+    with pytest.raises(ConfigParseError, match="theme"):
+        parse_config({"builders": {"html": {"theme": 42}}})
 
 
 def test_html_config_output_dir() -> None:

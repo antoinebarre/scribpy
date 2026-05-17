@@ -19,6 +19,7 @@ def build_mkdocs_yaml(
     site_name: str,
     nav_entries: list[dict[str, str]],
     extra_css: list[str],
+    theme: str | None = None,
 ) -> str:
     """Generate ``mkdocs.yml`` content.
 
@@ -26,11 +27,16 @@ def build_mkdocs_yaml(
         site_name: Human-readable site name.
         nav_entries: Ordered nav entries as ``{title: path}`` mappings.
         extra_css: CSS hrefs declared in ``extra_css``.
+        theme: Optional MkDocs theme name.
 
     Returns:
         ``mkdocs.yml`` content as a string.
     """
     lines = [f"site_name: {_yaml_str(site_name)}", ""]
+
+    if theme:
+        lines.append(f"theme: {_yaml_str(theme)}")
+        lines.append("")
 
     if extra_css:
         lines.append("extra_css:")
@@ -54,6 +60,7 @@ def write_site_artifacts(
     site_name: str,
     output_dir: Path,
     filesystem: FileSystem,
+    theme: str | None = None,
 ) -> tuple[tuple[BuildArtifact, ...], tuple[Diagnostic, ...]]:
     """Write MkDocs scaffold artifacts to disk.
 
@@ -63,6 +70,7 @@ def write_site_artifacts(
         site_name: Site name for ``mkdocs.yml``.
         output_dir: Relative output directory (e.g. ``build/site``).
         filesystem: Filesystem service used for writing.
+        theme: Optional MkDocs theme name.
 
     Returns:
         Produced artifacts plus diagnostics.
@@ -76,7 +84,9 @@ def write_site_artifacts(
     if page_diagnostics:
         return (), page_diagnostics
 
-    mkdocs_content = build_mkdocs_yaml(site_name, nav_entries, extra_css=[])
+    mkdocs_content = build_mkdocs_yaml(
+        site_name, nav_entries, extra_css=[], theme=theme
+    )
     mkdocs_path = abs_output / _MKDOCS_FILENAME
     try:
         abs_output.mkdir(parents=True, exist_ok=True)
@@ -105,6 +115,7 @@ def write_site_artifacts_with_css(
     output_dir: Path,
     css_sources: tuple[Path, ...],
     filesystem: FileSystem,
+    theme: str | None = None,
 ) -> tuple[tuple[BuildArtifact, ...], tuple[Diagnostic, ...]]:
     """Write MkDocs scaffold artifacts including CSS files.
 
@@ -115,6 +126,7 @@ def write_site_artifacts_with_css(
         output_dir: Relative output directory (e.g. ``build/site``).
         css_sources: CSS file paths relative to the project root.
         filesystem: Filesystem service used for writing.
+        theme: Optional MkDocs theme name.
 
     Returns:
         Produced artifacts plus diagnostics.
@@ -135,7 +147,7 @@ def write_site_artifacts_with_css(
         return (), css_diagnostics
 
     mkdocs_content = build_mkdocs_yaml(
-        site_name, nav_entries, extra_css=extra_css_hrefs
+        site_name, nav_entries, extra_css=extra_css_hrefs, theme=theme
     )
     mkdocs_path = abs_output / _MKDOCS_FILENAME
     try:

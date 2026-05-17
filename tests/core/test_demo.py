@@ -28,8 +28,8 @@ def test_create_demo_project_writes_tutorial_files(tmp_path: Path) -> None:
     assert (target / "doc/reference/diagnostics.md").is_file()
     assert (target / "doc/tutorials/build-markdown.md").is_file()
     assert (target / "doc/appendix/changelog.md").is_file()
-    assert (target / "doc/assets/architecture.png").is_file()
-    assert (target / "doc/assets/setup.png").is_file()
+    assert (target / "doc/assets/architecture.svg").is_file()
+    assert (target / "doc/assets/setup.svg").is_file()
     assert (target / "theme/demo.css").is_file()
     assert (target / "README.md").is_file()
     assert len(tuple((target / "doc").rglob("*.md"))) == 33
@@ -58,7 +58,8 @@ def test_created_demo_project_exposes_transform_configuration(tmp_path: Path) ->
         in config
     )
     assert (
-        '[builders.html]\nmode = "single-page"\ncss_files = ["theme/demo.css"]'
+        '[builders.html]\nmode = "single-page"\ncss_files = ["theme/demo.css"]\n'
+        'theme = "readthedocs"'
         in config
     )
 
@@ -196,7 +197,7 @@ def test_created_demo_project_assets_extracted(tmp_path: Path) -> None:
 
     index_doc = result.documents[0]
     assert len(index_doc.assets) == 1
-    assert index_doc.assets[0].target == "assets/architecture.png"
+    assert index_doc.assets[0].target == "assets/architecture.svg"
 
 
 def test_created_demo_project_headings_extracted(tmp_path: Path) -> None:
@@ -263,6 +264,8 @@ def test_created_demo_project_readme_documents_end_to_end_html_flow(
     assert "scribpy build html --mode site --root ." in readme
     assert "Scribpy prepares the MkDocs inputs and wraps `mkdocs build` itself." in readme
     assert "build/site/site/index.html" in readme
+    assert "scribpy build markdown --root ." in readme
+    assert 'builders.html.theme' in readme
 
 
 def test_invalid_demo_reports_phase_4_lint_diagnostics(tmp_path: Path) -> None:

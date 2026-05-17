@@ -337,6 +337,9 @@ def _run_demo_create_command(
     print(f"  scribpy index check --root {target}", file=stdout)
     print(f"  scribpy parse check --root {target}", file=stdout)
     print(f"  scribpy lint --root {target}", file=stdout)
+    print(f"  scribpy build markdown --root {target}", file=stdout)
+    print(f"  scribpy build html --mode single-page --root {target}", file=stdout)
+    print(f"  scribpy build html --mode site --root {target}", file=stdout)
     return 0
 
 

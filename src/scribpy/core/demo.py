@@ -72,6 +72,7 @@ style = "decimal"
 [builders.html]
 mode = "single-page"
 css_files = ["theme/demo.css"]
+theme = "readthedocs"
 
 [index]
 mode = "explicit"
@@ -123,7 +124,7 @@ The explicit index spans more than thirty Markdown documents across nested
 sections, so ordering and link resolution remain deterministic at realistic
 scale.
 
-![Scribpy architecture overview](assets/architecture.png)
+![Scribpy architecture overview](assets/architecture.svg)
 """
 
 
@@ -167,7 +168,7 @@ def _valid_demo_extra(relative_path: str) -> str:
             "\nSee the [installation guide](installation.md) before the quickstart.\n"
         )
     if relative_path == "guide/getting-started/installation.md":
-        return "\n![Setup diagram](../../assets/setup.png)\n"
+        return "\n![Setup diagram](../../assets/setup.svg)\n"
     if relative_path == "architecture/pipeline.md":
         return (
             "\n## Processing Stages\n\n"
@@ -296,14 +297,34 @@ style = "decimal"
 [builders.html]
 mode = "single-page"
 css_files = ["theme/demo.css"]
+theme = "readthedocs"
 ```
 
 ## Next steps
 
-Re-run checks after editing the files under `doc/` and observe how diagnostics,
-section numbering, generated table of contents, TOC depth, and link rewrites
-change. Then rebuild both HTML modes to compare how the same Markdown corpus is
-published as one document and as a MkDocs-rendered site.
+1. Edit one or two files under `doc/`.
+2. Re-run the quality gates:
+
+   ```bash
+   scribpy index check --root .
+   scribpy parse check --root .
+   scribpy lint --root .
+   ```
+
+3. Rebuild the publication targets:
+
+   ```bash
+   scribpy build markdown --root .
+   scribpy build html --mode single-page --root .
+   scribpy build html --mode site --root .
+   ```
+
+4. Compare `build/markdown/document.md`, `build/html/index.html`, and
+   `build/site/site/index.html` to see how the same corpus is published in each
+   format.
+
+The configured site theme is `readthedocs`; change `builders.html.theme` to try
+another MkDocs theme.
 """
 
 
@@ -314,8 +335,68 @@ _VALID_DEMO_FILES: dict[Path, str] = {
         Path("doc") / relative_path: _valid_demo_page(index, relative_path, title)
         for index, (relative_path, title) in enumerate(_VALID_DEMO_PAGES)
     },
-    Path("doc/assets/architecture.png"): "demo asset: architecture\n",
-    Path("doc/assets/setup.png"): "demo asset: setup\n",
+    Path("doc/assets/architecture.svg"): """\
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360"
+     viewBox="0 0 960 360" role="img" aria-labelledby="title desc">
+  <title id="title">Scribpy architecture overview</title>
+  <desc id="desc">
+    Source Markdown flows through parse, lint, transform, and build stages.
+  </desc>
+  <rect width="960" height="360" rx="24" fill="#f8fafc"/>
+  <g font-family="system-ui, sans-serif" font-size="24" text-anchor="middle">
+    <rect x="40" y="120" width="170" height="110" rx="16"
+          fill="#dbeafe" stroke="#2563eb"/>
+    <text x="125" y="170" fill="#1e3a8a">Markdown</text>
+    <text x="125" y="202" fill="#1e3a8a">sources</text>
+    <rect x="250" y="120" width="170" height="110" rx="16"
+          fill="#dcfce7" stroke="#16a34a"/>
+    <text x="335" y="186" fill="#166534">Parse</text>
+    <rect x="460" y="120" width="170" height="110" rx="16"
+          fill="#fef3c7" stroke="#d97706"/>
+    <text x="545" y="186" fill="#92400e">Lint</text>
+    <rect x="670" y="120" width="120" height="110" rx="16"
+          fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="730" y="186" fill="#5b21b6">Build</text>
+    <rect x="830" y="120" width="90" height="110" rx="16"
+          fill="#fee2e2" stroke="#dc2626"/>
+    <text x="875" y="172" fill="#991b1b">HTML</text>
+    <text x="875" y="204" fill="#991b1b">Site</text>
+  </g>
+  <g stroke="#475569" stroke-width="5" stroke-linecap="round">
+    <path d="M210 175h30"/>
+    <path d="M420 175h30"/>
+    <path d="M630 175h30"/>
+    <path d="M790 175h30"/>
+  </g>
+</svg>
+""",
+    Path("doc/assets/setup.svg"): """\
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="300"
+     viewBox="0 0 840 300" role="img" aria-labelledby="title desc">
+  <title id="title">Setup flow</title>
+  <desc id="desc">Install Scribpy, create a demo, run checks, then build outputs.</desc>
+  <rect width="840" height="300" rx="24" fill="#fff7ed"/>
+  <g font-family="system-ui, sans-serif" font-size="22" text-anchor="middle">
+    <circle cx="100" cy="150" r="62" fill="#ffedd5" stroke="#ea580c"/>
+    <text x="100" y="145" fill="#9a3412">Install</text>
+    <text x="100" y="174" fill="#9a3412">Scribpy</text>
+    <circle cx="300" cy="150" r="62" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="300" y="145" fill="#1e3a8a">Create</text>
+    <text x="300" y="174" fill="#1e3a8a">demo</text>
+    <circle cx="500" cy="150" r="62" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="500" y="145" fill="#166534">Run</text>
+    <text x="500" y="174" fill="#166534">checks</text>
+    <circle cx="700" cy="150" r="62" fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="700" y="145" fill="#5b21b6">Build</text>
+    <text x="700" y="174" fill="#5b21b6">outputs</text>
+  </g>
+  <g stroke="#9a3412" stroke-width="5" stroke-linecap="round">
+    <path d="M162 150h76"/>
+    <path d="M362 150h76"/>
+    <path d="M562 150h76"/>
+  </g>
+</svg>
+""",
     Path("theme/demo.css"): """\
 body {
   color: #1f2937;

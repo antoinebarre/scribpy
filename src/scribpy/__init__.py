@@ -33,13 +33,34 @@ Quick start
 -----------
 ::
 
-    from scribpy.core import load_markdown, get_headings
+    import scribpy
 
-    doc = load_markdown("docs/index.md")
-    for h in get_headings(doc):
-        print(h.level, h.title)
+    scribpy.check_index(".")
+    scribpy.lint(".")
+    scribpy.build_html(".", mode="site")
 """
 
 from scribpy._version import __version__
+from scribpy.api import (
+    build_html,
+    build_markdown,
+    check_index,
+    check_parse,
+    create_demo,
+    lint,
+)
+from scribpy.model import BuildArtifact, BuildResult, LintResult, ParseResult
 
-__all__ = ["__version__"]
+__all__ = [
+    "BuildArtifact",
+    "BuildResult",
+    "LintResult",
+    "ParseResult",
+    "__version__",
+    "build_html",
+    "build_markdown",
+    "check_index",
+    "check_parse",
+    "create_demo",
+    "lint",
+]

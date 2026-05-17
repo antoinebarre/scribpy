@@ -110,6 +110,7 @@ def _dispatch_html_build(
         mode=effective_mode,
         css_files=base_html_config.css_files,
         site_name=base_html_config.site_name,
+        theme=base_html_config.theme,
         output_dir=base_html_config.output_dir,
     )
 
