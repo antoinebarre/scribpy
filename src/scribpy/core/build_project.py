@@ -16,11 +16,14 @@ from scribpy.model.protocols import FileSystem, MarkdownParser
 from scribpy.transforms import TransformOptions, apply_transforms
 from scribpy.utils import has_errors
 
+_HTML_TARGETS = frozenset({"html", "html-single-page", "html-site"})
+
 
 def build_project(
     root: Path | None = None,
     *,
     target: str = "markdown",
+    html_mode: str | None = None,
     filesystem: FileSystem | None = None,
     parser: MarkdownParser | None = None,
     registry: ExtensionRegistry | None = None,
@@ -29,7 +32,10 @@ def build_project(
 
     Args:
         root: Project root, child path, config path, or ``None`` for cwd.
-        target: Requested build target. Phase 5 supports ``"markdown"`` only.
+        target: Requested build target: ``"markdown"``, ``"html"``,
+            ``"html-single-page"``, or ``"html-site"``.
+        html_mode: HTML output mode override — ``"single-page"`` or ``"site"``.
+            When set, takes precedence over the project configuration.
         filesystem: Optional filesystem service override.
         parser: Optional Markdown parser override.
         registry: Optional lint rule registry override.
@@ -37,6 +43,11 @@ def build_project(
     Returns:
         Build artifacts plus diagnostics produced by the chain.
     """
+    if target in _HTML_TARGETS:
+        return _dispatch_html_build(
+            root, target, html_mode, filesystem, parser, registry
+        )
+
     if target != "markdown":
         return BuildResult(
             success=False,
@@ -54,6 +65,61 @@ def build_project(
         return _blocked_build(diagnostics)
 
     return _write_markdown_build(state, diagnostics, active_registry)
+
+
+def _dispatch_html_build(
+    root: Path | None,
+    target: str,
+    html_mode: str | None,
+    filesystem: FileSystem | None,
+    parser: MarkdownParser | None,
+    registry: ExtensionRegistry | None,
+) -> BuildResult:
+    from scribpy.config.types import HtmlBuilderConfig, HtmlMode
+    from scribpy.core.build_html import build_html_project
+
+    # Resolve the effective mode from the target string or explicit override.
+    if html_mode is not None:
+        if html_mode not in ("single-page", "site"):
+            return BuildResult(
+                success=False,
+                artifacts=(),
+                diagnostics=(
+                    Diagnostic(
+                        severity="error",
+                        code="BLD001",
+                        message=f"Unsupported HTML mode: {html_mode}",
+                        hint="Use html_mode='single-page' or 'site'.",
+                    ),
+                ),
+            )
+        effective_mode: HtmlMode = html_mode  # type: ignore[assignment]
+    elif target == "html-site":
+        effective_mode = "site"
+    else:
+        effective_mode = "single-page"
+
+    # Load config to pick up html section defaults, then override the mode.
+    state, diagnostics = _prepare_build_state(root, filesystem, parser)
+    if state is None:
+        return _blocked_build(diagnostics)
+
+    assert state.config is not None
+    base_html_config = state.config.html
+    html_config = HtmlBuilderConfig(
+        mode=effective_mode,
+        css_files=base_html_config.css_files,
+        site_name=base_html_config.site_name,
+        output_dir=base_html_config.output_dir,
+    )
+
+    return build_html_project(
+        root,
+        html_config=html_config,
+        filesystem=filesystem,
+        parser=parser,
+        registry=registry,
+    )
 
 
 def _prepare_build_state(
@@ -131,7 +197,7 @@ def _unsupported_target_diagnostic(target: str) -> Diagnostic:
         severity="error",
         code="BLD001",
         message=f"Unsupported build target: {target}",
-        hint="Use target='markdown' until additional builders are implemented.",
+        hint=("Use target='markdown' until additional builders are implemented."),
     )
 
 
@@ -147,7 +213,7 @@ def _blocked_build_diagnostic() -> Diagnostic:
     return Diagnostic(
         severity="error",
         code="BLD002",
-        message="Build stopped because blocking diagnostics were reported upstream.",
+        message=("Build stopped because blocking diagnostics were reported upstream."),
         hint="Resolve project, parse, or lint errors before building.",
     )
 

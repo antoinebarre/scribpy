@@ -316,13 +316,107 @@ def test_build_markdown_help_documents_examples(capsys) -> None:
     assert exit_code == 0
     assert "scribpy build markdown --root dd1" in captured.out
 
+
+def test_build_without_subcommand_returns_usage_error(capsys) -> None:
+    exit_code = main(["build"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert "usage:" in captured.err
+
+def test_build_html_single_page_returns_zero_and_prints_artifact(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n")
+
+    exit_code = main(
+        ["build", "html", "--mode", "single-page", "--root", str(tmp_path)]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "Built html artifact:" in captured.out
+    assert "index.html" in captured.out
+    assert captured.err == ""
+
+
+def test_build_html_site_returns_zero_and_prints_site_artifact(
+    tmp_path: Path,
+    capsys,
+    monkeypatch,
+) -> None:
+    from scribpy.model import BuildArtifact
+
+    def fake_run(project_root: Path, output_dir: Path):
+        site_dir = project_root / output_dir / "site"
+        site_dir.mkdir(parents=True, exist_ok=True)
+        return BuildArtifact(site_dir, "html-site", "site"), ()
+
+    monkeypatch.setattr("scribpy.core.build_html.run_mkdocs_build", fake_run)
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n")
+
+    exit_code = main(
+        ["build", "html", "--mode", "site", "--root", str(tmp_path)]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "Built html-site artifact:" in captured.out
+    assert "build/site/site" in captured.out
+
+
+def test_build_html_returns_one_when_lint_fails(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "## Missing H1\n")
+
+    exit_code = main(
+        ["build", "html", "--mode", "single-page", "--root", str(tmp_path)]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "LINT001" in captured.err
+    assert captured.out == ""
+
+
+def test_build_html_defaults_to_single_page_mode(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n")
+
+    exit_code = main(["build", "html", "--root", str(tmp_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert (tmp_path / "build/html/index.html").exists()
+
+
+def test_build_html_help_documents_modes(capsys) -> None:
+    exit_code = main(["build", "html", "-h"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "single-page" in captured.out
+    assert "site" in captured.out
+
+
 def _write_config(root: Path, content: str) -> Path:
     config_path = root / "scribpy.toml"
     config_path.write_text(content, encoding="utf-8")
     return config_path
 
 
-def _write_source(root: Path, relative_path: str, content: str = "# Title\n") -> Path:
+def _write_source(
+    root: Path, relative_path: str, content: str = "# Title\n"
+) -> Path:
     source_path = root / relative_path
     source_path.parent.mkdir(parents=True, exist_ok=True)
     source_path.write_text(content, encoding="utf-8")

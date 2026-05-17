@@ -1,6 +1,8 @@
-# Scribpy Phase 2 Demo
+# Scribpy Demo
 
-This file is the first document in the explicit index.
+This checked-in demo exercises the full Scribpy workflow from project checks to
+HTML publication.
 
-It demonstrates that Scribpy can load a project, discover Markdown files, and
-validate the document index before parsing or building documentation.
+Start with the [setup guide](guide/setup.md).
+
+![Architecture placeholder](assets/architecture.png)

@@ -10,6 +10,8 @@ from typing import cast
 from scribpy.config.types import (
     Config,
     DocumentConfig,
+    HtmlBuilderConfig,
+    HtmlMode,
     IndexConfig,
     NumberingConfig,
     NumberingStyle,
@@ -25,6 +27,7 @@ CONFIG_FILENAME = "scribpy.toml"
 _KNOWN_INDEX_MODES = frozenset[IndexMode]({"explicit", "filesystem", "hybrid"})
 _KNOWN_TOC_STYLES = frozenset[TocStyle]({"bullet", "numbered"})
 _KNOWN_NUMBERING_STYLES = frozenset[NumberingStyle]({"decimal", "alpha", "roman"})
+_KNOWN_HTML_MODES = frozenset[HtmlMode]({"single-page", "site"})
 
 type RawSection = Mapping[str, object]
 
@@ -84,7 +87,11 @@ def parse_config(raw: Mapping[str, object]) -> Config:
     paths = _parse_path_config(_section(raw, "paths"))
     index = _parse_index_config(_section(raw, "index"))
     document = _parse_document_config(_section(raw, "document"))
-    return Config(project=project, paths=paths, index=index, document=document)
+    builders_raw = _section(raw, "builders")
+    html = _parse_html_builder_config(_nested_section(builders_raw, "html", "builders"))
+    return Config(
+        project=project, paths=paths, index=index, document=document, html=html
+    )
 
 
 def validate_config(config: Config) -> tuple[Diagnostic, ...]:
@@ -267,6 +274,52 @@ def _parse_numbering_config(raw: RawSection) -> NumberingConfig:
     return NumberingConfig(enabled=enabled, max_level=max_level, style=style)
 
 
+def _parse_html_builder_config(raw: RawSection) -> HtmlBuilderConfig:
+    mode = _parse_html_mode(raw)
+    css_files = _parse_html_css_files(raw)
+    site_name = _parse_optional_str(raw, "site_name", "builders.html")
+    output_dir_raw = _parse_optional_str(raw, "output_dir", "builders.html")
+    output_dir = Path(output_dir_raw) if output_dir_raw is not None else None
+    return HtmlBuilderConfig(
+        mode=mode,
+        css_files=tuple(css_files),
+        site_name=site_name,
+        output_dir=output_dir,
+    )
+
+
+def _parse_html_mode(raw: RawSection) -> HtmlMode:
+    mode = raw.get("mode", "single-page")
+    if not isinstance(mode, str) or mode not in _KNOWN_HTML_MODES:
+        raise ConfigParseError(
+            "Configuration value builders.html.mode must be 'single-page' or 'site'."
+        )
+    return mode
+
+
+def _parse_html_css_files(raw: RawSection) -> list[Path]:
+    css_raw = raw.get("css_files", ())
+    if not isinstance(css_raw, Sequence) or isinstance(css_raw, str):
+        raise ConfigParseError(
+            "Configuration value builders.html.css_files must be a list."
+        )
+    css_files: list[Path] = []
+    for item in css_raw:
+        if not isinstance(item, str):
+            raise ConfigParseError(
+                "Every builders.html.css_files entry must be a string."
+            )
+        css_files.append(Path(item))
+    return css_files
+
+
+def _parse_optional_str(raw: RawSection, key: str, section: str) -> str | None:
+    value = raw.get(key)
+    if value is not None and not isinstance(value, str):
+        raise ConfigParseError(f"Configuration value {section}.{key} must be a string.")
+    return value if isinstance(value, str) else None
+
+
 def _nested_section(raw: RawSection, name: str, parent: str) -> RawSection:
     value = raw.get(name, {})
     if not isinstance(value, Mapping):
@@ -306,4 +359,5 @@ __all__ = [
     "load_toml_config",
     "parse_config",
     "validate_config",
+    "_parse_html_builder_config",
 ]
