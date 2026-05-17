@@ -1,11 +1,45 @@
-site_name: Scribpy User Manual
+site_name: Scribpy
+site_description: >-
+  Scribpy — documentation compiler and Docs-as-Code toolkit.
+  Parse, lint, transform, and export Markdown into HTML, PDF-ready,
+  and assembled Markdown artefacts.
+site_author: Antoine Barré
+repo_name: scribpy
 docs_dir: doc
+
+# Recommended theme: pip install mkdocs-material
+# theme:
+#   name: material
+#   palette:
+#     - scheme: default
+#       primary: indigo
+#       accent: indigo
+#   features:
+#     - navigation.tabs
+#     - navigation.sections
+#     - navigation.top
+#     - search.highlight
+#     - content.code.copy
+
+theme:
+  name: readthedocs
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - fenced_code
+
 nav:
   - Home: index.md
-  - Getting started: user-manual/getting-started.md
-  - Pipelines: user-manual/pipelines.md
-  - CLI reference: user-manual/cli-reference.md
-  - Python API reference: user-manual/python-api-reference.md
-  - Public classes: user-manual/public-classes.md
-  - Configuration: user-manual/configuration.md
-  - Extensions: user-manual/extensions.md
+  - User Manual:
+    - Getting Started: user-manual/getting-started.md
+    - Configuration: user-manual/configuration.md
+    - Pipelines: user-manual/pipelines.md
+  - Reference:
+    - CLI Reference: user-manual/cli-reference.md
+    - Python API: user-manual/python-api-reference.md
+    - Public Classes & Types: user-manual/public-classes.md
+    - Extensions: user-manual/extensions.md
+  - Markdown Guide: user-manual/markdown-guide.md

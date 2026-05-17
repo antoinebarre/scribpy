@@ -1,8 +1,14 @@
 """Tests for the Scribpy command-line entry point."""
 
+import importlib
 from pathlib import Path
 
-from scribpy.cli.main import _exit_code, main
+import click
+import pytest
+
+from scribpy.cli.main import _exit_code, _runtime, main
+
+cli_main_module = importlib.import_module("scribpy.cli.main")
 
 
 def test_index_check_returns_zero_for_valid_project(
@@ -212,6 +218,40 @@ def test_missing_subcommand_returns_two(capsys) -> None:
 
 def test_non_integer_system_exit_code_maps_to_usage_error() -> None:
     assert _exit_code(SystemExit("bad usage")) == 2
+
+
+def test_integer_system_exit_code_is_preserved() -> None:
+    assert _exit_code(SystemExit(7)) == 7
+
+
+def test_main_returns_click_exit_code(monkeypatch) -> None:
+    def fake_app(*args, **kwargs):
+        raise click.exceptions.Exit(7)
+
+    monkeypatch.setattr(cli_main_module, "app", fake_app)
+
+    assert main(["lint"]) == 7
+
+
+def test_main_renders_generic_click_exception(monkeypatch, capsys) -> None:
+    def fake_app(*args, **kwargs):
+        raise click.ClickException("boom")
+
+    monkeypatch.setattr(cli_main_module, "app", fake_app)
+
+    assert main(["lint"]) == 1
+    assert "Error: boom" in capsys.readouterr().err
+
+
+def test_runtime_rejects_uninitialized_context() -> None:
+    class Context:
+        def find_root(self):
+            return self
+
+        obj = None
+
+    with pytest.raises(RuntimeError, match="CLI runtime was not initialized"):
+        _runtime(Context())
 
 
 def test_parse_check_returns_zero_for_valid_project(
