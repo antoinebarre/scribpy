@@ -34,6 +34,7 @@ from scribpy.cli.help_text import (
     _ROOT_DESCRIPTION,
     _ROOT_EPILOG,
 )
+from scribpy.cli.logging_options import add_logging_arguments, run_with_optional_logging
 from scribpy.core import (
     DemoVariant,
     build_project,
@@ -74,7 +75,10 @@ def _main(argv: Sequence[str] | None, stdout: TextIO, stderr: TextIO) -> int:
     except SystemExit as error:
         return _exit_code(error)
 
-    exit_code = _dispatch(args, stdout, stderr)
+    exit_code = run_with_optional_logging(
+        args,
+        lambda: _dispatch(args, stdout, stderr),
+    )
     if exit_code is not None:
         return exit_code
 
@@ -115,6 +119,7 @@ def _build_parser() -> argparse.ArgumentParser:
         epilog=_ROOT_EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    add_logging_arguments(parser)
     subparsers = parser.add_subparsers(dest="command")
 
     _add_parse_command(subparsers)

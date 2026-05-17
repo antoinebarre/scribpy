@@ -6,10 +6,12 @@ from pathlib import Path
 from typing import Literal
 
 from scribpy.core.demo_assets import DEMO_CSS
+from scribpy.logging import get_logger, prepare_logging
 from scribpy.model import Diagnostic, LintResult
 from scribpy.utils import has_errors
 
 DemoVariant = Literal["valid", "invalid"]
+logger = get_logger(__name__)
 
 _VALID_DEMO_PAGES: tuple[tuple[str, str], ...] = (
     ("guide/getting-started/overview.md", "Getting Started Overview"),
@@ -318,6 +320,36 @@ theme = "readthedocs"
 
 The configured site theme is `readthedocs`; change `builders.html.theme` to try
 another MkDocs theme.
+
+## Execution logs
+
+Enable execution logs when you want to inspect the chain without changing the
+diagnostics policy:
+
+```bash
+scribpy --log-level INFO build html --mode site --root .
+```
+
+By default, the log file is written to:
+
+```text
+build/logs/scribpy.log
+```
+
+Use a custom path or mirror logs to the console when needed:
+
+```bash
+scribpy --log-level DEBUG --log-console --log-file logs/demo.log lint --root .
+```
+
+The Python API exposes the same capability:
+
+```python
+import scribpy
+
+with scribpy.logging_context(level="INFO"):
+    scribpy.build_html(".", mode="site")
+```
 """
 
 
@@ -539,8 +571,11 @@ def create_demo_project(
         creation returns no diagnostics.
     """
     files = _DEMO_FILES_BY_VARIANT[variant]
+    prepare_logging(target)
+    logger.info("Creating %s demo project at %s", variant, target)
     diagnostics = _validate_target(target, files=files, force=force)
     if has_errors(diagnostics):
+        logger.error("Demo creation failed with %d diagnostic(s)", len(diagnostics))
         return LintResult(diagnostics=diagnostics, failed=True)
 
     try:
@@ -558,7 +593,9 @@ def create_demo_project(
             ),
         )
 
-    return LintResult(diagnostics=diagnostics, failed=has_errors(diagnostics))
+    result = LintResult(diagnostics=diagnostics, failed=has_errors(diagnostics))
+    logger.info("Created demo project with %d managed file(s)", len(files))
+    return result
 
 
 def _validate_target(

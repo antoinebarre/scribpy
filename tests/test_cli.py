@@ -20,6 +20,20 @@ def test_index_check_returns_zero_for_valid_project(
     assert captured.err == ""
 
 
+def test_cli_logging_writes_default_log_file(tmp_path: Path, capsys) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md")
+
+    exit_code = main(
+        ["--log-level", "INFO", "index", "check", "--root", str(tmp_path)]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert captured.err == ""
+    assert (tmp_path / "build/logs/scribpy.log").exists()
+
+
 def test_demo_create_returns_zero_and_creates_valid_project(
     tmp_path: Path,
     capsys,

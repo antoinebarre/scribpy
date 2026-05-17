@@ -49,6 +49,7 @@ from scribpy.api import (
     create_demo,
     lint,
 )
+from scribpy.logging import logging_context
 from scribpy.model import BuildArtifact, BuildResult, LintResult, ParseResult
 
 __all__ = [
@@ -63,4 +64,5 @@ __all__ = [
     "check_parse",
     "create_demo",
     "lint",
+    "logging_context",
 ]

@@ -11,12 +11,14 @@ from scribpy.core.project_pipeline import (
 )
 from scribpy.extensions import ExtensionRegistry
 from scribpy.lint import LintContext, run_lint_rules
+from scribpy.logging import get_logger
 from scribpy.model import BuildResult, Diagnostic
 from scribpy.model.protocols import FileSystem, MarkdownParser
 from scribpy.transforms import TransformOptions, apply_transforms
 from scribpy.utils import has_errors
 
 _HTML_TARGETS = frozenset({"html", "html-single-page", "html-site"})
+logger = get_logger(__name__)
 
 
 def build_project(
@@ -49,6 +51,7 @@ def build_project(
         )
 
     if target != "markdown":
+        logger.error("Unsupported build target: %s", target)
         return BuildResult(
             success=False,
             artifacts=(),
@@ -176,6 +179,10 @@ def _write_markdown_build(
     )
     transformed_diagnostics = (*diagnostics, *transform_result.diagnostics)
     if has_errors(transformed_diagnostics):
+        logger.error(
+            "Markdown transform failed with %d diagnostic(s)",
+            len(transformed_diagnostics),
+        )
         return BuildResult(
             success=False, artifacts=(), diagnostics=transformed_diagnostics
         )
@@ -187,7 +194,11 @@ def _write_markdown_build(
     )
     final_diagnostics = (*transformed_diagnostics, *write_diagnostics)
     if artifact is None or has_errors(final_diagnostics):
+        logger.error(
+            "Markdown build failed with %d diagnostic(s)", len(final_diagnostics)
+        )
         return BuildResult(success=False, artifacts=(), diagnostics=final_diagnostics)
+    logger.info("Built Markdown artifact: %s", artifact.path)
     return BuildResult(
         success=True, artifacts=(artifact,), diagnostics=final_diagnostics
     )

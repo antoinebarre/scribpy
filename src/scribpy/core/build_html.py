@@ -21,11 +21,14 @@ from scribpy.config.types import HtmlBuilderConfig
 from scribpy.core.project_pipeline import ProjectPipelineState
 from scribpy.extensions import ExtensionRegistry
 from scribpy.lint import LintContext, run_lint_rules
+from scribpy.logging import get_logger
 from scribpy.model import BuildResult, Diagnostic
 from scribpy.model.protocols import FileSystem, MarkdownParser
 from scribpy.transforms import Transform, TransformOptions, apply_transforms
 from scribpy.transforms.pipeline import native_html_transforms
 from scribpy.utils import has_errors
+
+logger = get_logger(__name__)
 
 
 def build_html_project(
@@ -60,7 +63,9 @@ def build_html_project(
         return _blocked(diagnostics)
 
     if html_config.mode == "single-page":
+        logger.info("Starting single-page HTML build")
         return _build_single_page(state, diagnostics, html_config, active_registry)
+    logger.info("Starting site HTML build")
     return _build_site(state, diagnostics, html_config, active_registry)
 
 
@@ -137,11 +142,13 @@ def _build_single_page(
     if has_errors(diagnostics):
         return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
 
-    return BuildResult(
+    result = BuildResult(
         success=True,
         artifacts=(*support_artifacts, *css_artifacts, *asset_artifacts),
         diagnostics=diagnostics,
     )
+    logger.info("Built single-page HTML with %d artifact(s)", len(result.artifacts))
+    return result
 
 
 def _build_site(
@@ -195,11 +202,13 @@ def _build_site(
     if rendered_site is None or has_errors(diagnostics):
         return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
 
-    return BuildResult(
+    result = BuildResult(
         success=True,
         artifacts=(*artifacts, *asset_artifacts, rendered_site),
         diagnostics=diagnostics,
     )
+    logger.info("Built site HTML with %d artifact(s)", len(result.artifacts))
+    return result
 
 
 def _transform_options(state: ProjectPipelineState) -> TransformOptions:

@@ -45,3 +45,27 @@ scribpy build html --mode site --root demo
 ```
 
 The site builder uses the configured MkDocs theme. This demo sets `builders.html.theme = "readthedocs"`; change it to experiment with another theme.
+
+## Execution logs
+
+To inspect the execution chain while keeping diagnostics unchanged:
+
+```bash
+scribpy --log-level INFO build html --mode site --root demo
+```
+
+This writes `demo/build/logs/scribpy.log` by default. You can also choose the
+log path and mirror records to the console:
+
+```bash
+scribpy --log-level DEBUG --log-console --log-file logs/demo.log lint --root demo
+```
+
+The same workflow is available from Python:
+
+```python
+import scribpy
+
+with scribpy.logging_context(level="INFO"):
+    scribpy.build_html("demo", mode="site")
+```

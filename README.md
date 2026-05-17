@@ -85,6 +85,22 @@ if not result.success:
         print(diagnostic.code, diagnostic.message)
 ```
 
+Execution logging can be enabled for a whole Python workflow with one context:
+
+```python
+with scribpy.logging_context(level="INFO"):
+    scribpy.build_html("docs-project", mode="site")
+```
+
+By default, logs are written below the project at `build/logs/scribpy.log`.
+Use `file_path=` for another location and `console=True` to also stream logs to
+stderr. The CLI exposes the same capability:
+
+```bash
+scribpy --log-level INFO build html --mode site --root docs-project
+scribpy --log-level DEBUG --log-console --log-file logs/run.log lint --root docs-project
+```
+
 ---
 
 ## CLI

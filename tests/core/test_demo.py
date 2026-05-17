@@ -280,6 +280,9 @@ def test_created_demo_project_readme_documents_end_to_end_html_flow(
     assert "build/site/site/index.html" in readme
     assert "scribpy build markdown --root ." in readme
     assert 'builders.html.theme' in readme
+    assert "## Execution logs" in readme
+    assert "scribpy --log-level INFO build html --mode site --root ." in readme
+    assert "with scribpy.logging_context" in readme
 
 
 def test_invalid_demo_reports_phase_4_lint_diagnostics(tmp_path: Path) -> None:
