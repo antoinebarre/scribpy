@@ -1,4 +1,8 @@
-"""Deprecated: use scribpy.parser instead.
+"""Markdown ingestion adapters (future extension point).
 
-This package is kept for import compatibility during the transition.
+Markdown parsing is currently handled by ``scribpy.parser``.
+This package is reserved for additional parser adapters (e.g. AsciiDoc,
+reStructuredText) that implement the ``MarkdownParser`` protocol.
 """
+
+__all__ = []
