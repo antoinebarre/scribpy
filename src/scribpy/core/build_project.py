@@ -43,6 +43,7 @@ def build_project(
         output_dir: Optional build output directory override. Relative paths are
             resolved from the project root; absolute paths are preserved. For
             HTML builds this overrides ``[builders.html].output_dir``.
+        extra_css: Additional CSS files to append to the HTML build.
         filesystem: Optional filesystem service override.
         parser: Optional Markdown parser override.
         registry: Optional lint rule registry override.
