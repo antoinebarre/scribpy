@@ -13,7 +13,7 @@ from scribpy.assets import (
 from scribpy.builders.html_single_page import (
     build_single_page_html,
     render_markdown_to_html,
-    write_single_page_artifact,
+    write_single_page_support_artifacts,
 )
 from scribpy.builders.html_site import run_mkdocs_build, write_site_artifacts_with_css
 from scribpy.builders.markdown import merge_documents
@@ -118,14 +118,14 @@ def _build_single_page(
     title = state.config.document.title or state.config.project.name or "Document"
     full_html = build_single_page_html(body_html, title, css_hrefs)
 
-    artifact, write_diags = write_single_page_artifact(
+    support_artifacts, support_diags = write_single_page_support_artifacts(
         state.project_root,
         full_html,
         html_config.resolve_output_dir(),
         state.filesystem,
     )
-    diagnostics = (*diagnostics, *write_diags)
-    if artifact is None or has_errors(diagnostics):
+    diagnostics = (*diagnostics, *support_diags)
+    if not support_artifacts or has_errors(diagnostics):
         return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
 
     asset_paths = collect_asset_paths(state.documents, source_root)
@@ -139,7 +139,7 @@ def _build_single_page(
 
     return BuildResult(
         success=True,
-        artifacts=(artifact, *css_artifacts, *asset_artifacts),
+        artifacts=(*support_artifacts, *css_artifacts, *asset_artifacts),
         diagnostics=diagnostics,
     )
 

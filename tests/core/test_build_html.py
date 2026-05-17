@@ -93,6 +93,7 @@ def test_build_html_single_page_copies_css(tmp_path: Path) -> None:
     assert (tmp_path / "build/html/css/style.css").exists()
     html = (tmp_path / "build/html/index.html").read_text(encoding="utf-8")
     assert "css/style.css" in html
+    assert (tmp_path / "build/html/js/toc.js").exists()
 
 
 def test_build_html_single_page_flattens_links_and_assets(tmp_path: Path) -> None:

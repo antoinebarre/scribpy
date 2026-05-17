@@ -6,3 +6,4 @@
 - implementer les log
 implementer les templates
 faire des test de validation end to end
+checksum des artefacts de sortie

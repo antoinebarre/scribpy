@@ -10,6 +10,7 @@ from scribpy.model.protocols import FileSystem
 
 _HTML_OUTPUT_PATH = Path("index.html")
 _ASSETS_DIR = Path("assets")
+_SCRIPT_OUTPUT_PATH = Path("js/toc.js")
 
 _HEADING_RE = re.compile(r"^(#{1,6})[ \t]+(.+?)[ \t]*$", re.MULTILINE)
 _LINK_RE = re.compile(r"(?<!!)\[([^\]]+)\]\(([^)]+)\)")
@@ -110,6 +111,7 @@ def build_single_page_html(
         f'<link rel="stylesheet" href="{href}">' for href in css_hrefs
     )
     prefix = "\n    " if link_tags else ""
+    body_html = _remove_generated_markdown_toc(body_html)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,8 +119,23 @@ def build_single_page_html(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{_escape(title)}</title>{prefix}{link_tags}
 </head>
-<body>
+<body class="scribpy-document">
+<button class="toc-toggle" type="button" aria-controls="page-toc" aria-expanded="false">
+  Contents
+</button>
+<div class="page-shell">
+  <aside class="toc-panel" aria-label="Table of contents">
+    <p class="toc-eyebrow">On this page</p>
+    <label class="toc-search-label" for="toc-search">Filter sections</label>
+    <input id="toc-search" class="toc-search" type="search"
+           placeholder="Search headings">
+    <nav id="page-toc" class="page-toc"></nav>
+  </aside>
+  <main class="document-content">
 {body_html}
+  </main>
+</div>
+<script src="js/toc.js"></script>
 </body>
 </html>
 """
@@ -161,6 +178,72 @@ def write_single_page_artifact(
     )
 
 
+def write_single_page_script_artifact(
+    project_root: Path,
+    output_dir: Path,
+    filesystem: FileSystem,
+) -> tuple[BuildArtifact | None, tuple[Diagnostic, ...]]:
+    """Write the JavaScript used by the interactive single-page TOC.
+
+    Args:
+        project_root: Absolute project root directory.
+        output_dir: Relative output directory (e.g. ``build/html``).
+        filesystem: Filesystem service used for writing.
+
+    Returns:
+        Script artifact on success, plus any write diagnostics.
+    """
+    artifact_path = project_root / output_dir / _SCRIPT_OUTPUT_PATH
+    try:
+        artifact_path.parent.mkdir(parents=True, exist_ok=True)
+        filesystem.write_text(artifact_path, _toc_script())
+    except Exception as exc:
+        return None, (
+            Diagnostic(
+                severity="error",
+                code="BLD006",
+                message=f"Cannot write HTML script artifact: {exc}",
+                path=artifact_path,
+                hint="Check that the build directory is writable.",
+            ),
+        )
+    return (
+        BuildArtifact(path=artifact_path, target="html", artifact_type="script"),
+        (),
+    )
+
+
+def write_single_page_support_artifacts(
+    project_root: Path,
+    html: str,
+    output_dir: Path,
+    filesystem: FileSystem,
+) -> tuple[tuple[BuildArtifact, ...], tuple[Diagnostic, ...]]:
+    """Write the document and JavaScript assets for single-page HTML.
+
+    Args:
+        project_root: Absolute project root directory.
+        html: Complete HTML document content.
+        output_dir: Relative output directory (e.g. ``build/html``).
+        filesystem: Filesystem service used for writing.
+
+    Returns:
+        Produced artifacts plus diagnostics.
+    """
+    artifact, html_diags = write_single_page_artifact(
+        project_root, html, output_dir, filesystem
+    )
+    if artifact is None:
+        return (), html_diags
+
+    script_artifact, script_diags = write_single_page_script_artifact(
+        project_root, output_dir, filesystem
+    )
+    if script_artifact is None:
+        return (), (*html_diags, *script_diags)
+    return (artifact, script_artifact), (*html_diags, *script_diags)
+
+
 def _anchor(title: str) -> str:
     lowered = title.lower()
     stripped = re.sub(r"[^\w\s-]", "", lowered)
@@ -187,8 +270,125 @@ def _inline(text: str) -> str:
     return text
 
 
+def _remove_generated_markdown_toc(body_html: str) -> str:
+    pattern = re.compile(
+        r'\n?<h2 id="table-of-contents">Table of Contents</h2>.*?(?=\n<h2\b|\Z)',
+        re.DOTALL,
+    )
+    return pattern.sub("", body_html, count=1)
+
+
+def _toc_script() -> str:
+    return """\
+(() => {
+  const toc = document.querySelector("#page-toc");
+  const content = document.querySelector(".document-content");
+  const panel = document.querySelector(".toc-panel");
+  const toggle = document.querySelector(".toc-toggle");
+  const search = document.querySelector("#toc-search");
+  if (!toc || !content || !panel || !toggle || !search) return;
+
+  const headings = [...content.querySelectorAll("h1, h2, h3")];
+  const visibleHeadings = headings.filter((heading) => heading.id);
+  if (visibleHeadings.length === 0) {
+    panel.hidden = true;
+    toggle.hidden = true;
+    return;
+  }
+
+  const list = document.createElement("ol");
+  list.className = "toc-list";
+  let currentGroup = null;
+  visibleHeadings.forEach((heading) => {
+    const item = document.createElement("li");
+    item.className = `toc-level-${heading.tagName.slice(1)}`;
+    const link = document.createElement("a");
+    link.href = `#${heading.id}`;
+    link.textContent = heading.textContent ?? "";
+    if (heading.tagName === "H2") {
+      const button = document.createElement("button");
+      button.className = "toc-collapse";
+      button.type = "button";
+      button.setAttribute("aria-expanded", "false");
+      button.setAttribute("aria-label", `Expand ${link.textContent}`);
+      item.append(button, link);
+
+      const children = document.createElement("ol");
+      children.className = "toc-children";
+      children.hidden = true;
+      item.append(children);
+      currentGroup = children;
+      button.addEventListener("click", () => {
+        const expanded = button.getAttribute("aria-expanded") === "true";
+        button.setAttribute("aria-expanded", String(!expanded));
+        children.hidden = expanded;
+      });
+      list.append(item);
+      return;
+    }
+    item.append(link);
+    if (heading.tagName === "H3" && currentGroup) {
+      currentGroup.append(item);
+      return;
+    }
+    list.append(item);
+  });
+  toc.replaceChildren(list);
+
+  search.addEventListener("input", () => {
+    const query = search.value.trim().toLowerCase();
+    list.querySelectorAll("li").forEach((item) => {
+      const text = item.textContent?.toLowerCase() ?? "";
+      item.hidden = query.length > 0 && !text.includes(query);
+    });
+    list.querySelectorAll(".toc-children").forEach((children) => {
+      if (!(children instanceof HTMLOListElement)) return;
+      const anyVisible = [...children.children].some((item) => !item.hidden);
+      children.hidden = query.length === 0 || !anyVisible;
+      const button = children.parentElement?.querySelector(".toc-collapse");
+      if (button) {
+        button.setAttribute("aria-expanded", String(query.length > 0 && anyVisible));
+      }
+    });
+  });
+
+  toggle.addEventListener("click", () => {
+    const open = panel.classList.toggle("is-open");
+    toggle.setAttribute("aria-expanded", String(open));
+  });
+
+  const linksById = new Map(
+    [...toc.querySelectorAll("a")].map((link) => [link.hash.slice(1), link])
+  );
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        toc.querySelectorAll("a").forEach((link) => {
+          link.removeAttribute("aria-current");
+        });
+        const active = linksById.get(entry.target.id);
+        active?.setAttribute("aria-current", "true");
+        const activeItem = active?.closest("li");
+        const parentGroup = activeItem?.parentElement;
+        if (parentGroup?.classList.contains("toc-children")) {
+          parentGroup.hidden = false;
+          const button = parentGroup.parentElement?.querySelector(".toc-collapse");
+          button?.setAttribute("aria-expanded", "true");
+        }
+      });
+    },
+    { rootMargin: "-20% 0px -70% 0px" }
+  );
+  visibleHeadings.forEach((heading) => observer.observe(heading));
+})();
+"""
+
+
 __all__ = [
     "build_single_page_html",
     "render_markdown_to_html",
     "write_single_page_artifact",
+    "write_single_page_script_artifact",
+    "write_single_page_support_artifacts",
 ]

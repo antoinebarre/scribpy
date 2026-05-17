@@ -1,3 +1,6 @@
+"""Static text assets used by the generated demo project."""
+
+DEMO_CSS = """\
 :root {
   color-scheme: light;
   --bg: #f8fafc;
@@ -12,26 +15,21 @@
   --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
   background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 28rem),
+    radial-gradient(
+      circle at top left,
+      rgba(37, 99, 235, 0.12),
+      transparent 28rem
+    ),
     var(--bg);
   color: var(--text);
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   line-height: 1.7;
   margin: 0;
 }
-
 .page-shell {
   display: grid;
   gap: 2rem;
@@ -39,7 +37,6 @@ body {
   justify-content: center;
   padding: 3rem 2rem 4rem;
 }
-
 .document-content {
   background: var(--surface);
   border: 1px solid rgba(203, 213, 225, 0.8);
@@ -48,7 +45,6 @@ body {
   min-width: 0;
   padding: clamp(1.5rem, 3vw, 3rem);
 }
-
 .document-content h1,
 .document-content h2,
 .document-content h3 {
@@ -56,60 +52,22 @@ body {
   line-height: 1.2;
   scroll-margin-top: 1.5rem;
 }
-
 .document-content h1 {
   font-size: clamp(2rem, 5vw, 3rem);
-  letter-spacing: -0.04em;
   margin-top: 0;
 }
-
 .document-content h2 {
   border-top: 1px solid var(--border);
-  font-size: 1.5rem;
   margin-top: 2.5rem;
   padding-top: 2rem;
 }
-
-.document-content p {
-  margin: 1rem 0;
-}
-
 .document-content img {
-  background: var(--surface-soft);
-  border: 1px solid var(--border);
   border-radius: 1rem;
   display: block;
-  height: auto;
   margin: 1.5rem auto;
   max-width: 100%;
 }
-
-.document-content code {
-  background: #e2e8f0;
-  border-radius: 0.35rem;
-  font-size: 0.92em;
-  padding: 0.12rem 0.35rem;
-}
-
-.document-content pre {
-  background: #0f172a;
-  border-radius: 1rem;
-  color: #e2e8f0;
-  overflow-x: auto;
-  padding: 1rem;
-}
-
-.document-content pre code {
-  background: transparent;
-  padding: 0;
-}
-
-a {
-  color: var(--accent);
-  text-decoration-thickness: 0.1em;
-  text-underline-offset: 0.16em;
-}
-
+a { color: var(--accent); }
 .toc-panel {
   align-self: start;
   background: rgba(255, 255, 255, 0.82);
@@ -122,16 +80,12 @@ a {
   max-height: calc(100vh - 4rem);
   overflow: hidden;
 }
-
 .toc-eyebrow {
   color: var(--muted);
   font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  margin: 0 0 0.75rem;
   text-transform: uppercase;
 }
-
 .toc-list {
   list-style: none;
   margin: 1rem 0 0;
@@ -140,49 +94,27 @@ a {
   padding: 0;
   scrollbar-width: thin;
 }
-
-.toc-list > li {
-  position: relative;
-}
-
-.toc-list li + li {
-  margin-top: 0.3rem;
-}
-
+.toc-list > li { position: relative; }
 .toc-list a {
   border-left: 3px solid transparent;
   color: var(--muted);
   display: block;
-  font-size: 0.94rem;
   padding: 0.3rem 0.5rem;
   text-decoration: none;
-  transition:
-    background-color 150ms ease,
-    border-color 150ms ease,
-    color 150ms ease;
 }
-
 .toc-list a:hover,
 .toc-list a[aria-current="true"] {
   background: var(--accent-soft);
   border-color: var(--accent);
   color: var(--heading);
 }
-
-.toc-level-2 {
-  padding-left: 1.6rem;
-}
-
-.toc-level-3 {
-  padding-left: 0.8rem;
-}
-
+.toc-level-2 { padding-left: 1.6rem; }
+.toc-level-3 { padding-left: 0.8rem; }
 .toc-children {
   list-style: none;
   margin: 0.35rem 0 0.5rem;
   padding: 0 0 0 0.7rem;
 }
-
 .toc-collapse {
   background: transparent;
   border: 0;
@@ -195,7 +127,6 @@ a {
   top: 0;
   width: 1.3rem;
 }
-
 .toc-collapse::before {
   content: "›";
   display: block;
@@ -203,18 +134,13 @@ a {
   transform: rotate(0deg);
   transition: transform 150ms ease;
 }
-
-.toc-collapse[aria-expanded="true"]::before {
-  transform: rotate(90deg);
-}
-
+.toc-collapse[aria-expanded="true"]::before { transform: rotate(90deg); }
 .toc-search-label {
   display: block;
   font-size: 0.8rem;
   font-weight: 600;
   margin-bottom: 0.35rem;
 }
-
 .toc-search {
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -222,36 +148,13 @@ a {
   padding: 0.55rem 0.8rem;
   width: 100%;
 }
-
-.toc-toggle {
-  display: none;
-}
-
+.toc-toggle { display: none; }
 @media (max-width: 900px) {
-  .page-shell {
-    display: block;
-    padding: 1rem;
-  }
-
-  .toc-toggle {
-    background: var(--heading);
-    border: 0;
-    border-radius: 999px;
-    color: #ffffff;
-    cursor: pointer;
-    display: inline-flex;
-    font-weight: 700;
-    margin: 1rem;
-    padding: 0.7rem 1rem;
-  }
-
-  .toc-panel {
-    display: none;
-    margin: 0 1rem 1rem;
-    position: static;
-  }
-
-  .toc-panel.is-open {
-    display: block;
-  }
+  .page-shell { display: block; padding: 1rem; }
+  .toc-toggle { display: inline-flex; margin: 1rem; }
+  .toc-panel { display: none; margin: 0 1rem 1rem; position: static; }
+  .toc-panel.is-open { display: block; }
 }
+"""
+
+__all__ = ["DEMO_CSS"]

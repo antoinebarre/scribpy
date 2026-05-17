@@ -33,6 +33,7 @@ def build_mkdocs_yaml(
         ``mkdocs.yml`` content as a string.
     """
     lines = [f"site_name: {_yaml_str(site_name)}", ""]
+    lines.extend(['site_url: ""', "use_directory_urls: false", ""])
 
     if theme:
         lines.append(f"theme: {_yaml_str(theme)}")

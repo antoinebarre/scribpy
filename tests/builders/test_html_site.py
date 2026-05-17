@@ -39,6 +39,8 @@ def _transformed(
 def test_build_mkdocs_yaml_minimal() -> None:
     yaml = build_mkdocs_yaml("My Site", [], [])
     assert "site_name: My Site" in yaml
+    assert 'site_url: ""' in yaml
+    assert "use_directory_urls: false" in yaml
 
 
 def test_build_mkdocs_yaml_with_nav() -> None:

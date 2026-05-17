@@ -165,6 +165,20 @@ def test_created_demo_project_documents_in_index_order(tmp_path: Path) -> None:
     assert titles[-3:] == ["Glossary", "Roadmap", "Changelog"]
 
 
+def test_created_demo_project_uses_document_oriented_copy(tmp_path: Path) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target)
+
+    page = (
+        target / "doc/guide/getting-started/overview.md"
+    ).read_text(encoding="utf-8")
+
+    assert "This section belongs" in page
+    assert "## In the assembled manual" in page
+    assert "previous page" not in page
+    assert "next page" not in page
+
+
 def test_created_demo_project_frontmatter_extracted(tmp_path: Path) -> None:
     target = tmp_path / "external-demo"
     create_demo_project(target)

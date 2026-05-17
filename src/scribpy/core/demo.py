@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
+from scribpy.core.demo_assets import DEMO_CSS
 from scribpy.model import Diagnostic, LintResult
 from scribpy.utils import has_errors
 
@@ -129,16 +130,6 @@ scale.
 
 
 def _valid_demo_page(index: int, relative_path: str, title: str) -> str:
-    previous_path = "index.md" if index == 0 else _VALID_DEMO_PAGES[index - 1][0]
-    next_path = (
-        "index.md"
-        if index == len(_VALID_DEMO_PAGES) - 1
-        else _VALID_DEMO_PAGES[index + 1][0]
-    )
-    current = Path(relative_path)
-    previous_link = _relative_link(current, previous_path)
-    next_link = _relative_link(current, next_path)
-    index_link = _relative_link(current, "index.md")
     extra = _valid_demo_extra(relative_path)
     return f"""\
 ---
@@ -148,17 +139,19 @@ author: Demo Author
 
 # {title}
 
-This page belongs to the complex Scribpy demo manual.
+This section belongs to the complex Scribpy demo manual.
 
 ## Overview
 
-Use this page to exercise deterministic indexing, semantic extraction, and
+Use this section to exercise deterministic indexing, semantic extraction, and
 assembled output across nested documentation sections.
 
-## Navigation
+## In the assembled manual
 
-Return to the [manual index]({index_link}), visit the [previous page]({previous_link}),
-or continue to the [next page]({next_link}).
+When Scribpy builds the final document, this source file is merged into one
+continuous publication according to the explicit index order. The result is a
+single manual with deterministic section numbering, generated table of
+contents, and resolved cross-references.
 {extra}"""
 
 
@@ -397,23 +390,7 @@ _VALID_DEMO_FILES: dict[Path, str] = {
   </g>
 </svg>
 """,
-    Path("theme/demo.css"): """\
-body {
-  color: #1f2937;
-  font-family: system-ui, sans-serif;
-  line-height: 1.6;
-  margin: 2rem auto;
-  max-width: 72ch;
-}
-
-h1, h2, h3 {
-  color: #0f172a;
-}
-
-a {
-  color: #0369a1;
-}
-""",
+    Path("theme/demo.css"): DEMO_CSS,
     Path("README.md"): _valid_demo_readme(),
 }
 
