@@ -30,6 +30,7 @@ def test_create_demo_project_writes_tutorial_files(tmp_path: Path) -> None:
     assert (target / "doc/appendix/changelog.md").is_file()
     assert (target / "doc/assets/architecture.png").is_file()
     assert (target / "doc/assets/setup.png").is_file()
+    assert (target / "theme/demo.css").is_file()
     assert (target / "README.md").is_file()
     assert len(tuple((target / "doc").rglob("*.md"))) == 33
 
@@ -54,6 +55,10 @@ def test_created_demo_project_exposes_transform_configuration(tmp_path: Path) ->
     assert '[document.toc]\nenabled = true\nmax_level = 3\nstyle = "bullet"' in config
     assert (
         '[document.numbering]\nenabled = true\nmax_level = 3\nstyle = "decimal"'
+        in config
+    )
+    assert (
+        '[builders.html]\nmode = "single-page"\ncss_files = ["theme/demo.css"]'
         in config
     )
 
@@ -243,6 +248,21 @@ def test_created_demo_project_builds_with_configured_document_transforms(
     )
     assert "  - [2.1 Overview](#21-overview)" in content
     assert "### 2.1 Overview" in content
+
+
+def test_created_demo_project_readme_documents_end_to_end_html_flow(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target)
+
+    readme = (target / "README.md").read_text(encoding="utf-8")
+
+    assert "## End-to-end walkthrough" in readme
+    assert "scribpy build html --mode single-page --root ." in readme
+    assert "scribpy build html --mode site --root ." in readme
+    assert "Scribpy prepares the MkDocs inputs and wraps `mkdocs build` itself." in readme
+    assert "build/site/site/index.html" in readme
 
 
 def test_invalid_demo_reports_phase_4_lint_diagnostics(tmp_path: Path) -> None:

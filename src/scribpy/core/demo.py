@@ -69,6 +69,10 @@ enabled = true
 max_level = 3
 style = "decimal"
 
+[builders.html]
+mode = "single-page"
+css_files = ["theme/demo.css"]
+
 [index]
 mode = "explicit"
 files = [
@@ -199,8 +203,15 @@ scribpy demo create
 ```
 
 The generated manual contains 33 Markdown documents under `doc/`, arranged in a
-nested tree that exercises explicit indexing, link resolution, transforms, and
-assembled Markdown builds.
+nested tree that exercises explicit indexing, link resolution, transforms,
+assembled Markdown builds, single-page HTML output, and MkDocs-backed site
+generation.
+
+## End-to-end walkthrough
+
+Run the commands below from this demo directory, in order. They mirror the
+normal Scribpy workflow: validate the project, inspect semantics, lint content,
+then build the publication targets.
 
 ## Phase 2 — Project context
 
@@ -226,6 +237,45 @@ scribpy lint --root .
 scribpy build markdown --root .
 ```
 
+This writes:
+
+```text
+build/markdown/document.md
+```
+
+## Phase 7 — HTML outputs
+
+Build the portable single-page document:
+
+```bash
+scribpy build html --mode single-page --root .
+```
+
+Inspect:
+
+```text
+build/html/index.html
+build/html/css/demo.css
+build/html/assets/
+```
+
+Then build the multi-page documentation site:
+
+```bash
+scribpy build html --mode site --root .
+```
+
+Scribpy prepares the MkDocs inputs and wraps `mkdocs build` itself. Inspect:
+
+```text
+build/site/mkdocs.yml
+build/site/docs/
+build/site/site/index.html
+```
+
+Use `single-page` when you need one distributable document. Use `site` when you
+need a browsable multi-page documentation website.
+
 The demo `scribpy.toml` configures the assembled document title, generated table
 of contents, TOC depth, and section-numbering style:
 
@@ -242,13 +292,18 @@ style = "bullet"
 enabled = true
 max_level = 3
 style = "decimal"
+
+[builders.html]
+mode = "single-page"
+css_files = ["theme/demo.css"]
 ```
 
 ## Next steps
 
 Re-run checks after editing the files under `doc/` and observe how diagnostics,
 section numbering, generated table of contents, TOC depth, and link rewrites
-change.
+change. Then rebuild both HTML modes to compare how the same Markdown corpus is
+published as one document and as a MkDocs-rendered site.
 """
 
 
@@ -261,6 +316,23 @@ _VALID_DEMO_FILES: dict[Path, str] = {
     },
     Path("doc/assets/architecture.png"): "demo asset: architecture\n",
     Path("doc/assets/setup.png"): "demo asset: setup\n",
+    Path("theme/demo.css"): """\
+body {
+  color: #1f2937;
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+  margin: 2rem auto;
+  max-width: 72ch;
+}
+
+h1, h2, h3 {
+  color: #0f172a;
+}
+
+a {
+  color: #0369a1;
+}
+""",
     Path("README.md"): _valid_demo_readme(),
 }
 
