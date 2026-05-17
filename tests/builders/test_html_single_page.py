@@ -190,3 +190,51 @@ def test_write_support_artifacts_stops_when_script_write_fails(
 
     assert artifacts == ()
     assert diagnostics[0].code == "BLD006"
+
+
+def test_write_support_artifacts_stops_when_html_write_fails(
+    tmp_path: Path,
+) -> None:
+    class FailHtmlFS(RealFileSystem):
+        def write_text(self, path: Path, content: str) -> None:
+            if path.name == "index.html":
+                raise OSError("disk full")
+            super().write_text(path, content)
+
+    artifacts, diagnostics = write_single_page_support_artifacts(
+        tmp_path,
+        "<html></html>",
+        Path("build/html"),
+        FailHtmlFS(),
+    )
+
+    assert artifacts == ()
+    assert any(d.code == "BLD005" for d in diagnostics)
+
+
+def test_write_support_artifacts_success(tmp_path: Path) -> None:
+    artifacts, diagnostics = write_single_page_support_artifacts(
+        tmp_path,
+        "<!DOCTYPE html><html><body></body></html>",
+        Path("build/html"),
+        RealFileSystem(),
+    )
+
+    assert diagnostics == ()
+    assert len(artifacts) == 2
+    types = {a.artifact_type for a in artifacts}
+    assert types == {"document", "script"}
+
+
+def test_toc_script_skips_h1_and_has_h2_h3_logic() -> None:
+    from scribpy.builders.html_single_page import write_single_page_script_artifact
+
+    artifact, _ = write_single_page_script_artifact(
+        __import__("pathlib").Path("/tmp"),
+        __import__("pathlib").Path("build/html"),
+        RealFileSystem(),
+    )
+    assert artifact is not None
+    script = artifact.path.read_text(encoding="utf-8")
+    assert "h2, h3" in script.lower() or "H2" in script
+    assert "H1" not in script or "Skip H1" in script

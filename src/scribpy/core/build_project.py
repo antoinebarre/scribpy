@@ -27,6 +27,7 @@ def build_project(
     target: str = "markdown",
     html_mode: str | None = None,
     output_dir: Path | None = None,
+    extra_css: tuple[Path, ...] = (),
     filesystem: FileSystem | None = None,
     parser: MarkdownParser | None = None,
     registry: ExtensionRegistry | None = None,
@@ -51,7 +52,7 @@ def build_project(
     """
     if target in _HTML_TARGETS:
         return _dispatch_html_build(
-            root, target, html_mode, output_dir, filesystem, parser, registry
+            root, target, html_mode, output_dir, extra_css, filesystem, parser, registry
         )
 
     if target != "markdown":
@@ -79,6 +80,7 @@ def _dispatch_html_build(
     target: str,
     html_mode: str | None,
     output_dir: Path | None,
+    extra_css: tuple[Path, ...],
     filesystem: FileSystem | None,
     parser: MarkdownParser | None,
     registry: ExtensionRegistry | None,
@@ -117,7 +119,7 @@ def _dispatch_html_build(
     base_html_config = state.config.html
     html_config = HtmlBuilderConfig(
         mode=effective_mode,
-        css_files=base_html_config.css_files,
+        css_files=(*base_html_config.css_files, *extra_css),
         site_name=base_html_config.site_name,
         theme=base_html_config.theme,
         output_dir=output_dir

@@ -26,6 +26,9 @@ def main() -> None:
         create_result = scribpy.create_demo(demo_dir)
         _step("Create demo project", not create_result.failed)
 
+        # Write the extra blue theme after create_demo so it survives the wipe.
+        _write_blue_theme(demo_dir / "theme" / "blue.css")
+
         # These calls mirror the CLI checks:
         # `scribpy index check`, `scribpy parse check`, and `scribpy lint`.
         index_result = scribpy.check_index(demo_dir)
@@ -40,7 +43,11 @@ def main() -> None:
         # These calls mirror the CLI builds:
         # `scribpy build markdown` and `scribpy build html`.
         markdown_result = scribpy.build_markdown(demo_dir)
-        html_result = scribpy.build_html(demo_dir, mode="single-page")
+        html_result = scribpy.build_html(
+            demo_dir,
+            mode="single-page",
+            extra_css=["theme/blue.css"],
+        )
         site_result = scribpy.build_html(demo_dir, mode="site")
 
     _step("Build Markdown", markdown_result.success)
@@ -59,6 +66,66 @@ def main() -> None:
     _section("Invalid project diagnostics")
     _step("Run lint rules", not invalid_lint.failed)
     scribpy.print_result(invalid_lint)
+
+
+def _write_blue_theme(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        """\
+/* ── Professional blue theme override ──────────────────────────────────── */
+:root {
+  --bg:           #f0f4ff;
+  --surface:      #ffffff;
+  --surface-soft: #e8eeff;
+  --text:         #1a2340;
+  --muted:        #5a6a8a;
+  --heading:      #0d1b3e;
+  --accent:       #1a56db;
+  --accent-soft:  #dce8fd;
+  --border:       #b8c8e8;
+  --shadow:       0 18px 45px rgba(13, 27, 62, 0.10);
+}
+
+body {
+  background:
+    radial-gradient(ellipse at top left,  rgba(26, 86, 219, 0.14) 0%, transparent 38%),
+    radial-gradient(ellipse at bottom right, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+    var(--bg);
+}
+
+.document-content {
+  border-color: rgba(184, 200, 232, 0.9);
+  border-radius: 1.25rem;
+}
+
+.document-content h1 { color: #1e3a8a; letter-spacing: -0.045em; }
+.document-content h2 { border-top-color: #bfdbfe; color: #1e40af; }
+.document-content h3 { color: #0369a1; }
+.document-content h4 { color: #3b5fa0; }
+
+a       { color: var(--accent); }
+a:hover { color: #1346b8; text-decoration-thickness: 0.12em; }
+
+.document-content code { background: #dce8fd; color: #1e3a8a; }
+.document-content pre  { background: #0d1b3e; }
+
+.toc-panel    { background: rgba(240, 244, 255, 0.92) !important;
+                border-right-color: rgba(184, 200, 232, 0.85) !important; }
+.toc-eyebrow  { color: #3b5fa0; }
+.toc-search:focus { border-color: var(--accent);
+                    outline: 2px solid rgba(26, 86, 219, 0.25);
+                    outline-offset: 1px; }
+.toc-list a                        { color: var(--muted); }
+.toc-list a:hover,
+.toc-list a[aria-current="true"]   { background: var(--accent-soft);
+                                     border-color: var(--accent);
+                                     color: var(--heading); }
+.toc-list a[aria-current="location"] { border-color: #93c5fd;
+                                       color: #1d4ed8; }
+.toc-toggle { background: #0d1b3e !important; }
+""",
+        encoding="utf-8",
+    )
 
 
 def _section(title: str) -> None:

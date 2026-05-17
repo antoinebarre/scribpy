@@ -119,6 +119,7 @@ def build_html(
     *,
     mode: HtmlMode = "single-page",
     output_dir: PathLike | None = None,
+    extra_css: list[PathLike] | None = None,
 ) -> BuildResult:
     """Build HTML output in ``single-page`` or ``site`` mode.
 
@@ -128,6 +129,8 @@ def build_html(
             ``"site"``.
         output_dir: Optional HTML output directory override. Relative paths are
             resolved from the project root; absolute paths are kept.
+        extra_css: Additional CSS file paths (relative to the project root) to
+            append after the project-configured stylesheets.
 
     Returns:
         Build result for the requested HTML mode.
@@ -135,12 +138,15 @@ def build_html(
     Examples:
         >>> build_html(".", mode="single-page")
         >>> build_html(".", mode="site", output_dir="build/ci-site")
+        >>> build_html(".", extra_css=["theme/custom.css"])
     """
+    extra = tuple(Path(p) for p in extra_css) if extra_css else ()
     return build_project(
         _path(root),
         target="html",
         html_mode=mode,
         output_dir=_path(output_dir),
+        extra_css=extra,
     )
 
 
