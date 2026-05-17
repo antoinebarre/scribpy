@@ -1,4 +1,10 @@
-.PHONY: format lint docstrings docstrings-strict init-modules format-check typecheck metrics test check ci clean-dist build check-dist publish-test publish
+.PHONY: clean-work format lint docstrings docstrings-strict init-modules format-check typecheck metrics test check ci clean-dist build check-dist publish-test publish
+
+clean-work:
+	@mkdir -p work
+	@find work -mindepth 1 -maxdepth 1 ! -name .gitignore -exec rm -rf {} +
+
+format lint docstrings docstrings-strict init-modules format-check typecheck metrics test check ci clean-dist build check-dist publish-test publish: clean-work
 
 format:
 	uv run ruff format src/ scripts/
