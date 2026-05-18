@@ -44,7 +44,7 @@ class FakePlantUmlRenderer:
 
 
 class FailingPlantUmlRenderer:
-    """Renderer that simulates local PlantUML failure."""
+    """Renderer that simulates Java PlantUML failure."""
 
     def render(self, source: str, output_format: str) -> bytes:
         """Fail deterministically."""
@@ -147,12 +147,16 @@ def test_build_html_single_page_renders_plantuml_locally(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
-        "scribpy.core.build_html.validate_local_plantuml_environment", lambda: ()
+        "scribpy.plugins.plantuml.validate_java_plantuml_environment", lambda: ()
     )
     monkeypatch.setattr(
-        "scribpy.core.build_html.EmbeddedPlantUmlRenderer", FakePlantUmlRenderer
+        "scribpy.plugins.plantuml.JavaPlantUmlRenderer", FakePlantUmlRenderer
     )
-    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_config(
+        tmp_path,
+        '[paths]\nsource = "doc"\n'
+        '[builders.html.plantuml]\nrenderer = "java"\n',
+    )
     _write_source(
         tmp_path,
         "doc/index.md",
@@ -171,12 +175,16 @@ def test_build_html_single_page_stops_on_plantuml_error(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
-        "scribpy.core.build_html.validate_local_plantuml_environment", lambda: ()
+        "scribpy.plugins.plantuml.validate_java_plantuml_environment", lambda: ()
     )
     monkeypatch.setattr(
-        "scribpy.core.build_html.EmbeddedPlantUmlRenderer", FailingPlantUmlRenderer
+        "scribpy.plugins.plantuml.JavaPlantUmlRenderer", FailingPlantUmlRenderer
     )
-    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_config(
+        tmp_path,
+        '[paths]\nsource = "doc"\n'
+        '[builders.html.plantuml]\nrenderer = "java"\n',
+    )
     _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
 
     result = build_project(tmp_path, target="html", html_mode="single-page")
@@ -225,12 +233,16 @@ def test_build_html_site_renders_plantuml_locally(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
-        "scribpy.core.build_html.validate_local_plantuml_environment", lambda: ()
+        "scribpy.plugins.plantuml.validate_java_plantuml_environment", lambda: ()
     )
     monkeypatch.setattr(
-        "scribpy.core.build_html.EmbeddedPlantUmlRenderer", FakePlantUmlRenderer
+        "scribpy.plugins.plantuml.JavaPlantUmlRenderer", FakePlantUmlRenderer
     )
-    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_config(
+        tmp_path,
+        '[paths]\nsource = "doc"\n'
+        '[builders.html.plantuml]\nrenderer = "java"\n',
+    )
     _write_source(
         tmp_path,
         "doc/guide/page.md",
@@ -249,12 +261,16 @@ def test_build_html_site_stops_on_plantuml_error(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
-        "scribpy.core.build_html.validate_local_plantuml_environment", lambda: ()
+        "scribpy.plugins.plantuml.validate_java_plantuml_environment", lambda: ()
     )
     monkeypatch.setattr(
-        "scribpy.core.build_html.EmbeddedPlantUmlRenderer", FailingPlantUmlRenderer
+        "scribpy.plugins.plantuml.JavaPlantUmlRenderer", FailingPlantUmlRenderer
     )
-    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_config(
+        tmp_path,
+        '[paths]\nsource = "doc"\n'
+        '[builders.html.plantuml]\nrenderer = "java"\n',
+    )
     _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
 
     result = build_project(tmp_path, target="html", html_mode="site")
@@ -263,14 +279,18 @@ def test_build_html_site_stops_on_plantuml_error(
     assert any(d.code == "UML002" for d in result.diagnostics)
 
 
-def test_build_html_local_plantuml_fails_early_without_java(
+def test_build_html_java_plantuml_fails_early_without_java(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
-        "scribpy.core.build_html.validate_local_plantuml_environment",
+        "scribpy.plugins.plantuml.validate_java_plantuml_environment",
         lambda: (Diagnostic("error", "UML004", "no java"),),
     )
-    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_config(
+        tmp_path,
+        '[paths]\nsource = "doc"\n'
+        '[builders.html.plantuml]\nrenderer = "java"\n',
+    )
     _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
 
     result = build_project(tmp_path, target="html", html_mode="single-page")
@@ -283,11 +303,11 @@ def test_build_html_web_plantuml_skips_java_preflight(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
-        "scribpy.core.build_html.validate_local_plantuml_environment",
+        "scribpy.plugins.plantuml.validate_java_plantuml_environment",
         lambda: (_ for _ in ()).throw(AssertionError("should not be called")),
     )
     monkeypatch.setattr(
-        "scribpy.core.build_html.WebPlantUmlRenderer", lambda _: FakePlantUmlRenderer()
+        "scribpy.plugins.plantuml.WebPlantUmlRenderer", lambda _: FakePlantUmlRenderer()
     )
     _write_config(
         tmp_path,
@@ -305,7 +325,7 @@ def test_build_html_uses_injected_renderer_without_selecting_configured_backend(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
-        "scribpy.core.build_html.validate_local_plantuml_environment", lambda: ()
+        "scribpy.plugins.plantuml.validate_java_plantuml_environment", lambda: ()
     )
     _write_config(tmp_path, '[paths]\nsource = "doc"\n')
     _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
@@ -467,12 +487,12 @@ def test_build_html_plantuml_override_replaces_project_config(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
-        "scribpy.core.build_html.WebPlantUmlRenderer", lambda _: FakePlantUmlRenderer()
+        "scribpy.plugins.plantuml.WebPlantUmlRenderer", lambda _: FakePlantUmlRenderer()
     )
     _write_config(
         tmp_path,
         '[paths]\nsource = "doc"\n'
-        '[builders.html.plantuml]\nrenderer = "local"\n',
+        '[builders.html.plantuml]\nrenderer = "java"\n',
     )
     _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
 

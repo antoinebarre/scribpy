@@ -320,7 +320,7 @@ def test_created_demo_project_readme_documents_end_to_end_html_flow(
     assert "scribpy --log-level INFO build html --mode site --root ." in readme
     assert "with scribpy.logging_context" in readme
     assert "complex PlantUML diagrams" in readme
-    assert "Install a Java runtime" in readme
+    assert 'configure `renderer = "java"`' in readme
 
 
 def test_invalid_demo_reports_phase_4_lint_diagnostics(tmp_path: Path) -> None:

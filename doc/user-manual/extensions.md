@@ -2,7 +2,9 @@
 
 Most users do not need the extension API. The `ExtensionRegistry` is the entry
 point for advanced callers who want to add custom lint rules or transforms for
-a single execution without modifying Scribpy internals.
+a single execution without modifying Scribpy internals. HTML builds also expose
+an internal code-block plugin hook for block renderers such as PlantUML or
+future Mermaid support.
 
 ---
 
@@ -35,6 +37,13 @@ The original registry is not mutated.
 Return a new registry with one additional Markdown transform appended after the
 built-ins. The original registry is not mutated.
 
+#### `with_code_block_plugin(plugin: CodeBlockPlugin) -> ExtensionRegistry`
+
+Return a new registry with one additional fenced-code-block plugin appended
+after Scribpy's built-in plugins. A plugin can detect a Markdown fence language,
+run an optional preflight check, emit assets, and replace the original blocks in
+the transformed output.
+
 ### Properties
 
 | Property | Type | Description |
@@ -42,6 +51,7 @@ built-ins. The original registry is not mutated.
 | `lint_rules` | `tuple[LintRule, ...]` | All lint rules in execution order. |
 | `markdown_transforms` | `tuple[Transform, ...]` | All Markdown transforms in execution order. |
 | `html_transforms` | `tuple[Transform, ...]` | All HTML transforms in execution order. |
+| `code_block_plugins` | `tuple[CodeBlockPlugin, ...]` | Additional fenced-code-block plugins in execution order. |
 
 ---
 

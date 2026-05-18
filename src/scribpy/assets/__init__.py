@@ -7,25 +7,25 @@ from scribpy.assets.copy import (
     rewrite_asset_links_single_page,
 )
 from scribpy.assets.plantuml import (
-    EmbeddedPlantUmlRenderer,
+    JavaPlantUmlRenderer,
     PlantUmlRenderError,
     PlantUmlRenderResult,
     WebPlantUmlRenderer,
     render_plantuml_blocks,
     render_plantuml_documents,
-    validate_local_plantuml_environment,
+    validate_java_plantuml_environment,
 )
 
 __all__ = [
     "collect_asset_paths",
     "copy_assets",
     "copy_css_files_single_page",
-    "EmbeddedPlantUmlRenderer",
+    "JavaPlantUmlRenderer",
     "PlantUmlRenderError",
     "PlantUmlRenderResult",
     "WebPlantUmlRenderer",
     "render_plantuml_blocks",
     "render_plantuml_documents",
-    "validate_local_plantuml_environment",
+    "validate_java_plantuml_environment",
     "rewrite_asset_links_single_page",
 ]

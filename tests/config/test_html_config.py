@@ -15,7 +15,7 @@ def test_html_config_defaults() -> None:
     assert config.html.site_name is None
     assert config.html.theme is None
     assert config.html.output_dir is None
-    assert config.html.plantuml.renderer == "local"
+    assert config.html.plantuml.renderer == "web"
 
 
 def test_html_config_single_page_mode() -> None:

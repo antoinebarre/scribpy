@@ -45,17 +45,16 @@ def main() -> None:
         # These calls mirror the CLI builds:
         # `scribpy build markdown` and `scribpy build html`.
         markdown_result = scribpy.build_markdown(demo_dir)
-        local_html_result = scribpy.build_html(
-            demo_dir,
-            mode="single-page",
-            extra_css=["theme/blue.css"],
-        )
         web_html_result = scribpy.build_html(
             demo_dir,
             mode="single-page",
             extra_css=["theme/blue.css"],
-            plantuml_renderer="web",
-            plantuml_server_url=PLANTUML_SERVER_URL,
+        )
+        java_html_result = scribpy.build_html(
+            demo_dir,
+            mode="single-page",
+            extra_css=["theme/blue.css"],
+            plantuml_renderer="java",
         )
         web_site_result = scribpy.build_html(
             demo_dir,
@@ -65,15 +64,15 @@ def main() -> None:
         )
 
     _step("Build Markdown", markdown_result.success)
-    _step("Build HTML single-page with default local PlantUML", local_html_result.success)
-    _step("Build HTML single-page with forced web PlantUML", web_html_result.success)
+    _step("Build HTML single-page with default web PlantUML", web_html_result.success)
+    _step("Build HTML single-page with forced Java PlantUML", java_html_result.success)
     _step("Build HTML site with forced web PlantUML", web_site_result.success)
     _artifact_summary("Markdown", markdown_result)
-    _artifact_summary("HTML single-page (local)", local_html_result)
     _artifact_summary("HTML single-page (web)", web_html_result)
+    _artifact_summary("HTML single-page (java)", java_html_result)
     _artifact_summary("HTML site (web)", web_site_result)
-    _print_failure_details("HTML single-page (local)", local_html_result)
     _print_failure_details("HTML single-page (web)", web_html_result)
+    _print_failure_details("HTML single-page (java)", java_html_result)
     _print_failure_details("HTML site (web)", web_site_result)
 
     # A second demo shows what callers receive when linting fails.

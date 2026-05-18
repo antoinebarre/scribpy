@@ -11,7 +11,7 @@ from scribpy.model import IndexMode
 TocStyle = Literal["bullet", "numbered"]
 NumberingStyle = Literal["decimal", "alpha", "roman"]
 HtmlMode = Literal["single-page", "site"]
-PlantUmlRendererMode = Literal["local", "web"]
+PlantUmlRendererMode = Literal["java", "web"]
 
 
 @dataclass(frozen=True)
@@ -100,12 +100,12 @@ class PlantUmlConfig:
     """PlantUML rendering configuration.
 
     Attributes:
-        renderer: Rendering backend. ``"local"`` uses the bundled JAR;
+        renderer: Rendering backend. ``"java"`` uses the bundled JAR;
             ``"web"`` calls a PlantUML server.
         server_url: Base URL of the PlantUML server used by ``"web"`` mode.
     """
 
-    renderer: PlantUmlRendererMode = "local"
+    renderer: PlantUmlRendererMode = "web"
     server_url: str = "http://www.plantuml.com/plantuml"
 
 

@@ -42,7 +42,7 @@ class PlantUmlRenderError(RuntimeError):
     """Raised when one PlantUML backend cannot render a diagram.
 
     Attributes:
-        backend: Renderer backend that failed, either ``"local"`` or ``"web"``.
+        backend: Renderer backend that failed, either ``"java"`` or ``"web"``.
     """
 
     def __init__(self, backend: str, detail: str) -> None:
@@ -56,11 +56,11 @@ class PlantUmlRenderError(RuntimeError):
         self.backend = backend
 
 
-class EmbeddedPlantUmlRenderer:
+class JavaPlantUmlRenderer:
     """Render PlantUML through the JAR shipped inside Scribpy."""
 
     def render(self, source: str, output_format: str) -> bytes:
-        """Render PlantUML source locally.
+        """Render PlantUML source with the bundled JAR through Java.
 
         Args:
             source: Raw PlantUML source.
@@ -87,7 +87,7 @@ class EmbeddedPlantUmlRenderer:
             logger.error(
                 "Bundled PlantUML renderer failed: %s", detail or "<no stderr>"
             )
-            raise PlantUmlRenderError("local", detail or "PlantUML rendering failed.")
+            raise PlantUmlRenderError("java", detail or "PlantUML rendering failed.")
         logger.debug("Bundled PlantUML renderer completed successfully")
         return completed.stdout
 
@@ -129,8 +129,8 @@ class WebPlantUmlRenderer:
             raise PlantUmlRenderError("web", str(exc)) from exc
 
 
-def validate_local_plantuml_environment() -> tuple[Diagnostic, ...]:
-    """Check that local PlantUML execution can start before the build begins.
+def validate_java_plantuml_environment() -> tuple[Diagnostic, ...]:
+    """Check that Java PlantUML execution can start before the build begins.
 
     Returns:
         Diagnostics describing an unavailable Java runtime.
@@ -139,13 +139,20 @@ def validate_local_plantuml_environment() -> tuple[Diagnostic, ...]:
     if java is None:
         return (_java_missing_diagnostic("Could not find the `java` executable."),)
     try:
-        subprocess.run(
+        completed = subprocess.run(
             (java, "-version"),
             capture_output=True,
             check=False,
         )
     except OSError as exc:
         return (_java_missing_diagnostic(f"Could not execute Java: {exc}"),)
+    if completed.returncode != 0:
+        detail = completed.stderr.decode("utf-8", errors="replace").strip()
+        return (
+            _java_missing_diagnostic(
+                detail or f"`java -version` exited with code {completed.returncode}."
+            ),
+        )
     return ()
 
 
@@ -215,7 +222,7 @@ def render_plantuml_blocks(
             logger.error("PlantUML block %s failed to render: %s", digest, exc)
             return PlantUmlRenderResult(
                 content=content,
-                diagnostics=(_local_render_failure_diagnostic(str(exc)),),
+                diagnostics=(_java_render_failure_diagnostic(str(exc)),),
             )
         try:
             artifact_path.parent.mkdir(parents=True, exist_ok=True)
@@ -305,7 +312,7 @@ def _java_missing_diagnostic(detail: str) -> Diagnostic:
     return Diagnostic(
         severity="error",
         code="UML004",
-        message=f"Local PlantUML renderer is unavailable: {detail}",
+        message=f"Java PlantUML renderer is unavailable: {detail}",
         hint=(
             "Install a Java runtime and ensure `java` is available on PATH, "
             "or configure builders.html.plantuml.renderer = 'web'."
@@ -325,17 +332,17 @@ def _render_failure_diagnostic(error: PlantUmlRenderError) -> Diagnostic:
                 "or use a self-hosted PlantUML server."
             ),
         )
-    return _local_render_failure_diagnostic(str(error))
+    return _java_render_failure_diagnostic(str(error))
 
 
-def _local_render_failure_diagnostic(detail: str) -> Diagnostic:
-    """Return a local-renderer failure diagnostic."""
+def _java_render_failure_diagnostic(detail: str) -> Diagnostic:
+    """Return a Java-renderer failure diagnostic."""
     return Diagnostic(
         severity="error",
         code="UML002",
         message=f"Cannot render PlantUML block: {detail}",
         hint=(
-            "Ensure the bundled PlantUML runtime can execute locally and "
+            "Ensure the bundled PlantUML runtime can execute through Java and "
             "the diagram syntax is valid."
         ),
     )
@@ -377,11 +384,11 @@ def _encode6bit(value: int) -> str:
 
 
 __all__ = [
-    "EmbeddedPlantUmlRenderer",
+    "JavaPlantUmlRenderer",
     "PlantUmlRenderError",
     "PlantUmlRenderResult",
     "WebPlantUmlRenderer",
     "render_plantuml_blocks",
     "render_plantuml_documents",
-    "validate_local_plantuml_environment",
+    "validate_java_plantuml_environment",
 ]

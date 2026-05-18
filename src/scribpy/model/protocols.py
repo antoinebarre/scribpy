@@ -4,9 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from scribpy.model.markdown import MarkdownAst
+
+if TYPE_CHECKING:
+    from scribpy.model.diagnostic import Diagnostic
+    from scribpy.model.results import BuildArtifact
+    from scribpy.model.transformed import TransformedDocument
 
 
 @runtime_checkable
@@ -114,8 +119,61 @@ class DiagramRenderer(Protocol):
         """
 
 
+@runtime_checkable
+class CodeBlockPlugin(Protocol):
+    """Plugin that rewrites fenced Markdown code blocks into build artifacts.
+
+    Attributes:
+        language: Markdown fence language handled by the plugin.
+    """
+
+    language: str
+
+    def has_blocks(self, content: str) -> bool:
+        """Return whether one Markdown source contains supported fenced blocks.
+
+        Args:
+            content: Markdown source text to inspect.
+
+        Returns:
+            Whether the source contains blocks handled by the plugin.
+        """
+
+    def preflight(self) -> tuple[Diagnostic, ...]:
+        """Validate plugin runtime requirements before rendering begins.
+
+        Returns:
+            Diagnostics raised before rendering starts.
+        """
+
+    def render_documents(
+        self,
+        documents: tuple[TransformedDocument, ...],
+        *,
+        output_dir: Path,
+        flattened: bool,
+        target: str,
+    ) -> tuple[
+        tuple[TransformedDocument, ...],
+        tuple[BuildArtifact, ...],
+        tuple[Diagnostic, ...],
+    ]:
+        """Rewrite documents and materialize plugin artifacts.
+
+        Args:
+            documents: Target-ready documents to inspect.
+            output_dir: Root directory for generated plugin assets.
+            flattened: Whether output documents will be merged into one page.
+            target: Artifact target label.
+
+        Returns:
+            Rewritten documents, generated artifacts, and diagnostics.
+        """
+
+
 __all__ = [
     "DiagramRenderer",
+    "CodeBlockPlugin",
     "FileSystem",
     "HtmlRenderer",
     "MarkdownParser",

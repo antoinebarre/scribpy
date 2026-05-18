@@ -37,3 +37,22 @@ def test_with_markdown_transform_returns_extended_registry() -> None:
     registry = ExtensionRegistry().with_markdown_transform(noop)
 
     assert registry.markdown_transforms == (noop,)
+
+
+def test_with_code_block_plugin_returns_extended_registry() -> None:
+    class FakePlugin:
+        language = "fake"
+
+        def has_blocks(self, content: str) -> bool:
+            return False
+
+        def preflight(self):
+            return ()
+
+        def render_documents(self, documents, *, output_dir, flattened, target):
+            return documents, (), ()
+
+    plugin = FakePlugin()
+    registry = ExtensionRegistry().with_code_block_plugin(plugin)
+
+    assert registry.code_block_plugins == (plugin,)

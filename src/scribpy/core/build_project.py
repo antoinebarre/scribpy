@@ -113,7 +113,7 @@ def _dispatch_html_build(
     assert state.config is not None
     base_html_config = state.config.html
     plantuml_renderer = overrides.plantuml_renderer
-    if plantuml_renderer is not None and plantuml_renderer not in ("local", "web"):
+    if plantuml_renderer is not None and plantuml_renderer not in ("java", "web"):
         return BuildResult(
             success=False,
             artifacts=(),
@@ -122,7 +122,7 @@ def _dispatch_html_build(
                     severity="error",
                     code="BLD001",
                     message=f"Unsupported PlantUML renderer: {plantuml_renderer}",
-                    hint="Use plantuml_renderer='local' or 'web'.",
+                    hint="Use plantuml_renderer='java' or 'web'.",
                 ),
             ),
         )

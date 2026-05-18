@@ -68,18 +68,19 @@ scribpy build html --mode site
 
 ou une API equivalente dans `build_project(...)`.
 
-### Rendu PlantUML hors ligne
+### Plugins internes de blocs de code et rendu PlantUML
 
-La phase 7 introduira un rendu PlantUML **local, pilote par Scribpy, sans appel a
-un service web externe**. Les blocs fenced Markdown de type `plantuml` seront
-detectes, rendus en assets HTML compatibles, puis remplaces dans le contenu
-transforme avant le rendu final :
+La phase 7 introduira une abstraction interne de **plugins de blocs de code**.
+PlantUML sera la premiere implementation, mais le mecanisme devra aussi pouvoir
+accueillir Mermaid ou d'autres langages fenced qui produisent des artefacts puis
+remplacent leur bloc source dans le Markdown transforme :
 
 ```text
-Markdown avec blocs fenced de type plantuml
-  -> extract_plantuml_blocks
-  -> render_plantuml_blocks
-  -> generated local SVG assets
+Markdown avec blocs fenced pris en charge
+  -> CodeBlockPlugin.has_blocks
+  -> CodeBlockPlugin.preflight
+  -> CodeBlockPlugin.render_documents
+  -> generated local assets
   -> replace blocks with local HTML/image references
   -> HTML final
 ```
@@ -96,20 +97,21 @@ render_plantuml_blocks(
 ```
 
 `PlantUmlRenderResult` contiendra le contenu reecrit, les assets produits et les
-diagnostics associes. La fonction devra :
+diagnostics associes. Le plugin PlantUML devra :
 
 - detecter les blocs fenced `plantuml` presents dans le Markdown ;
-- rendre chaque diagramme localement via un `DiagramRenderer` injecte ;
+- choisir le renderer PlantUML configure (`web` par defaut, `java` sur demande) ;
 - produire des assets SVG locaux deterministes ;
 - remplacer les blocs sources par du HTML ou des references d'image locales ;
 - retourner les diagnostics de rendu sans muter les sources ;
-- ne jamais envoyer le contenu PlantUML vers un service distant.
+- verifier Java au plus tot lorsque le backend `java` est explicitement demande.
 
 Le choix SVG est retenu pour le MVP HTML : il reste lisible, vectoriel et
 portable dans les deux modes de sortie. L'integration de PlantUML appartient a
-Scribpy ; le backend de rendu est un adaptateur local derriere le protocole
-`DiagramRenderer`, afin de conserver un pipeline testable et de garantir un
-fonctionnement sans internet.
+Scribpy ; le backend de rendu reste un adaptateur derriere le protocole
+`DiagramRenderer`, afin de conserver un pipeline testable. Le mode `web`
+favorise l'usage immediat ; le mode `java` preserve un chemin hors ligne quand
+le projet l'exige.
 
 ### Mode `single-page`
 
@@ -292,7 +294,7 @@ Principes communs :
 - les transforms restent responsables de la preparation du contenu, pas de
   l'ecriture des fichiers ;
 - les CSS fournis sont des entrees de projet, pas des dependances codees en dur ;
-- les blocs PlantUML sont rendus localement et ne provoquent aucun appel reseau ;
+- les blocs pris en charge sont traites par des plugins internes ordonnes ;
 - le mode `site` s'appuie sur les conventions MkDocs au lieu de les repliquer ;
 - les outputs restent deterministes a configuration et sources identiques.
 
@@ -367,26 +369,34 @@ Diagnostics proposes :
 - `SITE002` : echec d'ecriture d'une page du site ;
 - `SITE003` : MkDocs indisponible ou echec de son rendu.
 
-### Etape 5 — Rendu PlantUML hors ligne
+### Etape 5 — Plugins de blocs et rendu PlantUML
 
-Objectif : transformer les blocs PlantUML du Markdown en HTML sans dependance a
-un service externe.
+Objectif : transformer les blocs de code supportes du Markdown en assets HTML
+via une architecture interne extensible.
 
 A faire :
 
+- introduire le protocole `CodeBlockPlugin` ;
+- permettre l'enregistrement de plugins dans `ExtensionRegistry` ;
 - detecter les fences `plantuml` dans les documents transformes ;
 - ajouter `render_plantuml_blocks(...)` comme point d'entree de rendu ;
-- utiliser un `DiagramRenderer` local injecte, jamais un renderer HTTP ;
+- utiliser un `DiagramRenderer` injecte ;
+- choisir `web` par defaut et `java` lorsque ce backend est explicitement
+  configure ;
+- verifier la disponibilite de Java avant rendu quand `java` est selectionne ;
 - produire des fichiers SVG deterministes sous `assets/diagrams/` ;
 - remplacer les fences par des references HTML locales ;
 - exposer les assets produits au builder `single-page` et au builder `site` ;
-- garantir le fonctionnement hors ligne par des tests sans acces reseau.
+- garantir le fonctionnement hors ligne du backend `java` par des tests sans
+  acces reseau.
 
 Diagnostics proposes :
 
 - `UML001` : bloc PlantUML invalide ou non ferme ;
-- `UML002` : echec de rendu PlantUML local ;
+- `UML002` : echec de rendu PlantUML Java ;
 - `UML003` : echec d'ecriture d'un SVG genere.
+- `UML004` : runtime Java indisponible ;
+- `UML005` : echec de rendu PlantUML web.
 
 ### Etape 6 — Service applicatif et CLI
 
@@ -465,14 +475,17 @@ La phase 7 est consideree terminee lorsque :
 6. le mode `site` copie les CSS fournis et les declare dans `extra_css` ;
 7. le mode `site` preserve des liens Markdown relatifs compatibles avec MkDocs ;
 8. les assets locaux sont copies dans la destination attendue par chaque mode ;
-9. les blocs `plantuml` presents dans le Markdown sont rendus localement en SVG
-   puis integres a la sortie HTML ;
-10. le rendu PlantUML ne depend d'aucun service web externe et reste utilisable
-    hors ligne ;
-11. aucun artefact n'est ecrit en cas d'erreur bloquante ;
-12. les tests couvrent config, transforms, builders, assets, service applicatif
+9. les blocs de code supportes sont traites par des plugins internes
+   extensibles ;
+10. les blocs `plantuml` presents dans le Markdown sont rendus en SVG puis
+    integres a la sortie HTML ;
+11. PlantUML utilise le backend `web` par defaut et peut etre force sur `java`
+    pour un usage hors ligne ;
+12. le backend PlantUML `java` verifie son environnement avant le rendu ;
+13. aucun artefact n'est ecrit en cas d'erreur bloquante ;
+14. les tests couvrent config, transforms, builders, assets, service applicatif
     et CLI ;
-13. `make check` passe avec 100% de couverture.
+15. `make check` passe avec 100% de couverture.
 
 ---
 

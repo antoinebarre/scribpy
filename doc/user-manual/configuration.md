@@ -208,17 +208,8 @@ Controls how fenced `plantuml` blocks are rendered during HTML builds.
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `renderer` | `"local"` / `"web"` | `"local"` | Use the bundled local JAR or a PlantUML web server. |
+| `renderer` | `"java"` / `"web"` | `"web"` | Use a PlantUML web server or the bundled JAR through Java. |
 | `server_url` | `string` | PlantUML public server | Base URL used only when `renderer = "web"`. |
-
-```toml
-[builders.html.plantuml]
-renderer = "local"
-```
-
-`local` is the default and keeps diagram content on the machine. Scribpy checks
-that Java is available before starting an HTML build that contains PlantUML
-blocks.
 
 ```toml
 [builders.html.plantuml]
@@ -226,8 +217,17 @@ renderer = "web"
 server_url = "http://www.plantuml.com/plantuml"
 ```
 
-`web` sends the diagram source to the configured PlantUML server. Use it only
-when that tradeoff is acceptable for the project content.
+`web` is the default and sends diagram source to the configured PlantUML server.
+It works without requiring Java on the machine.
+
+```toml
+[builders.html.plantuml]
+renderer = "java"
+```
+
+`java` keeps diagram content on the machine. Scribpy checks that Java is
+available before starting an HTML build that contains PlantUML blocks and emits
+a dedicated diagnostic when the runtime cannot be used.
 
 ---
 

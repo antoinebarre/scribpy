@@ -60,9 +60,9 @@ Build the portable single-page document:
 scribpy build html --mode single-page --root .
 ```
 
-The demo contains complex PlantUML diagrams rendered locally into SVG assets.
-Install a Java runtime before running the HTML builds so Scribpy can execute its
-bundled PlantUML engine without using any external service.
+The demo contains complex PlantUML diagrams rendered into SVG assets. Scribpy
+uses web rendering by default; configure `renderer = "java"` when you want the
+bundled PlantUML engine to run offline on a machine with Java installed.
 
 Inspect:
 

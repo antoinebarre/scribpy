@@ -5,14 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 
 from scribpy.assets import (
-    EmbeddedPlantUmlRenderer,
-    WebPlantUmlRenderer,
     collect_asset_paths,
     copy_assets,
     copy_css_files_single_page,
-    render_plantuml_documents,
     rewrite_asset_links_single_page,
-    validate_local_plantuml_environment,
 )
 from scribpy.builders.html_single_page import (
     build_single_page_html,
@@ -30,7 +26,13 @@ from scribpy.extensions import ExtensionRegistry
 from scribpy.lint import LintContext, run_lint_rules
 from scribpy.logging import get_logger
 from scribpy.model import BuildArtifact, BuildResult, Diagnostic, TransformedDocument
-from scribpy.model.protocols import DiagramRenderer, FileSystem, MarkdownParser
+from scribpy.model.protocols import (
+    CodeBlockPlugin,
+    DiagramRenderer,
+    FileSystem,
+    MarkdownParser,
+)
+from scribpy.plugins import PlantUmlPlugin
 from scribpy.transforms import Transform, TransformOptions, apply_transforms
 from scribpy.transforms.pipeline import native_html_transforms
 from scribpy.utils import has_errors
@@ -70,18 +72,26 @@ def build_html_project(
     diagnostics = _lint(state, diagnostics, active_registry)
     if has_errors(diagnostics):
         return _blocked(diagnostics)
-    diagnostics = (*diagnostics, *_preflight_plantuml(state, html_config))
+    code_block_plugins = _code_block_plugins(
+        active_registry,
+        html_config,
+        diagram_renderer,
+    )
+    diagnostics = (
+        *diagnostics,
+        *_preflight_code_block_plugins(state, code_block_plugins),
+    )
     if has_errors(diagnostics):
         return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
 
     if html_config.mode == "single-page":
         logger.info("Starting single-page HTML build")
         return _build_single_page(
-            state, diagnostics, html_config, active_registry, diagram_renderer
+            state, diagnostics, html_config, active_registry, code_block_plugins
         )
     logger.info("Starting site HTML build")
     return _build_site(
-        state, diagnostics, html_config, active_registry, diagram_renderer
+        state, diagnostics, html_config, active_registry, code_block_plugins
     )
 
 
@@ -108,7 +118,7 @@ def _build_single_page(
     diagnostics: tuple[Diagnostic, ...],
     html_config: HtmlBuilderConfig,
     registry: ExtensionRegistry,
-    diagram_renderer: DiagramRenderer | None,
+    code_block_plugins: tuple[CodeBlockPlugin, ...],
 ) -> BuildResult:
     """Build single page."""
     assert state.project_root is not None
@@ -128,11 +138,11 @@ def _build_single_page(
         return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
 
     abs_output = state.project_root / html_config.resolve_output_dir()
-    rendered_documents, diagram_artifacts, diagnostics = _render_diagrams(
+    rendered_documents, diagram_artifacts, diagnostics = _render_code_blocks(
         transform_result.documents,
         diagnostics,
-        _select_diagram_renderer(html_config, diagram_renderer),
-        abs_output / "assets" / "diagrams",
+        code_block_plugins,
+        abs_output / "assets",
         flattened=True,
         target="html",
     )
@@ -193,7 +203,7 @@ def _build_site(
     diagnostics: tuple[Diagnostic, ...],
     html_config: HtmlBuilderConfig,
     registry: ExtensionRegistry,
-    diagram_renderer: DiagramRenderer | None,
+    code_block_plugins: tuple[CodeBlockPlugin, ...],
 ) -> BuildResult:
     """Build site."""
     assert state.project_root is not None
@@ -210,11 +220,11 @@ def _build_site(
         return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
 
     docs_dir = state.project_root / html_config.resolve_output_dir() / "docs"
-    rendered_documents, diagram_artifacts, diagnostics = _render_diagrams(
+    rendered_documents, diagram_artifacts, diagnostics = _render_code_blocks(
         transform_result.documents,
         diagnostics,
-        _select_diagram_renderer(html_config, diagram_renderer),
-        docs_dir / "assets" / "diagrams",
+        code_block_plugins,
+        docs_dir / "assets",
         flattened=False,
         target="html-site",
     )
@@ -314,11 +324,11 @@ def _transform_options(state: ProjectPipelineState) -> TransformOptions:
     )
 
 
-def _render_diagrams(
+def _render_code_blocks(
     documents: tuple[TransformedDocument, ...],
     diagnostics: tuple[Diagnostic, ...],
-    diagram_renderer: DiagramRenderer,
-    diagrams_dir: Path,
+    plugins: tuple[CodeBlockPlugin, ...],
+    output_dir: Path,
     *,
     flattened: bool,
     target: str,
@@ -327,54 +337,57 @@ def _render_diagrams(
     tuple[BuildArtifact, ...],
     tuple[Diagnostic, ...],
 ]:
-    """Render PlantUML documents and append diagnostics.
+    """Render fenced-code-block plugins and append diagnostics.
 
     Args:
         documents: Target-ready documents to inspect.
         diagnostics: Diagnostics already collected by the build.
-        diagram_renderer: Optional injected renderer override.
-        diagrams_dir: Destination directory for generated SVG files.
+        plugins: Ordered code-block plugins to apply.
+        output_dir: Destination root for plugin-generated assets.
         flattened: Whether output documents will be merged into one page.
         target: Artifact target label.
 
     Returns:
         Rewritten documents, generated artifacts, and accumulated diagnostics.
     """
-    rendered_documents, artifacts, diagram_diags = render_plantuml_documents(
-        documents,
-        renderer=diagram_renderer,
-        diagrams_dir=diagrams_dir,
-        flattened=flattened,
-        target=target,
-    )
-    return rendered_documents, artifacts, (*diagnostics, *diagram_diags)
+    rendered_documents = documents
+    artifacts: list[BuildArtifact] = []
+    for plugin in plugins:
+        rendered_documents, plugin_artifacts, plugin_diags = plugin.render_documents(
+            rendered_documents,
+            output_dir=output_dir,
+            flattened=flattened,
+            target=target,
+        )
+        artifacts.extend(plugin_artifacts)
+        diagnostics = (*diagnostics, *plugin_diags)
+        if has_errors(diagnostics):
+            break
+    return rendered_documents, tuple(artifacts), diagnostics
 
 
-def _preflight_plantuml(
+def _preflight_code_block_plugins(
     state: ProjectPipelineState,
-    html_config: HtmlBuilderConfig,
+    plugins: tuple[CodeBlockPlugin, ...],
 ) -> tuple[Diagnostic, ...]:
-    """Run early PlantUML backend validation when diagrams are present."""
-    if html_config.plantuml.renderer != "local" or not _has_plantuml_blocks(state):
-        return ()
-    return validate_local_plantuml_environment()
+    """Run early plugin validation only for plugins present in source Markdown."""
+    diagnostics: list[Diagnostic] = []
+    for plugin in plugins:
+        if any(plugin.has_blocks(document.source) for document in state.documents):
+            diagnostics.extend(plugin.preflight())
+    return tuple(diagnostics)
 
 
-def _select_diagram_renderer(
+def _code_block_plugins(
+    registry: ExtensionRegistry,
     html_config: HtmlBuilderConfig,
     override: DiagramRenderer | None,
-) -> DiagramRenderer:
-    """Return the configured PlantUML renderer."""
-    if override is not None:
-        return override
-    if html_config.plantuml.renderer == "web":
-        return WebPlantUmlRenderer(html_config.plantuml.server_url)
-    return EmbeddedPlantUmlRenderer()
-
-
-def _has_plantuml_blocks(state: ProjectPipelineState) -> bool:
-    """Return whether source documents contain PlantUML fences."""
-    return any("```plantuml" in document.source for document in state.documents)
+) -> tuple[CodeBlockPlugin, ...]:
+    """Return built-in and registry-provided code-block plugins."""
+    return (
+        PlantUmlPlugin(html_config.plantuml, override),
+        *registry.code_block_plugins,
+    )
 
 
 def _custom_html_transforms(

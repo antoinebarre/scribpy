@@ -25,11 +25,11 @@ def parse_plantuml_config(
     Returns:
         Typed PlantUML configuration.
     """
-    renderer = raw.get("renderer", "local")
-    if renderer not in ("local", "web"):
+    renderer = raw.get("renderer", "web")
+    if renderer not in ("java", "web"):
         raise error_type(
             "Configuration value builders.html.plantuml.renderer must be "
-            "'local' or 'web'."
+            "'java' or 'web'."
         )
     server_url = parse_optional_str(raw, "server_url", "builders.html.plantuml")
     typed_renderer: PlantUmlRendererMode = renderer

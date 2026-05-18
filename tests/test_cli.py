@@ -219,7 +219,7 @@ def test_build_html_cli_accepts_plantuml_overrides(
             return b"<svg/>"
 
     monkeypatch.setattr(
-        "scribpy.core.build_html.WebPlantUmlRenderer", lambda _: FakeRenderer()
+        "scribpy.plugins.plantuml.WebPlantUmlRenderer", lambda _: FakeRenderer()
     )
 
     exit_code = main(

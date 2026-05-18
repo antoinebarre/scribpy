@@ -5,11 +5,11 @@ from types import SimpleNamespace
 from urllib.error import URLError
 
 from scribpy.assets.plantuml import (
-    EmbeddedPlantUmlRenderer,
+    JavaPlantUmlRenderer,
     PlantUmlRenderError,
     WebPlantUmlRenderer,
     _encode6bit,
-    validate_local_plantuml_environment,
+    validate_java_plantuml_environment,
     render_plantuml_blocks,
     render_plantuml_documents,
 )
@@ -17,7 +17,7 @@ from scribpy.model import Document, MarkdownAst, TransformedDocument
 
 
 class FakeRenderer:
-    """Deterministic local renderer used by tests."""
+    """Deterministic Java renderer used by tests."""
 
     def render(self, source: str, output_format: str) -> bytes:
         """Return a tiny SVG payload."""
@@ -26,7 +26,7 @@ class FakeRenderer:
 
 
 class FailingRenderer:
-    """Renderer that simulates a local PlantUML failure."""
+    """Renderer that simulates a Java PlantUML failure."""
 
     def render(self, source: str, output_format: str) -> bytes:
         """Raise a render error."""
@@ -86,7 +86,7 @@ def test_render_plantuml_blocks_reports_renderer_failure(tmp_path: Path) -> None
     assert result.diagnostics[0].code == "UML002"
 
 
-def test_embedded_renderer_invokes_local_jar(monkeypatch) -> None:
+def test_java_renderer_invokes_local_jar(monkeypatch) -> None:
     """The embedded renderer shells out to the bundled local JAR."""
     seen: dict[str, object] = {}
 
@@ -97,7 +97,7 @@ def test_embedded_renderer_invokes_local_jar(monkeypatch) -> None:
 
     monkeypatch.setattr("scribpy.assets.plantuml.subprocess.run", fake_run)
 
-    rendered = EmbeddedPlantUmlRenderer().render("A -> B", "svg")
+    rendered = JavaPlantUmlRenderer().render("A -> B", "svg")
 
     assert rendered == b"<svg/>"
     assert seen["command"][0:3] == ("java", "-jar", seen["command"][2])
@@ -105,7 +105,7 @@ def test_embedded_renderer_invokes_local_jar(monkeypatch) -> None:
     assert seen["input"] == b"A -> B"
 
 
-def test_embedded_renderer_reports_local_process_error(monkeypatch) -> None:
+def test_java_renderer_reports_local_process_error(monkeypatch) -> None:
     """PlantUML stderr becomes a Python exception."""
 
     def fake_run(command, **kwargs):
@@ -114,33 +114,33 @@ def test_embedded_renderer_reports_local_process_error(monkeypatch) -> None:
     monkeypatch.setattr("scribpy.assets.plantuml.subprocess.run", fake_run)
 
     try:
-        EmbeddedPlantUmlRenderer().render("broken", "svg")
+        JavaPlantUmlRenderer().render("broken", "svg")
     except PlantUmlRenderError as exc:
-        assert exc.backend == "local"
+        assert exc.backend == "java"
         assert str(exc) == "syntax error"
     else:
         raise AssertionError("Expected RuntimeError")
 
 
-def test_validate_local_environment_reports_missing_java(monkeypatch) -> None:
+def test_validate_java_environment_reports_missing_java(monkeypatch) -> None:
     monkeypatch.setattr("scribpy.assets.plantuml.shutil.which", lambda _: None)
 
-    diagnostics = validate_local_plantuml_environment()
+    diagnostics = validate_java_plantuml_environment()
 
     assert diagnostics[0].code == "UML004"
 
 
-def test_validate_local_environment_accepts_java(monkeypatch) -> None:
+def test_validate_java_environment_accepts_java(monkeypatch) -> None:
     monkeypatch.setattr("scribpy.assets.plantuml.shutil.which", lambda _: "/bin/java")
     monkeypatch.setattr(
         "scribpy.assets.plantuml.subprocess.run",
         lambda *args, **kwargs: SimpleNamespace(returncode=0),
     )
 
-    assert validate_local_plantuml_environment() == ()
+    assert validate_java_plantuml_environment() == ()
 
 
-def test_validate_local_environment_reports_unexecutable_java(monkeypatch) -> None:
+def test_validate_java_environment_reports_unexecutable_java(monkeypatch) -> None:
     monkeypatch.setattr("scribpy.assets.plantuml.shutil.which", lambda _: "/bin/java")
 
     def fail_run(*args, **kwargs):
@@ -148,9 +148,24 @@ def test_validate_local_environment_reports_unexecutable_java(monkeypatch) -> No
 
     monkeypatch.setattr("scribpy.assets.plantuml.subprocess.run", fail_run)
 
-    diagnostics = validate_local_plantuml_environment()
+    diagnostics = validate_java_plantuml_environment()
 
     assert diagnostics[0].code == "UML004"
+
+
+def test_validate_java_environment_reports_nonzero_java(monkeypatch) -> None:
+    monkeypatch.setattr("scribpy.assets.plantuml.shutil.which", lambda _: "/bin/java")
+    monkeypatch.setattr(
+        "scribpy.assets.plantuml.subprocess.run",
+        lambda *args, **kwargs: SimpleNamespace(
+            returncode=1, stderr=b"runtime missing"
+        ),
+    )
+
+    diagnostics = validate_java_plantuml_environment()
+
+    assert diagnostics[0].code == "UML004"
+    assert "runtime missing" in diagnostics[0].message
 
 
 def test_web_renderer_fetches_svg(monkeypatch) -> None:
@@ -221,7 +236,7 @@ def test_render_plantuml_blocks_reports_web_failure(tmp_path: Path) -> None:
 def test_render_plantuml_blocks_reports_typed_local_failure(tmp_path: Path) -> None:
     class FailingLocalRenderer:
         def render(self, source: str, output_format: str) -> bytes:
-            raise PlantUmlRenderError("local", "syntax error")
+            raise PlantUmlRenderError("java", "syntax error")
 
     result = render_plantuml_blocks(
         "```plantuml\nA -> B\n```\n",

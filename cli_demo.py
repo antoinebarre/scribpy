@@ -58,25 +58,23 @@ def main() -> int:
             expected=0,
         ),
         _run(
-            "Build single-page HTML with default local PlantUML",
+            "Build single-page HTML with default web PlantUML",
             ["build", "html", "--mode", "single-page", "--root", str(valid_dir)],
-            expected=_expected_local_plantuml_exit_code(),
+            expected=0,
         ),
         _run(
-            "Build single-page HTML with forced web PlantUML",
+            "Build single-page HTML with forced Java PlantUML",
             [
                 "build",
                 "html",
                 "--mode",
                 "single-page",
                 "--plantuml-renderer",
-                "web",
-                "--plantuml-server-url",
-                PLANTUML_SERVER_URL,
+                "java",
                 "--root",
                 str(valid_dir),
             ],
-            expected=0,
+            expected=_expected_java_plantuml_exit_code(),
         ),
         _run(
             "Build site HTML with forced web PlantUML",
@@ -124,8 +122,8 @@ def _reset(path: Path) -> None:
         shutil.rmtree(path)
 
 
-def _expected_local_plantuml_exit_code() -> int:
-    """Return the expected local-renderer outcome for this machine.
+def _expected_java_plantuml_exit_code() -> int:
+    """Return the expected java-renderer outcome for this machine.
 
     Returns:
         ``0`` when Java appears available, otherwise ``1`` for the expected

@@ -73,7 +73,7 @@ class HtmlMode(StrEnum):
 class PlantUmlRendererOption(StrEnum):
     """Supported PlantUML renderer backends."""
 
-    LOCAL = "local"
+    JAVA = "java"
     WEB = "web"
 
 
