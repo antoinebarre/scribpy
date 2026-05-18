@@ -70,6 +70,13 @@ class HtmlMode(StrEnum):
     SITE = "site"
 
 
+class PlantUmlRendererOption(StrEnum):
+    """Supported PlantUML renderer backends."""
+
+    LOCAL = "local"
+    WEB = "web"
+
+
 class DemoVariantOption(StrEnum):
     """Supported demo project variants."""
 
@@ -233,6 +240,14 @@ def build_html(
     mode: Annotated[HtmlMode, typer.Option("--mode", help="Output mode.")] = (
         HtmlMode.SINGLE_PAGE
     ),
+    plantuml_renderer: Annotated[
+        PlantUmlRendererOption | None,
+        typer.Option("--plantuml-renderer", help="Override PlantUML renderer."),
+    ] = None,
+    plantuml_server_url: Annotated[
+        str | None,
+        typer.Option("--plantuml-server-url", help="Override PlantUML server URL."),
+    ] = None,
 ) -> None:
     """Build HTML output.
 
@@ -241,11 +256,19 @@ def build_html(
         root: Optional project root override.
         output_dir: Optional build directory override.
         mode: HTML output mode.
+        plantuml_renderer: Optional PlantUML renderer override.
+        plantuml_server_url: Optional PlantUML server URL override.
     """
     _finish(
         ctx,
         lambda runtime: run_build_html_command(
-            root, mode.value, output_dir, runtime.stdout, runtime.stderr
+            root,
+            mode.value,
+            output_dir,
+            None if plantuml_renderer is None else plantuml_renderer.value,
+            plantuml_server_url,
+            runtime.stdout,
+            runtime.stderr,
         ),
     )
 

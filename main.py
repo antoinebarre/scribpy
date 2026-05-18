@@ -11,6 +11,8 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 import scribpy
 
+PLANTUML_SERVER_URL = "http://www.plantuml.com/plantuml"
+
 
 def main() -> None:
     """Show the public API on both a valid and an invalid project."""
@@ -43,19 +45,36 @@ def main() -> None:
         # These calls mirror the CLI builds:
         # `scribpy build markdown` and `scribpy build html`.
         markdown_result = scribpy.build_markdown(demo_dir)
-        html_result = scribpy.build_html(
+        local_html_result = scribpy.build_html(
             demo_dir,
             mode="single-page",
             extra_css=["theme/blue.css"],
         )
-        site_result = scribpy.build_html(demo_dir, mode="site")
+        web_html_result = scribpy.build_html(
+            demo_dir,
+            mode="single-page",
+            extra_css=["theme/blue.css"],
+            plantuml_renderer="web",
+            plantuml_server_url=PLANTUML_SERVER_URL,
+        )
+        web_site_result = scribpy.build_html(
+            demo_dir,
+            mode="site",
+            plantuml_renderer="web",
+            plantuml_server_url=PLANTUML_SERVER_URL,
+        )
 
     _step("Build Markdown", markdown_result.success)
-    _step("Build HTML single-page", html_result.success)
-    _step("Build HTML site", site_result.success)
+    _step("Build HTML single-page with default local PlantUML", local_html_result.success)
+    _step("Build HTML single-page with forced web PlantUML", web_html_result.success)
+    _step("Build HTML site with forced web PlantUML", web_site_result.success)
     _artifact_summary("Markdown", markdown_result)
-    _artifact_summary("HTML single-page", html_result)
-    _artifact_summary("HTML site", site_result)
+    _artifact_summary("HTML single-page (local)", local_html_result)
+    _artifact_summary("HTML single-page (web)", web_html_result)
+    _artifact_summary("HTML site (web)", web_site_result)
+    _print_failure_details("HTML single-page (local)", local_html_result)
+    _print_failure_details("HTML single-page (web)", web_html_result)
+    _print_failure_details("HTML site (web)", web_site_result)
 
     # A second demo shows what callers receive when linting fails.
     if invalid_dir.exists():
@@ -158,6 +177,19 @@ def _artifact_summary(label: str, result: scribpy.BuildResult) -> None:
     print(f"  {label}: {primary.path}")
     if len(result.artifacts) > 1:
         print(f"    additional artifacts: {len(result.artifacts) - 1}")
+
+
+def _print_failure_details(label: str, result: scribpy.BuildResult) -> None:
+    """Print diagnostics for one failed demo build.
+
+    Args:
+        label: Human-readable build label.
+        result: Build result returned by Scribpy.
+    """
+    if result.success:
+        return
+    print(f"\n{label} diagnostics")
+    scribpy.print_result(result)
 
 
 if __name__ == "__main__":

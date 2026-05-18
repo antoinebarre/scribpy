@@ -39,8 +39,8 @@ AssembledDocument + Theme + CSS
 ```
 
 La phase 7 reprend aussi la partie immediate de FC-09 necessaire au web :
-validation et copie des assets references, sans encore livrer le rendu de
-diagrammes.
+validation et copie des assets references, ainsi que le premier rendu de
+diagrammes utile au HTML : **PlantUML hors ligne**.
 
 MkDocs fournit deja un modele standard pour un site documentaire : un fichier
 `mkdocs.yml`, un repertoire `docs/`, une navigation `nav`, des liens Markdown
@@ -67,6 +67,49 @@ scribpy build html --mode site
 ```
 
 ou une API equivalente dans `build_project(...)`.
+
+### Rendu PlantUML hors ligne
+
+La phase 7 introduira un rendu PlantUML **local, pilote par Scribpy, sans appel a
+un service web externe**. Les blocs fenced Markdown de type `plantuml` seront
+detectes, rendus en assets HTML compatibles, puis remplaces dans le contenu
+transforme avant le rendu final :
+
+```text
+Markdown avec blocs fenced de type plantuml
+  -> extract_plantuml_blocks
+  -> render_plantuml_blocks
+  -> generated local SVG assets
+  -> replace blocks with local HTML/image references
+  -> HTML final
+```
+
+La fonction centrale attendue sera :
+
+```python
+render_plantuml_blocks(
+    content: str,
+    *,
+    renderer: DiagramRenderer,
+    output_dir: Path,
+) -> PlantUmlRenderResult
+```
+
+`PlantUmlRenderResult` contiendra le contenu reecrit, les assets produits et les
+diagnostics associes. La fonction devra :
+
+- detecter les blocs fenced `plantuml` presents dans le Markdown ;
+- rendre chaque diagramme localement via un `DiagramRenderer` injecte ;
+- produire des assets SVG locaux deterministes ;
+- remplacer les blocs sources par du HTML ou des references d'image locales ;
+- retourner les diagnostics de rendu sans muter les sources ;
+- ne jamais envoyer le contenu PlantUML vers un service distant.
+
+Le choix SVG est retenu pour le MVP HTML : il reste lisible, vectoriel et
+portable dans les deux modes de sortie. L'integration de PlantUML appartient a
+Scribpy ; le backend de rendu est un adaptateur local derriere le protocole
+`DiagramRenderer`, afin de conserver un pipeline testable et de garantir un
+fonctionnement sans internet.
 
 ### Mode `single-page`
 
@@ -138,6 +181,8 @@ sur ces conventions plutot que les contourner.
     liens vers ancres internes, TOC et numerotation ;
   - jeu `site` : conservation de la structure multi-page et des liens Markdown
     relatifs compatibles MkDocs ;
+  - transform de rendu PlantUML commun aux sorties HTML, execute avant la
+    reecriture finale des liens et le rendu HTML ;
   - reutilisation de la configuration `[document]` pour TOC et numerotation quand
     elle s'applique au mode choisi.
 
@@ -154,6 +199,8 @@ sur ces conventions plutot que les contourner.
 - `scribpy.assets`
   - collecte des assets references ;
   - validation des assets locaux ;
+  - rendu PlantUML hors ligne en SVG via `render_plantuml_blocks(...)` et un
+    `DiagramRenderer` local ;
   - copie vers la destination adaptee au mode :
     - `build/html/assets/` pour `single-page` ;
     - `build/site/docs/...` pour `site` ;
@@ -188,7 +235,7 @@ sur ces conventions plutot que les contourner.
 - HTML multi-page rendu directement par Scribpy ;
 - moteur de theme MkDocs personnalise ;
 - rendu PDF ;
-- rendu Mermaid ou PlantUML ;
+- rendu Mermaid ;
 - bundling/minification CSS ou JavaScript ;
 - recherche client-side ;
 - preview server integre ;
@@ -235,6 +282,7 @@ A creer ou completer :
 | Liens inter-documents | ancres internes | liens Markdown relatifs conserves |
 | CSS | fichiers d'entree references/copied | fichiers d'entree copies et declares via `extra_css` |
 | Assets | `build/html/assets/` | `build/site/docs/...` |
+| PlantUML | SVG locaux sous `assets/diagrams/` | SVG locaux sous `docs/assets/diagrams/` |
 | Navigation | TOC du document assemble | `nav` MkDocs depuis `DocumentIndex` |
 | Rendu HTML final | par Scribpy | par MkDocs, pilote par Scribpy |
 
@@ -244,6 +292,7 @@ Principes communs :
 - les transforms restent responsables de la preparation du contenu, pas de
   l'ecriture des fichiers ;
 - les CSS fournis sont des entrees de projet, pas des dependances codees en dur ;
+- les blocs PlantUML sont rendus localement et ne provoquent aucun appel reseau ;
 - le mode `site` s'appuie sur les conventions MkDocs au lieu de les repliquer ;
 - les outputs restent deterministes a configuration et sources identiques.
 
@@ -283,6 +332,7 @@ A faire :
 
 - assembler les documents transformes ;
 - rendre le Markdown assemble en HTML ;
+- integrer les references HTML locales produites pour les diagrammes PlantUML ;
 - injecter le contenu dans un template HTML par defaut ;
 - integrer ou referencer les CSS d'entree ;
 - ecrire `build/html/index.html` ;
@@ -305,6 +355,7 @@ A faire :
 - generer `build/site/mkdocs.yml` ;
 - produire `nav` dans l'ordre du `DocumentIndex` ;
 - copier les assets et CSS dans `docs/` ;
+- copier les SVG PlantUML generes dans `docs/assets/diagrams/` ;
 - declarer `extra_css` ;
 - lancer `mkdocs build` sur le squelette genere ;
 - retourner des artefacts pour `mkdocs.yml`, les pages, les ressources et le site
@@ -316,7 +367,28 @@ Diagnostics proposes :
 - `SITE002` : echec d'ecriture d'une page du site ;
 - `SITE003` : MkDocs indisponible ou echec de son rendu.
 
-### Etape 5 — Service applicatif et CLI
+### Etape 5 — Rendu PlantUML hors ligne
+
+Objectif : transformer les blocs PlantUML du Markdown en HTML sans dependance a
+un service externe.
+
+A faire :
+
+- detecter les fences `plantuml` dans les documents transformes ;
+- ajouter `render_plantuml_blocks(...)` comme point d'entree de rendu ;
+- utiliser un `DiagramRenderer` local injecte, jamais un renderer HTTP ;
+- produire des fichiers SVG deterministes sous `assets/diagrams/` ;
+- remplacer les fences par des references HTML locales ;
+- exposer les assets produits au builder `single-page` et au builder `site` ;
+- garantir le fonctionnement hors ligne par des tests sans acces reseau.
+
+Diagnostics proposes :
+
+- `UML001` : bloc PlantUML invalide ou non ferme ;
+- `UML002` : echec de rendu PlantUML local ;
+- `UML003` : echec d'ecriture d'un SVG genere.
+
+### Etape 6 — Service applicatif et CLI
 
 Objectif : exposer les deux modes sans dupliquer la logique metier.
 
@@ -328,7 +400,7 @@ A faire :
 - ajouter `scribpy build html --mode site` ;
 - afficher les artefacts produits.
 
-### Etape 6 — Tests et qualite
+### Etape 7 — Tests et qualite
 
 Objectif : verrouiller les deux chemins avant d'ouvrir le PDF.
 
@@ -339,6 +411,8 @@ A faire :
 - tests de CSS d'entree ;
 - tests du squelette MkDocs et de `nav` ;
 - tests d'assets par mode ;
+- tests de detection et de rendu PlantUML hors ligne ;
+- tests garantissant l'absence de dependance a un service web externe ;
 - tests du service applicatif ;
 - tests CLI ;
 - `make check` avec 100% de couverture.
@@ -352,6 +426,8 @@ A faire :
 - Scribpy couvre deux usages web reels sans les confondre ;
 - le mode `single-page` reste simple et autonome ;
 - le mode `site` beneficie immediatement de l'ecosysteme MkDocs ;
+- les diagrammes PlantUML peuvent etre publies sans fuite de donnees et sans
+  connexion internet ;
 - les CSS deviennent une vraie entree configurable ;
 - la future evolution vers un site complet ne demande pas de rearchitecturer le
   builder single-page.
@@ -363,7 +439,9 @@ A faire :
 - certaines options `[document]` n'ont pas exactement la meme portee selon le
   mode ;
 - les tests doivent verifier explicitement deux comportements de liens
-  differents.
+  differents ;
+- l'integration PlantUML ajoute une dependance locale de rendu a piloter et a
+  diagnostiquer proprement.
 
 Ces couts sont acceptes car ils correspondent a deux besoins utilisateurs
 legitimes et evitent de forcer un seul modele HTML a couvrir deux usages
@@ -387,10 +465,14 @@ La phase 7 est consideree terminee lorsque :
 6. le mode `site` copie les CSS fournis et les declare dans `extra_css` ;
 7. le mode `site` preserve des liens Markdown relatifs compatibles avec MkDocs ;
 8. les assets locaux sont copies dans la destination attendue par chaque mode ;
-9. aucun artefact n'est ecrit en cas d'erreur bloquante ;
-10. les tests couvrent config, transforms, builders, assets, service applicatif
+9. les blocs `plantuml` presents dans le Markdown sont rendus localement en SVG
+   puis integres a la sortie HTML ;
+10. le rendu PlantUML ne depend d'aucun service web externe et reste utilisable
+    hors ligne ;
+11. aucun artefact n'est ecrit en cas d'erreur bloquante ;
+12. les tests couvrent config, transforms, builders, assets, service applicatif
     et CLI ;
-11. `make check` passe avec 100% de couverture.
+13. `make check` passe avec 100% de couverture.
 
 ---
 
@@ -400,7 +482,7 @@ Les decisions suivantes sont explicitement repoussees a la phase 8 ou au-dela :
 
 - execution automatique de `mkdocs serve` ou `mkdocs build` ;
 - rendu PDF ;
-- rendu Mermaid et PlantUML ;
+- rendu Mermaid ;
 - generation de themes MkDocs personnalises ;
 - bundling/minification CSS ou JavaScript ;
 - recherche client-side ;

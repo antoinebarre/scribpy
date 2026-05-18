@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import shutil
+import subprocess
 import sys
+from shutil import which
 from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
@@ -12,6 +14,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from scribpy.cli.main import main as cli_main
+
+PLANTUML_SERVER_URL = "http://www.plantuml.com/plantuml"
 
 
 def main() -> int:
@@ -54,13 +58,40 @@ def main() -> int:
             expected=0,
         ),
         _run(
-            "Build single-page HTML",
+            "Build single-page HTML with default local PlantUML",
             ["build", "html", "--mode", "single-page", "--root", str(valid_dir)],
+            expected=_expected_local_plantuml_exit_code(),
+        ),
+        _run(
+            "Build single-page HTML with forced web PlantUML",
+            [
+                "build",
+                "html",
+                "--mode",
+                "single-page",
+                "--plantuml-renderer",
+                "web",
+                "--plantuml-server-url",
+                PLANTUML_SERVER_URL,
+                "--root",
+                str(valid_dir),
+            ],
             expected=0,
         ),
         _run(
-            "Build site HTML",
-            ["build", "html", "--mode", "site", "--root", str(valid_dir)],
+            "Build site HTML with forced web PlantUML",
+            [
+                "build",
+                "html",
+                "--mode",
+                "site",
+                "--plantuml-renderer",
+                "web",
+                "--plantuml-server-url",
+                PLANTUML_SERVER_URL,
+                "--root",
+                str(valid_dir),
+            ],
             expected=0,
         ),
         _run(
@@ -91,6 +122,27 @@ def main() -> int:
 def _reset(path: Path) -> None:
     if path.exists():
         shutil.rmtree(path)
+
+
+def _expected_local_plantuml_exit_code() -> int:
+    """Return the expected local-renderer outcome for this machine.
+
+    Returns:
+        ``0`` when Java appears available, otherwise ``1`` for the expected
+        early ``UML004`` diagnostic.
+    """
+    java = which("java")
+    if java is None:
+        return 1
+    try:
+        completed = subprocess.run(
+            (java, "-version"),
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return 1
+    return 0 if completed.returncode == 0 else 1
 
 
 def _run(label: str, argv: list[str], *, expected: int) -> CommandResult:

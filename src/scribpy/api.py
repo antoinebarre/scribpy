@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scribpy.config.types import HtmlMode
+from scribpy.config.types import HtmlMode, PlantUmlRendererMode
 from scribpy.core import (
     DemoVariant,
     build_project,
@@ -13,6 +13,8 @@ from scribpy.core import (
     parse_project_documents,
     run_index_check,
 )
+from scribpy.core.build_options import HtmlBuildOverrides
+from scribpy.core.build_project import build_html_with_overrides
 from scribpy.model import BuildResult, LintResult, ParseResult
 
 type PathLike = str | Path
@@ -120,6 +122,8 @@ def build_html(
     mode: HtmlMode = "single-page",
     output_dir: PathLike | None = None,
     extra_css: list[PathLike] | None = None,
+    plantuml_renderer: PlantUmlRendererMode | None = None,
+    plantuml_server_url: str | None = None,
 ) -> BuildResult:
     """Build HTML output in ``single-page`` or ``site`` mode.
 
@@ -131,6 +135,8 @@ def build_html(
             resolved from the project root; absolute paths are kept.
         extra_css: Additional CSS file paths (relative to the project root) to
             append after the project-configured stylesheets.
+        plantuml_renderer: Optional PlantUML backend override.
+        plantuml_server_url: Optional PlantUML server URL override for web mode.
 
     Returns:
         Build result for the requested HTML mode.
@@ -139,14 +145,18 @@ def build_html(
         >>> build_html(".", mode="single-page")
         >>> build_html(".", mode="site", output_dir="build/ci-site")
         >>> build_html(".", extra_css=["theme/custom.css"])
+        >>> build_html(".", plantuml_renderer="web")
     """
     extra = tuple(Path(p) for p in extra_css) if extra_css else ()
-    return build_project(
+    return build_html_with_overrides(
         _path(root),
-        target="html",
-        html_mode=mode,
-        output_dir=_path(output_dir),
-        extra_css=extra,
+        HtmlBuildOverrides(
+            mode=mode,
+            output_dir=_path(output_dir),
+            extra_css=extra,
+            plantuml_renderer=plantuml_renderer,
+            plantuml_server_url=plantuml_server_url,
+        ),
     )
 
 

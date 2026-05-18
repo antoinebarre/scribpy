@@ -202,6 +202,33 @@ Default output directories:
 A `--output-dir` CLI flag or `output_dir=` Python argument overrides the
 configured value for one run without modifying `scribpy.toml`.
 
+#### `[builders.html.plantuml]`
+
+Controls how fenced `plantuml` blocks are rendered during HTML builds.
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `renderer` | `"local"` / `"web"` | `"local"` | Use the bundled local JAR or a PlantUML web server. |
+| `server_url` | `string` | PlantUML public server | Base URL used only when `renderer = "web"`. |
+
+```toml
+[builders.html.plantuml]
+renderer = "local"
+```
+
+`local` is the default and keeps diagram content on the machine. Scribpy checks
+that Java is available before starting an HTML build that contains PlantUML
+blocks.
+
+```toml
+[builders.html.plantuml]
+renderer = "web"
+server_url = "http://www.plantuml.com/plantuml"
+```
+
+`web` sends the diagram source to the configured PlantUML server. Use it only
+when that tradeoff is acceptable for the project content.
+
 ---
 
 ## Complete example

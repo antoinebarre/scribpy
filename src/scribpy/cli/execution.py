@@ -22,6 +22,8 @@ from scribpy.core import (
     parse_project_documents,
     run_index_check,
 )
+from scribpy.core.build_options import HtmlBuildOverrides
+from scribpy.core.build_project import build_html_with_overrides
 from scribpy.logging import logging_context
 from scribpy.utils import format_diagnostics
 
@@ -157,6 +159,8 @@ def run_build_html_command(
     root: Path | None,
     mode: str,
     output_dir: Path | None,
+    plantuml_renderer: str | None,
+    plantuml_server_url: str | None,
     stdout: TextIO,
     stderr: TextIO,
 ) -> int:
@@ -166,13 +170,23 @@ def run_build_html_command(
         root: Optional project root override.
         mode: HTML output mode.
         output_dir: Optional build directory override.
+        plantuml_renderer: Optional PlantUML renderer override.
+        plantuml_server_url: Optional PlantUML server URL override.
         stdout: Stream receiving the execution report.
         stderr: Stream receiving diagnostics.
 
     Returns:
         Process exit code.
     """
-    result = build_project(root, target="html", html_mode=mode, output_dir=output_dir)
+    result = build_html_with_overrides(
+        root,
+        HtmlBuildOverrides(
+            mode=mode,
+            output_dir=output_dir,
+            plantuml_renderer=plantuml_renderer,
+            plantuml_server_url=plantuml_server_url,
+        ),
+    )
     if result.diagnostics:
         print(format_diagnostics(result.diagnostics), file=stderr)
     print_build_report(result, f"HTML ({mode})", stdout)

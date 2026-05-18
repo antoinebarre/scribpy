@@ -5,6 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from scribpy.builders import merge_documents, write_markdown_artifact
+from scribpy.config.types import HtmlMode
+from scribpy.core.build_options import HtmlBuildOverrides
 from scribpy.core.project_pipeline import (
     ProjectPipelineState,
     run_project_parse_pipeline,
@@ -53,7 +55,16 @@ def build_project(
     """
     if target in _HTML_TARGETS:
         return _dispatch_html_build(
-            root, target, html_mode, output_dir, extra_css, filesystem, parser, registry
+            root,
+            target,
+            HtmlBuildOverrides(
+                mode=html_mode,
+                output_dir=output_dir,
+                extra_css=extra_css,
+            ),
+            filesystem,
+            parser,
+            registry,
         )
 
     if target != "markdown":
@@ -79,37 +90,20 @@ def build_project(
 def _dispatch_html_build(
     root: Path | None,
     target: str,
-    html_mode: str | None,
-    output_dir: Path | None,
-    extra_css: tuple[Path, ...],
+    overrides: HtmlBuildOverrides,
     filesystem: FileSystem | None,
     parser: MarkdownParser | None,
     registry: ExtensionRegistry | None,
 ) -> BuildResult:
     """Dispatch html build."""
-    from scribpy.config.types import HtmlBuilderConfig, HtmlMode
+    from scribpy.config.types import HtmlBuilderConfig, PlantUmlConfig
     from scribpy.core.build_html import build_html_project
 
     # Resolve the effective mode from the target string or explicit override.
-    if html_mode is not None:
-        if html_mode not in ("single-page", "site"):
-            return BuildResult(
-                success=False,
-                artifacts=(),
-                diagnostics=(
-                    Diagnostic(
-                        severity="error",
-                        code="BLD001",
-                        message=f"Unsupported HTML mode: {html_mode}",
-                        hint="Use html_mode='single-page' or 'site'.",
-                    ),
-                ),
-            )
-        effective_mode: HtmlMode = html_mode  # type: ignore[assignment]
-    elif target == "html-site":
-        effective_mode = "site"
-    else:
-        effective_mode = "single-page"
+    mode_diagnostic = _html_mode_diagnostic(overrides.mode)
+    if mode_diagnostic is not None:
+        return BuildResult(success=False, artifacts=(), diagnostics=(mode_diagnostic,))
+    effective_mode = _effective_html_mode(target, overrides.mode)
 
     # Load config to pick up html section defaults, then override the mode.
     state, diagnostics = _prepare_build_state(root, filesystem, parser)
@@ -118,14 +112,34 @@ def _dispatch_html_build(
 
     assert state.config is not None
     base_html_config = state.config.html
+    plantuml_renderer = overrides.plantuml_renderer
+    if plantuml_renderer is not None and plantuml_renderer not in ("local", "web"):
+        return BuildResult(
+            success=False,
+            artifacts=(),
+            diagnostics=(
+                Diagnostic(
+                    severity="error",
+                    code="BLD001",
+                    message=f"Unsupported PlantUML renderer: {plantuml_renderer}",
+                    hint="Use plantuml_renderer='local' or 'web'.",
+                ),
+            ),
+        )
+    effective_plantuml = PlantUmlConfig(
+        renderer=plantuml_renderer or base_html_config.plantuml.renderer,  # type: ignore[arg-type]
+        server_url=overrides.plantuml_server_url
+        or base_html_config.plantuml.server_url,
+    )
     html_config = HtmlBuilderConfig(
         mode=effective_mode,
-        css_files=(*base_html_config.css_files, *extra_css),
+        css_files=(*base_html_config.css_files, *overrides.extra_css),
         site_name=base_html_config.site_name,
         theme=base_html_config.theme,
-        output_dir=output_dir
-        if output_dir is not None
+        output_dir=overrides.output_dir
+        if overrides.output_dir is not None
         else base_html_config.output_dir,
+        plantuml=effective_plantuml,
     )
 
     return build_html_project(
@@ -134,6 +148,36 @@ def _dispatch_html_build(
         filesystem=filesystem,
         parser=parser,
         registry=registry,
+    )
+
+
+def build_html_with_overrides(
+    root: Path | None,
+    overrides: HtmlBuildOverrides,
+    *,
+    filesystem: FileSystem | None = None,
+    parser: MarkdownParser | None = None,
+    registry: ExtensionRegistry | None = None,
+) -> BuildResult:
+    """Build HTML output using grouped per-run overrides.
+
+    Args:
+        root: Project root or path inside the project.
+        overrides: Grouped HTML overrides for one build.
+        filesystem: Optional filesystem override.
+        parser: Optional parser override.
+        registry: Optional extension registry override.
+
+    Returns:
+        HTML build result.
+    """
+    return _dispatch_html_build(
+        root,
+        "html",
+        overrides,
+        filesystem,
+        parser,
+        registry,
     )
 
 
@@ -250,4 +294,23 @@ def _blocked_build_diagnostic() -> Diagnostic:
     )
 
 
-__all__ = ["build_project"]
+__all__ = ["build_html_with_overrides", "build_project"]
+
+
+def _html_mode_diagnostic(mode: str | None) -> Diagnostic | None:
+    """Return an unsupported-mode diagnostic when needed."""
+    if mode is None or mode in ("single-page", "site"):
+        return None
+    return Diagnostic(
+        severity="error",
+        code="BLD001",
+        message=f"Unsupported HTML mode: {mode}",
+        hint="Use html_mode='single-page' or 'site'.",
+    )
+
+
+def _effective_html_mode(target: str, mode: str | None) -> HtmlMode:
+    """Return the effective HTML mode for one build."""
+    if mode is not None:
+        return mode  # type: ignore[return-value]
+    return "site" if target == "html-site" else "single-page"

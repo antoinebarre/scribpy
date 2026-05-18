@@ -151,6 +151,40 @@ name = "My Project"
 
 ---
 
+## PlantUML diagrams
+
+Scribpy renders fenced `plantuml` blocks locally when building HTML:
+
+````markdown
+```plantuml
+@startuml
+Alice -> Bob: hello
+@enduml
+```
+````
+
+By default, the PlantUML JAR is bundled with Scribpy and the diagram source is
+never sent to an external service. Rendering still requires a local Java runtime
+because the embedded PlantUML engine is executed by the JVM.
+
+Projects may opt into web rendering instead:
+
+```toml
+[builders.html.plantuml]
+renderer = "web"
+server_url = "http://www.plantuml.com/plantuml"
+```
+
+Web rendering is convenient when Java is unavailable, but the diagram source is
+sent to the configured server. Keep the default local mode for confidential
+documentation or offline use.
+
+For HTML builds, Scribpy writes deterministic SVG files below the generated
+`assets/diagrams/` directory and replaces each source block with a local image
+reference in the generated output.
+
+---
+
 ## Tables
 
 Use standard GFM (GitHub Flavored Markdown) table syntax:

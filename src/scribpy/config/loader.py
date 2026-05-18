@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import cast
 
+from scribpy.config.html import parse_plantuml_config
 from scribpy.config.types import (
     Config,
     DocumentConfig,
@@ -289,12 +290,18 @@ def _parse_html_builder_config(raw: RawSection) -> HtmlBuilderConfig:
     theme = _parse_optional_str(raw, "theme", "builders.html")
     output_dir_raw = _parse_optional_str(raw, "output_dir", "builders.html")
     output_dir = Path(output_dir_raw) if output_dir_raw is not None else None
+    plantuml = parse_plantuml_config(
+        _nested_section(raw, "plantuml", "builders.html"),
+        parse_optional_str=_parse_optional_str,
+        error_type=ConfigParseError,
+    )
     return HtmlBuilderConfig(
         mode=mode,
         css_files=tuple(css_files),
         site_name=site_name,
         theme=theme,
         output_dir=output_dir,
+        plantuml=plantuml,
     )
 
 

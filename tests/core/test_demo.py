@@ -194,6 +194,24 @@ def test_created_demo_project_uses_document_oriented_copy(
     assert "next page" not in page
 
 
+def test_created_demo_project_contains_complex_plantuml_examples(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target)
+
+    pipeline = (target / "doc/architecture/pipeline.md").read_text(encoding="utf-8")
+    data_model = (target / "doc/architecture/data-model.md").read_text(
+        encoding="utf-8"
+    )
+    overview = (target / "doc/architecture/overview.md").read_text(encoding="utf-8")
+
+    assert "```plantuml" in pipeline
+    assert "alt diagnostics contain errors" in pipeline
+    assert "class BuildResult" in data_model
+    assert "Bundled PlantUML MIT JAR" in overview
+
+
 def test_created_demo_project_frontmatter_extracted(tmp_path: Path) -> None:
     target = tmp_path / "external-demo"
     create_demo_project(target)
@@ -301,6 +319,8 @@ def test_created_demo_project_readme_documents_end_to_end_html_flow(
     assert "## Execution logs" in readme
     assert "scribpy --log-level INFO build html --mode site --root ." in readme
     assert "with scribpy.logging_context" in readme
+    assert "complex PlantUML diagrams" in readme
+    assert "Install a Java runtime" in readme
 
 
 def test_invalid_demo_reports_phase_4_lint_diagnostics(tmp_path: Path) -> None:

@@ -11,6 +11,7 @@ from scribpy.model import IndexMode
 TocStyle = Literal["bullet", "numbered"]
 NumberingStyle = Literal["decimal", "alpha", "roman"]
 HtmlMode = Literal["single-page", "site"]
+PlantUmlRendererMode = Literal["local", "web"]
 
 
 @dataclass(frozen=True)
@@ -95,6 +96,20 @@ class DocumentConfig:
 
 
 @dataclass(frozen=True)
+class PlantUmlConfig:
+    """PlantUML rendering configuration.
+
+    Attributes:
+        renderer: Rendering backend. ``"local"`` uses the bundled JAR;
+            ``"web"`` calls a PlantUML server.
+        server_url: Base URL of the PlantUML server used by ``"web"`` mode.
+    """
+
+    renderer: PlantUmlRendererMode = "local"
+    server_url: str = "http://www.plantuml.com/plantuml"
+
+
+@dataclass(frozen=True)
 class HtmlBuilderConfig:
     """HTML builder configuration.
 
@@ -109,6 +124,7 @@ class HtmlBuilderConfig:
             output, for example ``"readthedocs"``.
         output_dir: Output directory relative to the project root. Defaults to
             ``build/html`` for ``single-page`` and ``build/site`` for ``site``.
+        plantuml: PlantUML rendering settings.
     """
 
     mode: HtmlMode = "single-page"
@@ -116,6 +132,7 @@ class HtmlBuilderConfig:
     site_name: str | None = None
     theme: str | None = None
     output_dir: Path | None = None
+    plantuml: PlantUmlConfig = PlantUmlConfig()
 
     def resolve_output_dir(self) -> Path:
         """Return the effective output directory for the configured mode.
@@ -156,6 +173,8 @@ __all__ = [
     "NumberingConfig",
     "NumberingStyle",
     "PathConfig",
+    "PlantUmlConfig",
+    "PlantUmlRendererMode",
     "ProjectConfig",
     "TocConfig",
     "TocStyle",

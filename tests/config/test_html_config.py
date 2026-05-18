@@ -15,6 +15,7 @@ def test_html_config_defaults() -> None:
     assert config.html.site_name is None
     assert config.html.theme is None
     assert config.html.output_dir is None
+    assert config.html.plantuml.renderer == "local"
 
 
 def test_html_config_single_page_mode() -> None:
@@ -84,6 +85,34 @@ def test_html_config_output_dir() -> None:
 def test_html_config_output_dir_non_string_raises() -> None:
     with pytest.raises(ConfigParseError, match="output_dir"):
         parse_config({"builders": {"html": {"output_dir": 123}}})
+
+
+def test_html_config_plantuml_web_renderer() -> None:
+    config = parse_config(
+        {"builders": {"html": {"plantuml": {"renderer": "web"}}}}
+    )
+    assert config.html.plantuml.renderer == "web"
+
+
+def test_html_config_plantuml_server_url() -> None:
+    config = parse_config(
+        {
+            "builders": {
+                "html": {
+                    "plantuml": {
+                        "renderer": "web",
+                        "server_url": "https://plantuml.example/plantuml",
+                    }
+                }
+            }
+        }
+    )
+    assert config.html.plantuml.server_url == "https://plantuml.example/plantuml"
+
+
+def test_html_config_invalid_plantuml_renderer_raises() -> None:
+    with pytest.raises(ConfigParseError, match="plantuml.renderer"):
+        parse_config({"builders": {"html": {"plantuml": {"renderer": "remote"}}}})
 
 
 def test_html_builder_config_resolve_output_dir_single_page() -> None:

@@ -208,6 +208,38 @@ def test_invalid_cli_usage_returns_two(capsys) -> None:
     assert "invalid choice" in captured.err
 
 
+def test_build_html_cli_accepts_plantuml_overrides(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
+
+    class FakeRenderer:
+        def render(self, source: str, output_format: str) -> bytes:
+            return b"<svg/>"
+
+    monkeypatch.setattr(
+        "scribpy.core.build_html.WebPlantUmlRenderer", lambda _: FakeRenderer()
+    )
+
+    exit_code = main(
+        [
+            "build",
+            "html",
+            "--root",
+            str(tmp_path),
+            "--plantuml-renderer",
+            "web",
+            "--plantuml-server-url",
+            "https://example.test/plantuml",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "HTML (single-page)" in captured.out
+
+
 def test_missing_subcommand_returns_two(capsys) -> None:
     exit_code = main([])
 

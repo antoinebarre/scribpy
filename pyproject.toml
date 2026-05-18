@@ -43,6 +43,7 @@ scribpy = "scribpy.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/scribpy"]
+include = ["src/scribpy/vendor/*.jar"]
 
 [tool.hatch.version]
 source = "vcs"
