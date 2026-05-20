@@ -11,6 +11,7 @@ from scribpy.core.project_pipeline import (
     ProjectPipelineState,
     run_project_parse_pipeline,
 )
+from scribpy.core.project_pipeline_state import ResolvedPipelineState
 from scribpy.extensions import ExtensionRegistry
 from scribpy.lint import LintContext, run_lint_rules
 from scribpy.logging import get_logger
@@ -79,12 +80,17 @@ def build_project(
     if state is None:
         return _blocked_build(diagnostics)
 
-    active_registry = registry if registry is not None else ExtensionRegistry.native()
-    diagnostics = _lint_state(state, diagnostics, active_registry)
+    active_registry = (
+        registry if registry is not None else ExtensionRegistry.native()
+    )
+    resolved = state.require_resolved()
+    diagnostics = _lint_state(resolved, diagnostics, active_registry)
     if has_errors(diagnostics):
         return _blocked_build(diagnostics)
 
-    return _write_markdown_build(state, diagnostics, active_registry, output_dir)
+    return _write_markdown_build(
+        resolved, diagnostics, active_registry, output_dir
+    )
 
 
 def _dispatch_html_build(
@@ -102,7 +108,9 @@ def _dispatch_html_build(
     # Resolve the effective mode from the target string or explicit override.
     mode_diagnostic = _html_mode_diagnostic(overrides.mode)
     if mode_diagnostic is not None:
-        return BuildResult(success=False, artifacts=(), diagnostics=(mode_diagnostic,))
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=(mode_diagnostic,)
+        )
     effective_mode = _effective_html_mode(target, overrides.mode)
 
     # Load config to pick up html section defaults, then override the mode.
@@ -110,10 +118,13 @@ def _dispatch_html_build(
     if state is None:
         return _blocked_build(diagnostics)
 
-    assert state.config is not None
-    base_html_config = state.config.html
+    resolved_for_config = state.require_resolved()
+    base_html_config = resolved_for_config.config.html
     plantuml_renderer = overrides.plantuml_renderer
-    if plantuml_renderer is not None and plantuml_renderer not in ("java", "web"):
+    if plantuml_renderer is not None and plantuml_renderer not in (
+        "java",
+        "web",
+    ):
         return BuildResult(
             success=False,
             artifacts=(),
@@ -189,20 +200,30 @@ def _prepare_build_state(
 ) -> tuple[ProjectPipelineState | None, tuple[Diagnostic, ...]]:
     """Handle prepare build state."""
     prepared = run_project_parse_pipeline(root, filesystem, parser)
-    if prepared.failed or prepared.value is None or has_errors(prepared.diagnostics):
+    if (
+        prepared.failed
+        or prepared.value is None
+        or has_errors(prepared.diagnostics)
+    ):
         return None, prepared.diagnostics
     return prepared.value, prepared.diagnostics
 
 
 def _lint_state(
-    state: ProjectPipelineState,
+    state: ResolvedPipelineState,
     diagnostics: tuple[Diagnostic, ...],
     registry: ExtensionRegistry,
 ) -> tuple[Diagnostic, ...]:
-    """Lint state."""
-    assert state.project_root is not None
-    assert state.config is not None
-    assert state.index is not None
+    """Run registered lint rules and append their diagnostics.
+
+    Args:
+        state: Fully resolved pipeline state.
+        diagnostics: Diagnostics already collected upstream.
+        registry: Extension registry providing lint rules.
+
+    Returns:
+        Accumulated diagnostics including any lint findings.
+    """
     context = LintContext(
         source_root=(state.project_root / state.config.paths.source).resolve(),
         documents=state.documents,
@@ -213,14 +234,22 @@ def _lint_state(
 
 
 def _write_markdown_build(
-    state: ProjectPipelineState,
+    state: ResolvedPipelineState,
     diagnostics: tuple[Diagnostic, ...],
     registry: ExtensionRegistry,
     output_dir: Path | None,
 ) -> BuildResult:
-    """Write markdown build."""
-    assert state.project_root is not None
-    assert state.config is not None
+    """Apply Markdown transforms and write the merged artifact to disk.
+
+    Args:
+        state: Fully resolved pipeline state.
+        diagnostics: Diagnostics already collected upstream.
+        registry: Extension registry providing Markdown transforms.
+        output_dir: Optional output directory override.
+
+    Returns:
+        Build result with the Markdown artifact and all diagnostics.
+    """
     transform_result = apply_transforms(
         state.documents,
         target="markdown",
@@ -251,7 +280,9 @@ def _write_markdown_build(
         state.project_root,
         assembled,
         state.filesystem,
-        output_dir=output_dir if output_dir is not None else Path("build/markdown"),
+        output_dir=output_dir
+        if output_dir is not None
+        else Path("build/markdown"),
     )
     final_diagnostics = (*transformed_diagnostics, *write_diagnostics)
     if artifact is None or has_errors(final_diagnostics):
@@ -259,7 +290,9 @@ def _write_markdown_build(
             "Markdown build failed with %d diagnostic(s)",
             len(final_diagnostics),
         )
-        return BuildResult(success=False, artifacts=(), diagnostics=final_diagnostics)
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=final_diagnostics
+        )
     logger.info("Built Markdown artifact: %s", artifact.path)
     return BuildResult(
         success=True, artifacts=(artifact,), diagnostics=final_diagnostics
@@ -272,7 +305,9 @@ def _unsupported_target_diagnostic(target: str) -> Diagnostic:
         severity="error",
         code="BLD001",
         message=f"Unsupported build target: {target}",
-        hint=("Use target='markdown' until additional builders are implemented."),
+        hint=(
+            "Use target='markdown' until additional builders are implemented."
+        ),
     )
 
 
@@ -290,7 +325,9 @@ def _blocked_build_diagnostic() -> Diagnostic:
     return Diagnostic(
         severity="error",
         code="BLD002",
-        message=("Build stopped because blocking diagnostics were reported upstream."),
+        message=(
+            "Build stopped because blocking diagnostics were reported upstream."
+        ),
         hint="Resolve project, parse, or lint errors before building.",
     )
 

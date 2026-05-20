@@ -4,10 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scribpy.core.project_pipeline import (
-    ProjectPipelineState,
-    run_project_parse_pipeline,
-)
+from scribpy.core.project_pipeline import run_project_parse_pipeline
+from scribpy.core.project_pipeline_state import ResolvedPipelineState
 from scribpy.extensions import ExtensionRegistry
 from scribpy.lint import LintContext, run_lint_rules
 from scribpy.logging import get_logger
@@ -36,22 +34,32 @@ def lint_project(
         Aggregated lint diagnostics and failure state.
     """
     prepared = run_project_parse_pipeline(root, filesystem, parser)
-    if prepared.failed or prepared.value is None or has_errors(prepared.diagnostics):
+    if (
+        prepared.failed
+        or prepared.value is None
+        or has_errors(prepared.diagnostics)
+    ):
         return LintResult(diagnostics=prepared.diagnostics, failed=True)
 
-    context = _build_lint_context(prepared.value)
-    active_registry = registry if registry is not None else ExtensionRegistry.native()
+    context = _build_lint_context(prepared.value.require_resolved())
+    active_registry = (
+        registry if registry is not None else ExtensionRegistry.native()
+    )
     lint_result = run_lint_rules(context, active_registry.lint_rules)
     diagnostics = (*prepared.diagnostics, *lint_result.diagnostics)
     logger.info("Completed lint: %d diagnostic(s)", len(diagnostics))
     return LintResult(diagnostics=diagnostics, failed=has_errors(diagnostics))
 
 
-def _build_lint_context(state: ProjectPipelineState) -> LintContext:
-    """Build lint context."""
-    assert state.project_root is not None
-    assert state.config is not None
-    assert state.index is not None
+def _build_lint_context(state: ResolvedPipelineState) -> LintContext:
+    """Build a lint context from a fully resolved pipeline state.
+
+    Args:
+        state: Fully resolved pipeline state.
+
+    Returns:
+        Lint context ready to be passed to lint rules.
+    """
     return LintContext(
         source_root=(state.project_root / state.config.paths.source).resolve(),
         documents=state.documents,

@@ -210,7 +210,9 @@ _VALID_DEMO_FILES: dict[Path, str] = {
     Path("scribpy.toml"): _valid_demo_config(),
     Path("doc/index.md"): _valid_demo_index(),
     **{
-        Path("doc") / relative_path: _valid_demo_page(index, relative_path, title)
+        Path("doc") / relative_path: _valid_demo_page(
+            index, relative_path, title
+        )
         for index, (relative_path, title) in enumerate(_VALID_DEMO_PAGES)
     },
     Path("doc/assets/architecture.svg"): """\
@@ -440,7 +442,9 @@ def create_demo_project(
     logger.info("Creating %s demo project at %s", variant, target)
     diagnostics = _validate_target(target, files=files, force=force)
     if has_errors(diagnostics):
-        logger.error("Demo creation failed with %d diagnostic(s)", len(diagnostics))
+        logger.error(
+            "Demo creation failed with %d diagnostic(s)", len(diagnostics)
+        )
         return LintResult(diagnostics=diagnostics, failed=True)
 
     try:
@@ -458,7 +462,9 @@ def create_demo_project(
             ),
         )
 
-    result = LintResult(diagnostics=diagnostics, failed=has_errors(diagnostics))
+    result = LintResult(
+        diagnostics=diagnostics, failed=has_errors(diagnostics)
+    )
     logger.info("Created demo project with %d managed file(s)", len(files))
     return result
 
@@ -502,7 +508,9 @@ def _validate_target(
     )
 
 
-def _planned_paths(target: Path, *, files: dict[Path, str]) -> tuple[Path, ...]:
+def _planned_paths(
+    target: Path, *, files: dict[Path, str]
+) -> tuple[Path, ...]:
     """Return planned paths."""
     return tuple(target / relative_path for relative_path in files)
 

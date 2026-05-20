@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import TextIO
 
-from scribpy.model import BuildArtifact, BuildResult, LintResult, ParseResult
+from scribpy.cli.report_artifacts import print_artifact_summary
+from scribpy.cli.report_status import has_blocking_lint, project_preparation_ok
+from scribpy.cli.report_steps import print_steps
+from scribpy.model import BuildResult, LintResult, ParseResult
 
 
 def print_index_report(result: LintResult, stream: TextIO) -> None:
@@ -15,10 +17,10 @@ def print_index_report(result: LintResult, stream: TextIO) -> None:
         result: Index-check result to summarize.
         stream: Output stream receiving the report.
     """
-    _print_steps(
+    print_steps(
         (
-            ("Resolve project configuration", _project_preparation_ok(result)),
-            ("Discover Markdown sources", _project_preparation_ok(result)),
+            ("Resolve project configuration", project_preparation_ok(result)),
+            ("Discover Markdown sources", project_preparation_ok(result)),
             ("Build document index", not result.failed),
         ),
         stream,
@@ -32,8 +34,8 @@ def print_parse_report(result: ParseResult, stream: TextIO) -> None:
         result: Parse result to summarize.
         stream: Output stream receiving the report.
     """
-    preparation_ok = _project_preparation_ok(result)
-    _print_steps(
+    preparation_ok = project_preparation_ok(result)
+    print_steps(
         (
             ("Resolve project configuration", preparation_ok),
             ("Discover Markdown sources", preparation_ok),
@@ -53,9 +55,9 @@ def print_lint_report(result: LintResult, stream: TextIO) -> None:
         result: Lint result to summarize.
         stream: Output stream receiving the report.
     """
-    preparation_ok = _project_preparation_ok(result)
+    preparation_ok = project_preparation_ok(result)
     lint_ok = preparation_ok and not result.failed
-    _print_steps(
+    print_steps(
         (
             ("Resolve project configuration", preparation_ok),
             ("Parse project documents", preparation_ok),
@@ -65,7 +67,9 @@ def print_lint_report(result: LintResult, stream: TextIO) -> None:
     )
 
 
-def print_build_report(result: BuildResult, target: str, stream: TextIO) -> None:
+def print_build_report(
+    result: BuildResult, target: str, stream: TextIO
+) -> None:
     """Print the high-level build execution report.
 
     Args:
@@ -73,9 +77,9 @@ def print_build_report(result: BuildResult, target: str, stream: TextIO) -> None
         target: User-facing build target label.
         stream: Output stream receiving the report.
     """
-    preparation_ok = _project_preparation_ok(result)
-    lint_ok = preparation_ok and not _has_blocking_lint(result)
-    _print_steps(
+    preparation_ok = project_preparation_ok(result)
+    lint_ok = preparation_ok and not has_blocking_lint(result)
+    print_steps(
         (
             ("Resolve project configuration", preparation_ok),
             ("Parse project documents", preparation_ok),
@@ -85,58 +89,7 @@ def print_build_report(result: BuildResult, target: str, stream: TextIO) -> None
         stream,
     )
     if result.success:
-        _print_artifact_summary(result.artifacts, stream)
-
-
-def _print_steps(steps: Sequence[tuple[str, bool]], stream: TextIO) -> None:
-    """Print steps."""
-    for label, succeeded in steps:
-        mark = "✔" if succeeded else "✘"
-        status = "done" if succeeded else "failed"
-        print(f"{mark} {label} — {status}", file=stream)
-
-
-def _print_artifact_summary(
-    artifacts: Sequence[BuildArtifact],
-    stream: TextIO,
-) -> None:
-    """Print artifact summary."""
-    if not artifacts:
-        return
-    primary = _primary_artifact(artifacts)
-    print("", file=stream)
-    print(f"Primary artifact: {primary.path}", file=stream)
-    if len(artifacts) > 1:
-        print(f"Additional artifacts: {len(artifacts) - 1}", file=stream)
-
-
-def _primary_artifact(artifacts: Sequence[BuildArtifact]) -> BuildArtifact:
-    """Select the primary artifact."""
-    preferred_types = ("document", "site", "page")
-    for artifact_type in preferred_types:
-        for artifact in artifacts:
-            if artifact.artifact_type == artifact_type:
-                return artifact
-    return artifacts[0]
-
-
-def _project_preparation_ok(
-    result: BuildResult | LintResult | ParseResult,
-) -> bool:
-    """Return whether project preparation ok."""
-    return not any(
-        diagnostic.severity == "error"
-        and diagnostic.code.startswith(("CFG", "PRJ", "IDX", "PRS"))
-        for diagnostic in result.diagnostics
-    )
-
-
-def _has_blocking_lint(result: BuildResult) -> bool:
-    """Return whether blocking lint."""
-    return any(
-        diagnostic.severity == "error" and diagnostic.code.startswith("LINT")
-        for diagnostic in result.diagnostics
-    )
+        print_artifact_summary(result.artifacts, stream)
 
 
 __all__ = [

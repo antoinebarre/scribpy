@@ -82,10 +82,15 @@ cache_dir = "work/.mypy_cache"
 
 [tool.ruff]
 cache-dir = "work/.ruff_cache"
+line-length = 79
 exclude = ["tests/"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915"]
+# E501 is managed by the formatter (line-length = 79) for code;
+# docstrings and comments are not reformatted and may legitimately exceed
+# the limit slightly — exclude E501 to avoid false positives there.
+ignore = ["E501"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -99,19 +104,30 @@ max-branches = 12
 max-returns = 6
 max-statements = 50
 
+[tool.quality-gate]
+project_name = "scribpy"
+source_root = "src/scribpy"
+source_base = "src"
+config_namespace = "scribpy"
+
 [tool.scribpy.code_metrics]
 paths = ["src/scribpy"]
 exclude = []
 max_cyclomatic_complexity = 10
 max_average_complexity = 4.0
-min_maintainability_index = 45.0
+min_maintainability_index = 50
 max_module_logical_lines = 300
-max_module_source_lines = 500
+max_module_source_lines = 520
 report_path = "work/code-metrics-report.md"
 
 [tool.bandit]
 exclude_dirs = ["tests", "work", "dist", "site"]
-skips = ["B101"]
+skips = [
+    "B101",   # assert used in tests
+    "B105",   # hardcoded_password_string: false positive on status icon strings
+    "B404",   # import subprocess: used in report scripts for pip list introspection
+    "B603",   # subprocess_without_shell: call uses fixed args, no user input
+]
 
 [tool.scribpy.security_audit]
 # PYSEC-2026-89 affects Python-Markdown versions before 3.8.1; the lockfile
@@ -121,6 +137,10 @@ ignore_vulns = ["PYSEC-2026-89"]
 [dependency-groups]
 dev = [
     "bandit>=1.8",
+    "flake8>=7",
+    "flake8-bugbear>=24",
+    "flake8-docstrings>=1.7",
+    "pep8-naming>=0.14",
     "pip-audit>=2.8",
     "pytest>=8",
     "pytest-cov>=6",

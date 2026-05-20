@@ -49,6 +49,7 @@ printf "\n${B}Running CI checks…${N}\n\n"
 # source tree. The local check script intentionally formats files for developers.
 run "format-check"  work/format.log    uv run ruff format --check src/ scripts/
 run "lint"          work/lint.log      uv run ruff check  src/ scripts/
+run "flake8"        work/flake8.log    uv run flake8 src/scribpy/
 run "docstrings"    work/docstrings.log uv run ruff check src/ --select D --ignore D100,D104
 run "docstrings-strict" work/docstrings-strict.log uv run python scripts/check_google_docstrings.py
 run "init-modules"      work/init-modules.log      uv run python scripts/check_init_modules.py
@@ -82,6 +83,7 @@ if [ "${#FAIL_NAMES[@]}" -gt 0 ]; then
         case $name in
             format-check) log=work/format.log    ;;
             lint)         log=work/lint.log      ;;
+            flake8)       log=work/flake8.log    ;;
             docstrings)   log=work/docstrings.log ;;
             docstrings-strict) log=work/docstrings-strict.log ;;
             init-modules) log=work/init-modules.log ;;
@@ -104,10 +106,11 @@ printf "\n${B}%s${N}\n" "$SEP"
 printf "${B} %-16s  %-10s  %s${N}\n" "Check" "Status" "Details"
 printf "${B}%s${N}\n" "$SEP"
 
-for name in "format-check" "lint" "docstrings" "docstrings-strict" "init-modules" "type-check" "metrics" "security-code" "security-deps" "tests"; do
+for name in "format-check" "lint" "flake8" "docstrings" "docstrings-strict" "init-modules" "type-check" "metrics" "security-code" "security-deps" "tests"; do
     # This summary is intentionally compact. Detailed diagnostics have already
     # been printed for failed checks and full logs remain in work/.
     case "$name" in
+        flake8) details="PEP8 + naming + bugbear + docstrings" ;;
         metrics) details="report work/code-metrics-report.md" ;;
         security-code) details="Bandit SAST" ;;
         security-deps) details="pip-audit runtime dependencies" ;;
@@ -126,6 +129,18 @@ if [ "$FAIL" -eq 0 ]; then
     printf " ${G}${B}All %d checks passed.${N}\n\n" "$TOTAL"
 else
     printf " ${R}${B}%d of %d checks failed.${N}\n\n" "$FAIL" "$TOTAL"
+fi
+
+# Generate quality reports (never blocks exit code)
+if uv run python scripts/report_files.py >>work/reports.log 2>&1 && \
+   uv run python scripts/report_lint.py  >>work/reports.log 2>&1 && \
+   uv run python scripts/report_metrics.py >>work/reports.log 2>&1 && \
+   uv run python scripts/report_tests.py >>work/reports.log 2>&1 && \
+   uv run python scripts/assemble_report.py >>work/reports.log 2>&1; then
+    printf " ${G}Quality report: work/quality_report.md${N}\n"
+    printf " ${G}Artefacts zip:  work/quality_artefacts.zip${N}\n"
+else
+    printf " ${Y}Warning: report generation had errors (see work/reports.log)${N}\n"
 fi
 
 exit "$FAIL"

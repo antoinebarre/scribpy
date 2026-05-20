@@ -6,7 +6,9 @@ import ast
 from dataclasses import dataclass
 from pathlib import Path
 
-_SOURCE_ROOT = Path("src")
+from quality_config import load_quality_config
+
+_SOURCE_ROOT = load_quality_config().source_base
 
 
 @dataclass(frozen=True)

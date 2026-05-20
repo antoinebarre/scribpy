@@ -130,7 +130,9 @@ def prepare_logging(project_root: Path) -> Path | None:
     if settings is None or not settings.file:
         return None
 
-    if any(isinstance(handler, logging.FileHandler) for handler in _HANDLERS.get()):
+    if any(
+        isinstance(handler, logging.FileHandler) for handler in _HANDLERS.get()
+    ):
         return _effective_log_path(project_root, settings)
 
     log_path = _effective_log_path(project_root, settings)
@@ -165,7 +167,9 @@ def _attach_handler(handler: logging.Handler) -> None:
 def _effective_log_path(project_root: Path, settings: LoggingSettings) -> Path:
     """Return the effective log path."""
     configured = settings.file_path or _DEFAULT_LOG_RELATIVE_PATH
-    return configured if configured.is_absolute() else project_root / configured
+    return (
+        configured if configured.is_absolute() else project_root / configured
+    )
 
 
 __all__ = [

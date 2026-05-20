@@ -56,7 +56,9 @@ class Runtime:
     log_file: Path | None = None
 
 
-def run_with_optional_logging(runtime: Runtime, action: Callable[[], int]) -> int:
+def run_with_optional_logging(
+    runtime: Runtime, action: Callable[[], int]
+) -> int:
     """Run a command, enabling logs only when requested.
 
     Args:
@@ -77,7 +79,9 @@ def run_with_optional_logging(runtime: Runtime, action: Callable[[], int]) -> in
         return action()
 
 
-def run_parse_check_command(root: Path | None, stdout: TextIO, stderr: TextIO) -> int:
+def run_parse_check_command(
+    root: Path | None, stdout: TextIO, stderr: TextIO
+) -> int:
     """Run ``parse check``.
 
     Args:
@@ -95,7 +99,9 @@ def run_parse_check_command(root: Path | None, stdout: TextIO, stderr: TextIO) -
     return 1 if result.failed else 0
 
 
-def run_index_check_command(root: Path | None, stdout: TextIO, stderr: TextIO) -> int:
+def run_index_check_command(
+    root: Path | None, stdout: TextIO, stderr: TextIO
+) -> int:
     """Run ``index check``.
 
     Args:
@@ -224,6 +230,8 @@ def run_demo_create_command(
     print(f"  scribpy parse check --root {target}", file=stdout)
     print(f"  scribpy lint --root {target}", file=stdout)
     print(f"  scribpy build markdown --root {target}", file=stdout)
-    print(f"  scribpy build html --mode single-page --root {target}", file=stdout)
+    print(
+        f"  scribpy build html --mode single-page --root {target}", file=stdout
+    )
     print(f"  scribpy build html --mode site --root {target}", file=stdout)
     return 0

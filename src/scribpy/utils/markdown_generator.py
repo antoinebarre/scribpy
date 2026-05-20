@@ -112,7 +112,10 @@ _CODE_SNIPPETS: tuple[tuple[str, str], ...] = (
     ),
     ("sql", "SELECT id, name FROM users\nWHERE active = TRUE\nORDER BY name;"),
     ("yaml", "name: lorem\nversion: 1.0.0\ndescription: ipsum dolor sit amet"),
-    ("json", '{\n  "name": "lorem",\n  "version": "1.0.0",\n  "active": true\n}'),
+    (
+        "json",
+        '{\n  "name": "lorem",\n  "version": "1.0.0",\n  "active": true\n}',
+    ),
     ("rust", 'fn main() {\n    println!("Hello, world!");\n}'),
     ("go", 'func main() {\n\tfmt.Println("Hello, world!")\n}'),
     ("css", "body {\n  font-family: sans-serif;\n  color: #333;\n}"),
@@ -139,7 +142,13 @@ _EMOJIS: tuple[str, ...] = (
     ":construction:",
 )
 
-_ALERT_TYPES: tuple[str, ...] = ("NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION")
+_ALERT_TYPES: tuple[str, ...] = (
+    "NOTE",
+    "TIP",
+    "IMPORTANT",
+    "WARNING",
+    "CAUTION",
+)
 
 _MATH_INLINE_EXPRS: tuple[str, ...] = (
     r"E = mc^2",
@@ -193,7 +202,14 @@ _MERMAID_DIAGRAMS: tuple[str, ...] = (
     ),
 )
 
-_USERNAMES: tuple[str, ...] = ("alice", "bob", "charlie", "dave", "eve", "mallory")
+_USERNAMES: tuple[str, ...] = (
+    "alice",
+    "bob",
+    "charlie",
+    "dave",
+    "eve",
+    "mallory",
+)
 
 _EXAMPLE_URLS: tuple[str, ...] = (
     "https://example.com",
@@ -449,7 +465,9 @@ def _table_row(cells: list[str]) -> str:
     return "| " + " | ".join(cells) + " |"
 
 
-def _table(headers: list[str], rows: list[list[str]], aligns: list[str]) -> str:
+def _table(
+    headers: list[str], rows: list[list[str]], aligns: list[str]
+) -> str:
     """Assembles a full GFM pipe table from headers, alignment markers, and data rows.
 
     Args:
@@ -552,7 +570,9 @@ def _details(summary: str, content: str) -> str:
     Returns:
         A multi-line HTML string with ``<details>``, ``<summary>``, and body.
     """
-    return f"<details>\n<summary>{summary}</summary>\n\n{content}\n\n</details>"
+    return (
+        f"<details>\n<summary>{summary}</summary>\n\n{content}\n\n</details>"
+    )
 
 
 def _mermaid(diagram: str) -> str:
@@ -645,7 +665,9 @@ def _task_list(rng: random.Random) -> str:
     Returns:
         A newline-joined string of ``- [ ]`` / ``- [x]`` items.
     """
-    items = [_task_item(rng.choice([True, False]), _sentence(rng)) for _ in range(6)]
+    items = [
+        _task_item(rng.choice([True, False]), _sentence(rng)) for _ in range(6)
+    ]
     return "\n".join(items)
 
 
@@ -1017,7 +1039,9 @@ def _section_misc(rng: random.Random) -> str:
 # Assembly helpers
 # ---------------------------------------------------------------------------
 
-_OPTIONAL_SECTION_FNS: tuple[tuple[str, Callable[[random.Random], str]], ...] = (
+_OPTIONAL_SECTION_FNS: tuple[
+    tuple[str, Callable[[random.Random], str]], ...
+] = (
     ("include_alerts", _section_alerts),
     ("include_math", _section_math),
     ("include_mermaid", _section_mermaid),
@@ -1046,7 +1070,9 @@ def _core_sections(rng: random.Random) -> list[str]:
     ]
 
 
-def _optional_sections(rng: random.Random, config: MarkdownConfig) -> list[str]:
+def _optional_sections(
+    rng: random.Random, config: MarkdownConfig
+) -> list[str]:
     """Returns enabled optional section strings.
 
     Sections are returned in document order when their flag in ``config`` is
@@ -1059,10 +1085,14 @@ def _optional_sections(rng: random.Random, config: MarkdownConfig) -> list[str]:
     Returns:
         List of enabled section strings (alerts → math → mermaid → details).
     """
-    return [fn(rng) for attr, fn in _OPTIONAL_SECTION_FNS if getattr(config, attr)]
+    return [
+        fn(rng) for attr, fn in _OPTIONAL_SECTION_FNS if getattr(config, attr)
+    ]
 
 
-def _footnote_parts(rng: random.Random, include: bool) -> tuple[list[str], list[str]]:
+def _footnote_parts(
+    rng: random.Random, include: bool
+) -> tuple[list[str], list[str]]:
     """Generates footnote section and definition lines.
 
     Empty lists are returned when footnotes are disabled.
@@ -1116,7 +1146,9 @@ def generate_markdown(
     resolved = config if config is not None else _DEFAULT_CONFIG
     # Reproducible sample content only; this is not used for cryptography.
     rng = random.Random(seed)  # nosec B311
-    footnote_sections, footnote_defs = _footnote_parts(rng, resolved.include_footnotes)
+    footnote_sections, footnote_defs = _footnote_parts(
+        rng, resolved.include_footnotes
+    )
     tail = ["\n".join(footnote_defs)] if footnote_defs else []
     parts = (
         _core_sections(rng)

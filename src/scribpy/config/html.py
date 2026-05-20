@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 
-from scribpy.config.types import MermaidConfig, PlantUmlConfig, PlantUmlRendererMode
+from scribpy.config.types import (
+    MermaidConfig,
+    PlantUmlConfig,
+    PlantUmlRendererMode,
+)
 
 type RawSection = Mapping[str, object]
 
@@ -31,7 +35,9 @@ def parse_plantuml_config(
             "Configuration value builders.html.plantuml.renderer must be "
             "'java' or 'web'."
         )
-    server_url = parse_optional_str(raw, "server_url", "builders.html.plantuml")
+    server_url = parse_optional_str(
+        raw, "server_url", "builders.html.plantuml"
+    )
     typed_renderer: PlantUmlRendererMode = renderer
     return PlantUmlConfig(
         renderer=typed_renderer,

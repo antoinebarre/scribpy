@@ -68,9 +68,13 @@ def parse_document_file(
         return None, read_diagnostics
 
     fm_result = parse_frontmatter(source, path=source_file.path)
-    diagnostics: list[Diagnostic] = list(read_diagnostics) + list(fm_result.diagnostics)
+    diagnostics: list[Diagnostic] = list(read_diagnostics) + list(
+        fm_result.diagnostics
+    )
 
-    ast, parse_diagnostics = _parse_body(fm_result.body, source_file.path, parser)
+    ast, parse_diagnostics = _parse_body(
+        fm_result.body, source_file.path, parser
+    )
     diagnostics.extend(parse_diagnostics)
     if ast is None:
         return None, tuple(diagnostics)

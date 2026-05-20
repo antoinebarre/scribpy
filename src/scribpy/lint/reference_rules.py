@@ -1,16 +1,16 @@
-"""Native lint rules for local links and assets."""
+"""Native lint rule for local links and heading anchors."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
 from scribpy.lint.context import LintContext
-from scribpy.lint.resolution import (
-    is_external_target,
-    resolve_relative_path,
-    split_local_target,
-    stays_within_source_tree,
+from scribpy.lint.reference_diagnostics import (
+    missing_anchor,
+    missing_link_target,
 )
+from scribpy.lint.reference_targets import has_anchor, target_document
+from scribpy.lint.resolution import is_external_target, split_local_target
 from scribpy.model import Diagnostic, Document
 
 
@@ -39,68 +39,25 @@ class BrokenInternalLinkRule:
         document: Document,
         documents: dict[Path, Document],
     ) -> tuple[Diagnostic, ...]:
-        """Lint document."""
+        """Return diagnostics for one document's internal links."""
         diagnostics: list[Diagnostic] = []
         for reference in document.links:
             if is_external_target(reference.target):
                 continue
 
             raw_path, anchor = split_local_target(reference.target)
-            target_document = self._target_document(document, raw_path, documents)
-            if target_document is None:
+            target = target_document(document, raw_path, documents)
+            if target is None:
                 diagnostics.append(
-                    _missing_link_target(document, reference.target, reference.line)
+                    missing_link_target(
+                        document, reference.target, reference.line
+                    )
                 )
-            elif anchor is not None and not _has_anchor(target_document, anchor):
-                diagnostics.append(_missing_anchor(document, anchor, reference.line))
+            elif anchor is not None and not has_anchor(target, anchor):
+                diagnostics.append(
+                    missing_anchor(document, anchor, reference.line)
+                )
         return tuple(diagnostics)
-
-    def _target_document(
-        self,
-        document: Document,
-        raw_path: str,
-        documents: dict[Path, Document],
-    ) -> Document | None:
-        """Return target document."""
-        if raw_path == "":
-            return document
-        relative_path = resolve_relative_path(document, raw_path)
-        if not stays_within_source_tree(relative_path):
-            return None
-        return documents.get(relative_path)
-
-
-def _missing_link_target(
-    document: Document,
-    target: str,
-    line: int | None,
-) -> Diagnostic:
-    """Create link target."""
-    return Diagnostic(
-        severity="error",
-        code="LINT003",
-        message="Internal link target does not exist.",
-        path=document.relative_path,
-        line=line,
-        hint=f"Check the target path: {target}",
-    )
-
-
-def _missing_anchor(document: Document, anchor: str, line: int | None) -> Diagnostic:
-    """Create anchor."""
-    return Diagnostic(
-        severity="error",
-        code="LINT003",
-        message="Internal link anchor does not exist.",
-        path=document.relative_path,
-        line=line,
-        hint=f"Check the target anchor: #{anchor}",
-    )
-
-
-def _has_anchor(document: Document, anchor: str) -> bool:
-    """Return whether anchor."""
-    return any(heading.anchor == anchor for heading in document.headings)
 
 
 __all__ = ["BrokenInternalLinkRule"]

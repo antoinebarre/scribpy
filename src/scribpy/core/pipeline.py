@@ -56,7 +56,7 @@ class PipelineResult[T]:
         """
         return cls(value=value, diagnostics=diagnostics, failed=True)
 
-    def bind[U](
+    def bind[U](  # noqa: D102
         self,
         step: Callable[[T], PipelineResult[U]],
     ) -> PipelineResult[U]:
@@ -69,7 +69,9 @@ class PipelineResult[T]:
             Next pipeline result with accumulated diagnostics.
         """
         if self.failed or self.value is None:
-            return PipelineResult(value=None, diagnostics=self.diagnostics, failed=True)
+            return PipelineResult(
+                value=None, diagnostics=self.diagnostics, failed=True
+            )
 
         next_result = step(self.value)
         return PipelineResult(

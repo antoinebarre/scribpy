@@ -29,8 +29,12 @@ def resolve_config_step(
     """
     config_path = _resolve_config_path(state.start)
     if config_path is None:
-        logger.error("Could not resolve project configuration from %s", state.start)
-        return PipelineResult.fail((_missing_config_diagnostic(state.start),), state)
+        logger.error(
+            "Could not resolve project configuration from %s", state.start
+        )
+        return PipelineResult.fail(
+            (_missing_config_diagnostic(state.start),), state
+        )
     logger.info("Resolved configuration file: %s", config_path)
     return PipelineResult.ok(replace(state, config_path=config_path))
 
@@ -81,7 +85,9 @@ def scan_sources_step(
         source_files=source_files,
     )
     if has_errors(diagnostics):
-        logger.error("Source scan failed with %d diagnostic(s)", len(diagnostics))
+        logger.error(
+            "Source scan failed with %d diagnostic(s)", len(diagnostics)
+        )
         return PipelineResult.fail(diagnostics, next_state)
     logger.info("Discovered %d Markdown source file(s)", len(source_files))
     return PipelineResult.ok(next_state, diagnostics)

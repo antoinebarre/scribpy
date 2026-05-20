@@ -44,7 +44,9 @@ def extract_headings(ast: MarkdownAst) -> tuple[Heading, ...]:
             if i + 1 < len(tokens) and tokens[i + 1].get("type") == "inline":
                 title = str(tokens[i + 1].get("content", ""))
             anchor = _github_anchor(title)
-            headings.append(Heading(level=level, title=title, anchor=anchor, line=line))
+            headings.append(
+                Heading(level=level, title=title, anchor=anchor, line=line)
+            )
         i += 1
     return tuple(headings)
 
@@ -176,7 +178,9 @@ def _get_children(token: Mapping[str, object]) -> list[Mapping[str, object]]:
     return [c for c in raw if isinstance(c, Mapping)]
 
 
-def _collect_link_text(children: list[Mapping[str, object]], start: int) -> str:
+def _collect_link_text(
+    children: list[Mapping[str, object]], start: int
+) -> str:
     """Collect link text."""
     parts: list[str] = []
     for child in children[start:]:
@@ -191,9 +195,13 @@ def _collect_link_text(children: list[Mapping[str, object]], start: int) -> str:
 def _build_reference(href: str, text: str, line: int | None) -> Reference:
     """Build reference."""
     if href.startswith("#"):
-        return Reference(kind="xref", target=href, text=text or None, line=line)
+        return Reference(
+            kind="xref", target=href, text=text or None, line=line
+        )
     path = _local_path(href)
-    return Reference(kind="link", target=href, text=text or None, path=path, line=line)
+    return Reference(
+        kind="link", target=href, text=text or None, path=path, line=line
+    )
 
 
 def _local_path(target: str) -> Path | None:

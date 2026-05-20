@@ -29,8 +29,6 @@ jobs:
         with:
           name: ci-reports-${{ github.run_number }}
           path: |
-            work/*.log
-            work/*.md
-            work/*.xml
-            work/htmlcov/
+            work/quality_artefacts.zip
+            work/quality_report.md
           if-no-files-found: ignore

@@ -63,7 +63,9 @@ def write_markdown_artifact(
         Artifact plus diagnostics. On failure the artifact is ``None`` and a
         ``BLD003`` diagnostic explains the write error.
     """
-    base_dir = output_dir if output_dir.is_absolute() else project_root / output_dir
+    base_dir = (
+        output_dir if output_dir.is_absolute() else project_root / output_dir
+    )
     artifact_path = base_dir / "document.md"
     try:
         artifact_path.parent.mkdir(parents=True, exist_ok=True)

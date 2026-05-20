@@ -44,7 +44,10 @@ class MissingLocalAssetRule:
             raw_path, _anchor = split_local_target(asset.target)
             relative_path = resolve_relative_path(document, raw_path)
             asset_path = context.source_root / relative_path
-            if stays_within_source_tree(relative_path) and asset_path.is_file():
+            if (
+                stays_within_source_tree(relative_path)
+                and asset_path.is_file()
+            ):
                 continue
             diagnostics.append(
                 Diagnostic(

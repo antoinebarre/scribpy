@@ -206,7 +206,9 @@ def run_mkdocs_build(
             check=False,
         )
     except OSError as exc:
-        return None, (_mkdocs_diagnostic("SITE003", f"Cannot execute MkDocs: {exc}"),)
+        return None, (
+            _mkdocs_diagnostic("SITE003", f"Cannot execute MkDocs: {exc}"),
+        )
     if completed.returncode != 0:
         detail = (completed.stderr or completed.stdout).strip()
         message = "MkDocs build failed."
@@ -223,7 +225,9 @@ def _write_pages(
     documents: tuple[TransformedDocument, ...],
     docs_dir: Path,
     filesystem: FileSystem,
-) -> tuple[tuple[BuildArtifact, ...], tuple[Diagnostic, ...], list[dict[str, str]]]:
+) -> tuple[
+    tuple[BuildArtifact, ...], tuple[Diagnostic, ...], list[dict[str, str]]
+]:
     """Write pages."""
     artifacts: list[BuildArtifact] = []
     nav_entries: list[dict[str, str]] = []
@@ -248,7 +252,9 @@ def _write_pages(
                 [],
             )
         artifacts.append(
-            BuildArtifact(path=page_path, target="html-site", artifact_type="page")
+            BuildArtifact(
+                path=page_path, target="html-site", artifact_type="page"
+            )
         )
         nav_title = _page_title(document)
         nav_path = str(PurePosixPath(document.relative_path))
@@ -307,7 +313,9 @@ def _copy_css_files(
                 [],
             )
         artifacts.append(
-            BuildArtifact(path=dest, target="html-site", artifact_type="stylesheet")
+            BuildArtifact(
+                path=dest, target="html-site", artifact_type="stylesheet"
+            )
         )
         hrefs.append(f"{_CSS_SUBDIR}/{css_source.name}")
 
@@ -318,7 +326,9 @@ def _page_title(document: TransformedDocument) -> str:
     """Return the page title."""
     if document.source_document.title:
         return document.source_document.title
-    return document.relative_path.stem.replace("-", " ").replace("_", " ").title()
+    return (
+        document.relative_path.stem.replace("-", " ").replace("_", " ").title()
+    )
 
 
 def _yaml_str(value: str) -> str:
