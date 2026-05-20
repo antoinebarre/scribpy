@@ -132,7 +132,9 @@ def _render_chapter(
 
     for child in chapter.children:
         parts.append(
-            _render_child(child, depth=1, num_ctx=num_ctx, assets_dir=assets_dir)
+            _render_child(
+                child, depth=1, num_ctx=num_ctx, assets_dir=assets_dir
+            )
         )
 
     if num_ctx is not None:
@@ -369,7 +371,9 @@ def _render_table(node: Table) -> str:
     """
     header_row = "| " + " | ".join(node.headers) + " |"
     separator = "| " + " | ".join("---" for _ in node.headers) + " |"
-    data_rows = ["| " + " | ".join(cell for cell in row) + " |" for row in node.rows]
+    data_rows = [
+        "| " + " | ".join(cell for cell in row) + " |" for row in node.rows
+    ]
     return "\n".join([header_row, separator, *data_rows])
 
 

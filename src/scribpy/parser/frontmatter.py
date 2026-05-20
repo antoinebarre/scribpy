@@ -32,7 +32,9 @@ class FrontmatterResult:
     diagnostics: tuple[Diagnostic, ...]
 
 
-def parse_frontmatter(source: str, path: Path | None = None) -> FrontmatterResult:
+def parse_frontmatter(
+    source: str, path: Path | None = None
+) -> FrontmatterResult:
     """Separate and parse a frontmatter block at the start of a Markdown source.
 
     Supports YAML blocks delimited by ``---`` and TOML blocks delimited by
@@ -137,7 +139,9 @@ def _yaml_adapter(
                     ),
                     path=path,
                     line=1,
-                    hint=("Use 'key: value' pairs at the top level of the YAML block."),
+                    hint=(
+                        "Use 'key: value' pairs at the top level of the YAML block."
+                    ),
                 ),
             )
         return dict(data), ()

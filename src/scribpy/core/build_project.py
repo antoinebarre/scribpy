@@ -79,12 +79,16 @@ def build_project(
     if state is None:
         return _blocked_build(diagnostics)
 
-    active_registry = registry if registry is not None else ExtensionRegistry.native()
+    active_registry = (
+        registry if registry is not None else ExtensionRegistry.native()
+    )
     diagnostics = _lint_state(state, diagnostics, active_registry)
     if has_errors(diagnostics):
         return _blocked_build(diagnostics)
 
-    return _write_markdown_build(state, diagnostics, active_registry, output_dir)
+    return _write_markdown_build(
+        state, diagnostics, active_registry, output_dir
+    )
 
 
 def _dispatch_html_build(
@@ -102,7 +106,9 @@ def _dispatch_html_build(
     # Resolve the effective mode from the target string or explicit override.
     mode_diagnostic = _html_mode_diagnostic(overrides.mode)
     if mode_diagnostic is not None:
-        return BuildResult(success=False, artifacts=(), diagnostics=(mode_diagnostic,))
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=(mode_diagnostic,)
+        )
     effective_mode = _effective_html_mode(target, overrides.mode)
 
     # Load config to pick up html section defaults, then override the mode.
@@ -113,7 +119,10 @@ def _dispatch_html_build(
     assert state.config is not None
     base_html_config = state.config.html
     plantuml_renderer = overrides.plantuml_renderer
-    if plantuml_renderer is not None and plantuml_renderer not in ("java", "web"):
+    if plantuml_renderer is not None and plantuml_renderer not in (
+        "java",
+        "web",
+    ):
         return BuildResult(
             success=False,
             artifacts=(),
@@ -189,7 +198,11 @@ def _prepare_build_state(
 ) -> tuple[ProjectPipelineState | None, tuple[Diagnostic, ...]]:
     """Handle prepare build state."""
     prepared = run_project_parse_pipeline(root, filesystem, parser)
-    if prepared.failed or prepared.value is None or has_errors(prepared.diagnostics):
+    if (
+        prepared.failed
+        or prepared.value is None
+        or has_errors(prepared.diagnostics)
+    ):
         return None, prepared.diagnostics
     return prepared.value, prepared.diagnostics
 
@@ -251,7 +264,9 @@ def _write_markdown_build(
         state.project_root,
         assembled,
         state.filesystem,
-        output_dir=output_dir if output_dir is not None else Path("build/markdown"),
+        output_dir=output_dir
+        if output_dir is not None
+        else Path("build/markdown"),
     )
     final_diagnostics = (*transformed_diagnostics, *write_diagnostics)
     if artifact is None or has_errors(final_diagnostics):
@@ -259,7 +274,9 @@ def _write_markdown_build(
             "Markdown build failed with %d diagnostic(s)",
             len(final_diagnostics),
         )
-        return BuildResult(success=False, artifacts=(), diagnostics=final_diagnostics)
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=final_diagnostics
+        )
     logger.info("Built Markdown artifact: %s", artifact.path)
     return BuildResult(
         success=True, artifacts=(artifact,), diagnostics=final_diagnostics
@@ -272,7 +289,9 @@ def _unsupported_target_diagnostic(target: str) -> Diagnostic:
         severity="error",
         code="BLD001",
         message=f"Unsupported build target: {target}",
-        hint=("Use target='markdown' until additional builders are implemented."),
+        hint=(
+            "Use target='markdown' until additional builders are implemented."
+        ),
     )
 
 
@@ -290,7 +309,9 @@ def _blocked_build_diagnostic() -> Diagnostic:
     return Diagnostic(
         severity="error",
         code="BLD002",
-        message=("Build stopped because blocking diagnostics were reported upstream."),
+        message=(
+            "Build stopped because blocking diagnostics were reported upstream."
+        ),
         hint="Resolve project, parse, or lint errors before building.",
     )
 

@@ -113,7 +113,9 @@ app.add_typer(
     help="Parse Markdown sources and report semantic extraction diagnostics",
 )
 app.add_typer(build_app, name="build", help="Build documentation artifacts")
-app.add_typer(index_app, name="index", help="Manage and validate the document index")
+app.add_typer(
+    index_app, name="index", help="Manage and validate the document index"
+)
 app.add_typer(demo_app, name="demo", help="Create tutorial projects")
 
 
@@ -128,7 +130,9 @@ def _root(
     ] = None,
     log_console: Annotated[
         bool,
-        typer.Option("--log-console", help="Also write execution logs to stderr."),
+        typer.Option(
+            "--log-console", help="Also write execution logs to stderr."
+        ),
     ] = False,
     log_file: Annotated[
         Path | None,
@@ -171,7 +175,9 @@ def _demo_root(ctx: typer.Context) -> None:
 )
 def parse_check(
     ctx: typer.Context,
-    root: Annotated[Path | None, typer.Option("--root", help=_ROOT_HELP)] = None,
+    root: Annotated[
+        Path | None, typer.Option("--root", help=_ROOT_HELP)
+    ] = None,
 ) -> None:
     """Parse all Markdown sources and report diagnostics.
 
@@ -181,14 +187,18 @@ def parse_check(
     """
     _finish(
         ctx,
-        lambda runtime: run_parse_check_command(root, runtime.stdout, runtime.stderr),
+        lambda runtime: run_parse_check_command(
+            root, runtime.stdout, runtime.stderr
+        ),
     )
 
 
 @app.command(help=_verbatim(_LINT_DESCRIPTION), epilog=_verbatim(_LINT_EPILOG))
 def lint(
     ctx: typer.Context,
-    root: Annotated[Path | None, typer.Option("--root", help=_ROOT_HELP)] = None,
+    root: Annotated[
+        Path | None, typer.Option("--root", help=_ROOT_HELP)
+    ] = None,
 ) -> None:
     """Check documentation quality.
 
@@ -196,7 +206,10 @@ def lint(
         ctx: Current command context.
         root: Optional project root override.
     """
-    _finish(ctx, lambda runtime: run_lint_command(root, runtime.stdout, runtime.stderr))
+    _finish(
+        ctx,
+        lambda runtime: run_lint_command(root, runtime.stdout, runtime.stderr),
+    )
 
 
 @build_app.command(
@@ -206,7 +219,9 @@ def lint(
 )
 def build_markdown(
     ctx: typer.Context,
-    root: Annotated[Path | None, typer.Option("--root", help=_ROOT_HELP)] = None,
+    root: Annotated[
+        Path | None, typer.Option("--root", help=_ROOT_HELP)
+    ] = None,
     output_dir: Annotated[
         Path | None, typer.Option("--output-dir", help=_OUTPUT_DIR_HELP)
     ] = None,
@@ -233,7 +248,9 @@ def build_markdown(
 )
 def build_html(
     ctx: typer.Context,
-    root: Annotated[Path | None, typer.Option("--root", help=_ROOT_HELP)] = None,
+    root: Annotated[
+        Path | None, typer.Option("--root", help=_ROOT_HELP)
+    ] = None,
     output_dir: Annotated[
         Path | None, typer.Option("--output-dir", help=_OUTPUT_DIR_HELP)
     ] = None,
@@ -242,11 +259,15 @@ def build_html(
     ),
     plantuml_renderer: Annotated[
         PlantUmlRendererOption | None,
-        typer.Option("--plantuml-renderer", help="Override PlantUML renderer."),
+        typer.Option(
+            "--plantuml-renderer", help="Override PlantUML renderer."
+        ),
     ] = None,
     plantuml_server_url: Annotated[
         str | None,
-        typer.Option("--plantuml-server-url", help="Override PlantUML server URL."),
+        typer.Option(
+            "--plantuml-server-url", help="Override PlantUML server URL."
+        ),
     ] = None,
 ) -> None:
     """Build HTML output.
@@ -280,7 +301,9 @@ def build_html(
 )
 def index_check(
     ctx: typer.Context,
-    root: Annotated[Path | None, typer.Option("--root", help=_ROOT_HELP)] = None,
+    root: Annotated[
+        Path | None, typer.Option("--root", help=_ROOT_HELP)
+    ] = None,
 ) -> None:
     """Validate the document index.
 
@@ -290,7 +313,9 @@ def index_check(
     """
     _finish(
         ctx,
-        lambda runtime: run_index_check_command(root, runtime.stdout, runtime.stderr),
+        lambda runtime: run_index_check_command(
+            root, runtime.stdout, runtime.stderr
+        ),
     )
 
 

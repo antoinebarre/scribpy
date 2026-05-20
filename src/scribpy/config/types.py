@@ -157,7 +157,11 @@ class HtmlBuilderConfig:
         """
         if self.output_dir is not None:
             return self.output_dir
-        return Path("build/html") if self.mode == "single-page" else Path("build/site")
+        return (
+            Path("build/html")
+            if self.mode == "single-page"
+            else Path("build/site")
+        )
 
 
 @dataclass(frozen=True)

@@ -194,7 +194,9 @@ def render_mermaid_blocks(
         logger.info("Rendered Mermaid block %s from %s", digest, label)
         rewritten.append(f"![Mermaid diagram]({href_prefix / filename})\n")
         index += 1
-    return MermaidRenderResult(content="".join(rewritten), artifacts=tuple(artifacts))
+    return MermaidRenderResult(
+        content="".join(rewritten), artifacts=tuple(artifacts)
+    )
 
 
 def render_mermaid_documents(
@@ -205,7 +207,9 @@ def render_mermaid_documents(
     flattened: bool,
     target: str,
 ) -> tuple[
-    tuple[TransformedDocument, ...], tuple[BuildArtifact, ...], tuple[Diagnostic, ...]
+    tuple[TransformedDocument, ...],
+    tuple[BuildArtifact, ...],
+    tuple[Diagnostic, ...],
 ]:
     """Render Mermaid blocks across transformed documents.
 
@@ -239,7 +243,9 @@ def render_mermaid_documents(
             )
             return documents, (), result.diagnostics
         rendered_documents.append(replace(document, content=result.content))
-        artifacts.update({artifact.path: artifact for artifact in result.artifacts})
+        artifacts.update(
+            {artifact.path: artifact for artifact in result.artifacts}
+        )
     return tuple(rendered_documents), tuple(artifacts.values()), ()
 
 
@@ -258,7 +264,9 @@ def _validate_http_url(url: str) -> None:
     """Validate that a renderer URL targets an HTTP(S) endpoint."""
     parsed = urlparse(url)
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-        raise MermaidRenderError("Mermaid renderer URL must use http or https.")
+        raise MermaidRenderError(
+            "Mermaid renderer URL must use http or https."
+        )
 
 
 def _render_failure_diagnostic(detail: str) -> Diagnostic:

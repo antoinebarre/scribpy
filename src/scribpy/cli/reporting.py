@@ -65,7 +65,9 @@ def print_lint_report(result: LintResult, stream: TextIO) -> None:
     )
 
 
-def print_build_report(result: BuildResult, target: str, stream: TextIO) -> None:
+def print_build_report(
+    result: BuildResult, target: str, stream: TextIO
+) -> None:
     """Print the high-level build execution report.
 
     Args:

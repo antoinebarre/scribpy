@@ -48,7 +48,9 @@ class ExtensionRegistry:
             code_block_plugins=self.code_block_plugins,
         )
 
-    def with_markdown_transform(self, transform: Transform) -> ExtensionRegistry:
+    def with_markdown_transform(
+        self, transform: Transform
+    ) -> ExtensionRegistry:
         """Return a new registry with one additional Markdown transform.
 
         Args:
@@ -67,7 +69,9 @@ class ExtensionRegistry:
             code_block_plugins=self.code_block_plugins,
         )
 
-    def with_code_block_plugin(self, plugin: CodeBlockPlugin) -> ExtensionRegistry:
+    def with_code_block_plugin(
+        self, plugin: CodeBlockPlugin
+    ) -> ExtensionRegistry:
         """Return a new registry with one additional code-block plugin.
 
         Args:

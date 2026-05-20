@@ -1,7 +1,9 @@
 """scribpy.report — programmatic GFM report generator."""
 
 from .assets import AssetRenderer, MatplotlibRenderer
+from .checksum import Algorithm, file_checksum
 from .errors import InvalidChildError, InvalidTableError, ReportDepthError
+from .merge import MergeSection, merge_markdown
 from .nodes import (
     BlockQuote,
     BulletList,
@@ -46,6 +48,12 @@ __all__ = [
     # Asset renderers
     "AssetRenderer",
     "MatplotlibRenderer",
+    # Merge utilities
+    "MergeSection",
+    "merge_markdown",
+    # Checksum
+    "file_checksum",
+    "Algorithm",
     # Errors
     "ReportDepthError",
     "InvalidChildError",

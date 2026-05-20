@@ -69,7 +69,9 @@ class PipelineResult[T]:
             Next pipeline result with accumulated diagnostics.
         """
         if self.failed or self.value is None:
-            return PipelineResult(value=None, diagnostics=self.diagnostics, failed=True)
+            return PipelineResult(
+                value=None, diagnostics=self.diagnostics, failed=True
+            )
 
         next_result = step(self.value)
         return PipelineResult(

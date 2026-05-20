@@ -29,7 +29,9 @@ class LintContext:
         Returns:
             Documents keyed by their source-relative paths.
         """
-        return {document.relative_path: document for document in self.documents}
+        return {
+            document.relative_path: document for document in self.documents
+        }
 
 
 __all__ = ["LintContext"]

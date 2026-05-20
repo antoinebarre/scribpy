@@ -46,13 +46,21 @@ class BrokenInternalLinkRule:
                 continue
 
             raw_path, anchor = split_local_target(reference.target)
-            target_document = self._target_document(document, raw_path, documents)
+            target_document = self._target_document(
+                document, raw_path, documents
+            )
             if target_document is None:
                 diagnostics.append(
-                    _missing_link_target(document, reference.target, reference.line)
+                    _missing_link_target(
+                        document, reference.target, reference.line
+                    )
                 )
-            elif anchor is not None and not _has_anchor(target_document, anchor):
-                diagnostics.append(_missing_anchor(document, anchor, reference.line))
+            elif anchor is not None and not _has_anchor(
+                target_document, anchor
+            ):
+                diagnostics.append(
+                    _missing_anchor(document, anchor, reference.line)
+                )
         return tuple(diagnostics)
 
     def _target_document(
@@ -86,7 +94,9 @@ def _missing_link_target(
     )
 
 
-def _missing_anchor(document: Document, anchor: str, line: int | None) -> Diagnostic:
+def _missing_anchor(
+    document: Document, anchor: str, line: int | None
+) -> Diagnostic:
     """Create anchor."""
     return Diagnostic(
         severity="error",

@@ -128,4 +128,16 @@ else
     printf " ${R}${B}%d of %d checks failed.${N}\n\n" "$FAIL" "$TOTAL"
 fi
 
+# Generate quality reports (never blocks exit code)
+if uv run python scripts/report_files.py >>work/reports.log 2>&1 && \
+   uv run python scripts/report_lint.py  >>work/reports.log 2>&1 && \
+   uv run python scripts/report_metrics.py >>work/reports.log 2>&1 && \
+   uv run python scripts/report_tests.py >>work/reports.log 2>&1 && \
+   uv run python scripts/assemble_report.py >>work/reports.log 2>&1; then
+    printf " ${G}Quality report: work/quality_report.md${N}\n"
+    printf " ${G}Artefacts zip:  work/quality_artefacts.zip${N}\n"
+else
+    printf " ${Y}Warning: report generation had errors (see work/reports.log)${N}\n"
+fi
+
 exit "$FAIL"

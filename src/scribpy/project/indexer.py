@@ -71,7 +71,9 @@ def validate_document_index(
         )
 
     diagnostics: list[Diagnostic] = []
-    discovered_paths = frozenset(source_file.relative_path for source_file in files)
+    discovered_paths = frozenset(
+        source_file.relative_path for source_file in files
+    )
 
     diagnostics.extend(_validate_entry_scope(index.paths))
     diagnostics.extend(_validate_duplicates(index.paths))
@@ -81,7 +83,9 @@ def validate_document_index(
         diagnostics.extend(
             _validate_missing_explicit_files(index.paths, discovered_paths)
         )
-        diagnostics.extend(_validate_uncovered_discovered_files(indexed_paths, files))
+        diagnostics.extend(
+            _validate_uncovered_discovered_files(indexed_paths, files)
+        )
 
     return tuple(diagnostics)
 

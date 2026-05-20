@@ -27,7 +27,9 @@ from scribpy.utils.toml import load_toml
 CONFIG_FILENAME = "scribpy.toml"
 _KNOWN_INDEX_MODES = frozenset[IndexMode]({"explicit", "filesystem", "hybrid"})
 _KNOWN_TOC_STYLES = frozenset[TocStyle]({"bullet", "numbered"})
-_KNOWN_NUMBERING_STYLES = frozenset[NumberingStyle]({"decimal", "alpha", "roman"})
+_KNOWN_NUMBERING_STYLES = frozenset[NumberingStyle](
+    {"decimal", "alpha", "roman"}
+)
 _KNOWN_HTML_MODES = frozenset[HtmlMode]({"single-page", "site"})
 
 type RawSection = Mapping[str, object]
@@ -89,7 +91,9 @@ def parse_config(raw: Mapping[str, object]) -> Config:
     index = _parse_index_config(_section(raw, "index"))
     document = _parse_document_config(_section(raw, "document"))
     builders_raw = _section(raw, "builders")
-    html = _parse_html_builder_config(_nested_section(builders_raw, "html", "builders"))
+    html = _parse_html_builder_config(
+        _nested_section(builders_raw, "html", "builders")
+    )
     return Config(
         project=project, paths=paths, index=index, document=document, html=html
     )
@@ -201,7 +205,9 @@ def _section(raw: Mapping[str, object], name: str) -> RawSection:
     """Return ."""
     value = raw.get(name, {})
     if not isinstance(value, Mapping):
-        raise ConfigParseError(f"Configuration section [{name}] must be a table.")
+        raise ConfigParseError(
+            f"Configuration section [{name}] must be a table."
+        )
     return cast("RawSection", value)
 
 
@@ -211,7 +217,9 @@ def _parse_project_config(raw: RawSection) -> ProjectConfig:
     if name is None:
         return ProjectConfig()
     if not isinstance(name, str):
-        raise ConfigParseError("Configuration value project.name must be a string.")
+        raise ConfigParseError(
+            "Configuration value project.name must be a string."
+        )
     return ProjectConfig(name=name)
 
 
@@ -219,7 +227,9 @@ def _parse_path_config(raw: RawSection) -> PathConfig:
     """Parse path config."""
     source = raw.get("source", "doc")
     if not isinstance(source, str):
-        raise ConfigParseError("Configuration value paths.source must be a string.")
+        raise ConfigParseError(
+            "Configuration value paths.source must be a string."
+        )
     return PathConfig(source=Path(source))
 
 
@@ -227,7 +237,9 @@ def _parse_index_config(raw: RawSection) -> IndexConfig:
     """Parse index config."""
     mode = raw.get("mode", "filesystem")
     if not isinstance(mode, str):
-        raise ConfigParseError("Configuration value index.mode must be a string.")
+        raise ConfigParseError(
+            "Configuration value index.mode must be a string."
+        )
     if mode not in _KNOWN_INDEX_MODES:
         raise ConfigParseError(
             "Configuration value index.mode must be 'filesystem', 'explicit', "
@@ -236,7 +248,9 @@ def _parse_index_config(raw: RawSection) -> IndexConfig:
 
     files = raw.get("files", ())
     if not isinstance(files, Sequence) or isinstance(files, str):
-        raise ConfigParseError("Configuration value index.files must be a list.")
+        raise ConfigParseError(
+            "Configuration value index.files must be a list."
+        )
 
     parsed_files: list[Path] = []
     for item in files:
@@ -251,9 +265,13 @@ def _parse_document_config(raw: RawSection) -> DocumentConfig:
     """Parse document config."""
     title = raw.get("title")
     if title is not None and not isinstance(title, str):
-        raise ConfigParseError("Configuration value document.title must be a string.")
+        raise ConfigParseError(
+            "Configuration value document.title must be a string."
+        )
     toc = _parse_toc_config(_nested_section(raw, "toc", "document"))
-    numbering = _parse_numbering_config(_nested_section(raw, "numbering", "document"))
+    numbering = _parse_numbering_config(
+        _nested_section(raw, "numbering", "document")
+    )
     return DocumentConfig(title=title, toc=toc, numbering=numbering)
 
 
@@ -341,7 +359,9 @@ def _parse_optional_str(raw: RawSection, key: str, section: str) -> str | None:
     """Parse optional str."""
     value = raw.get(key)
     if value is not None and not isinstance(value, str):
-        raise ConfigParseError(f"Configuration value {section}.{key} must be a string.")
+        raise ConfigParseError(
+            f"Configuration value {section}.{key} must be a string."
+        )
     return value if isinstance(value, str) else None
 
 
@@ -355,7 +375,9 @@ def _nested_section(raw: RawSection, name: str, parent: str) -> RawSection:
     return cast("RawSection", value)
 
 
-def _parse_bool(raw: RawSection, key: str, section: str, default: bool) -> bool:
+def _parse_bool(
+    raw: RawSection, key: str, section: str, default: bool
+) -> bool:
     """Parse bool."""
     value = raw.get(key, default)
     if not isinstance(value, bool):
@@ -365,10 +387,16 @@ def _parse_bool(raw: RawSection, key: str, section: str, default: bool) -> bool:
     return value
 
 
-def _parse_heading_level(raw: RawSection, key: str, section: str, default: int) -> int:
+def _parse_heading_level(
+    raw: RawSection, key: str, section: str, default: int
+) -> int:
     """Parse heading level."""
     value = raw.get(key, default)
-    if not isinstance(value, int) or isinstance(value, bool) or not 1 <= value <= 6:
+    if (
+        not isinstance(value, int)
+        or isinstance(value, bool)
+        or not 1 <= value <= 6
+    ):
         raise ConfigParseError(
             f"Configuration value {section}.{key} must be an integer from 1 to 6."
         )

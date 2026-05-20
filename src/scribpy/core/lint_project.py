@@ -36,11 +36,17 @@ def lint_project(
         Aggregated lint diagnostics and failure state.
     """
     prepared = run_project_parse_pipeline(root, filesystem, parser)
-    if prepared.failed or prepared.value is None or has_errors(prepared.diagnostics):
+    if (
+        prepared.failed
+        or prepared.value is None
+        or has_errors(prepared.diagnostics)
+    ):
         return LintResult(diagnostics=prepared.diagnostics, failed=True)
 
     context = _build_lint_context(prepared.value)
-    active_registry = registry if registry is not None else ExtensionRegistry.native()
+    active_registry = (
+        registry if registry is not None else ExtensionRegistry.native()
+    )
     lint_result = run_lint_rules(context, active_registry.lint_rules)
     diagnostics = (*prepared.diagnostics, *lint_result.diagnostics)
     logger.info("Completed lint: %d diagnostic(s)", len(diagnostics))

@@ -74,9 +74,19 @@ class JavaPlantUmlRenderer:
             RuntimeError: If PlantUML cannot render the source.
             OSError: If Java cannot be executed.
         """
-        jar_path = resources.files("scribpy").joinpath("vendor/plantuml-mit.jar")
-        command = ("java", "-jar", str(jar_path), f"-t{output_format}", "-pipe")
-        logger.debug("Executing bundled PlantUML renderer: %s", " ".join(command))
+        jar_path = resources.files("scribpy").joinpath(
+            "vendor/plantuml-mit.jar"
+        )
+        command = (
+            "java",
+            "-jar",
+            str(jar_path),
+            f"-t{output_format}",
+            "-pipe",
+        )
+        logger.debug(
+            "Executing bundled PlantUML renderer: %s", " ".join(command)
+        )
         completed = subprocess.run(
             command,
             input=source.encode("utf-8"),
@@ -88,7 +98,9 @@ class JavaPlantUmlRenderer:
             logger.error(
                 "Bundled PlantUML renderer failed: %s", detail or "<no stderr>"
             )
-            raise PlantUmlRenderError("java", detail or "PlantUML rendering failed.")
+            raise PlantUmlRenderError(
+                "java", detail or "PlantUML rendering failed."
+            )
         logger.debug("Bundled PlantUML renderer completed successfully")
         return completed.stdout
 
@@ -123,7 +135,9 @@ class WebPlantUmlRenderer:
         url = f"{self._server_url}/{output_format}/{encoded}"
         _validate_http_url(url)
         request = Request(url, headers={"User-Agent": self._USER_AGENT})
-        logger.info("Rendering PlantUML through web server %s", self._server_url)
+        logger.info(
+            "Rendering PlantUML through web server %s", self._server_url
+        )
         try:
             with urlopen(request, timeout=30) as response:  # nosec B310
                 return cast("bytes", response.read())
@@ -139,7 +153,9 @@ def validate_java_plantuml_environment() -> tuple[Diagnostic, ...]:
     """
     java = shutil.which("java")
     if java is None:
-        return (_java_missing_diagnostic("Could not find the `java` executable."),)
+        return (
+            _java_missing_diagnostic("Could not find the `java` executable."),
+        )
     try:
         completed = subprocess.run(
             (java, "-version"),
@@ -152,7 +168,8 @@ def validate_java_plantuml_environment() -> tuple[Diagnostic, ...]:
         detail = completed.stderr.decode("utf-8", errors="replace").strip()
         return (
             _java_missing_diagnostic(
-                detail or f"`java -version` exited with code {completed.returncode}."
+                detail
+                or f"`java -version` exited with code {completed.returncode}."
             ),
         )
     return ()
@@ -270,7 +287,9 @@ def render_plantuml_documents(
     flattened: bool,
     target: str,
 ) -> tuple[
-    tuple[TransformedDocument, ...], tuple[BuildArtifact, ...], tuple[Diagnostic, ...]
+    tuple[TransformedDocument, ...],
+    tuple[BuildArtifact, ...],
+    tuple[Diagnostic, ...],
 ]:
     """Render PlantUML blocks across transformed documents.
 
@@ -303,7 +322,9 @@ def render_plantuml_documents(
             )
             return documents, (), result.diagnostics
         rendered_documents.append(replace(document, content=result.content))
-        artifacts.update({artifact.path: artifact for artifact in result.artifacts})
+        artifacts.update(
+            {artifact.path: artifact for artifact in result.artifacts}
+        )
     return tuple(rendered_documents), tuple(artifacts.values()), ()
 
 

@@ -93,7 +93,9 @@ class HtmlRenderer(Protocol):
 class PdfRenderer(Protocol):
     """PDF renderer adapter."""
 
-    def render(self, html: str, css_files: Sequence[Path], output_path: Path) -> None:
+    def render(
+        self, html: str, css_files: Sequence[Path], output_path: Path
+    ) -> None:
         """Render HTML and CSS files to an output path.
 
         Args:

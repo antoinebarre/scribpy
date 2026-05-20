@@ -50,8 +50,12 @@ def parse_documents_step(
         Updated state carrying ordered files and parsed documents.
     """
     assert state.index is not None
-    ordered_files, order_diagnostics = order_by_index(state.index, state.source_files)
-    parse_result = parse_documents(ordered_files, state.filesystem, state.parser)
+    ordered_files, order_diagnostics = order_by_index(
+        state.index, state.source_files
+    )
+    parse_result = parse_documents(
+        ordered_files, state.filesystem, state.parser
+    )
     diagnostics = (*order_diagnostics, *parse_result.diagnostics)
     next_state = replace(
         state,
@@ -59,7 +63,9 @@ def parse_documents_step(
         documents=parse_result.documents,
     )
     if parse_result.failed:
-        logger.error("Document parsing failed with %d diagnostic(s)", len(diagnostics))
+        logger.error(
+            "Document parsing failed with %d diagnostic(s)", len(diagnostics)
+        )
         return PipelineResult.fail(diagnostics, next_state)
     logger.info("Parsed %d document(s)", len(parse_result.documents))
     return PipelineResult.ok(next_state, diagnostics)

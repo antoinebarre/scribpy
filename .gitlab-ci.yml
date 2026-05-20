@@ -32,9 +32,8 @@ check:
   artifacts:
     when: always
     paths:
-      - work/*.log
-      - work/*.xml
-      - work/htmlcov/
+      - work/quality_artefacts.zip
+      - work/quality_report.md
     reports:
       junit: work/junit.xml
       coverage_report:

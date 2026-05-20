@@ -33,7 +33,9 @@ _SUPPORTED_BLOCK_TYPES = frozenset(
 )
 
 
-def parse_markdown(body: str, parser: MarkdownParser | None = None) -> MarkdownAst:
+def parse_markdown(
+    body: str, parser: MarkdownParser | None = None
+) -> MarkdownAst:
     """Parse Markdown source into a ``MarkdownAst``.
 
     Uses the bundled ``markdown-it-py`` adapter when no ``parser`` is injected.

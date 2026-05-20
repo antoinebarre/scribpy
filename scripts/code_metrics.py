@@ -64,7 +64,9 @@ def main() -> int:
             total_blocks += 1
             if block.complexity > max_complexity:
                 max_complexity = block.complexity
-                max_complexity_label = f"{file_path}:{block.lineno} {block.name}"
+                max_complexity_label = (
+                    f"{file_path}:{block.lineno} {block.name}"
+                )
 
         if maintainability_index < min_maintainability_index:
             min_maintainability_index = maintainability_index
@@ -78,7 +80,9 @@ def main() -> int:
             max_source_lines = raw_metrics.sloc
             max_source_lines_label = file_path.as_posix()
 
-    average_complexity = total_complexity / total_blocks if total_blocks else 0.0
+    average_complexity = (
+        total_complexity / total_blocks if total_blocks else 0.0
+    )
     results = (
         MetricResult(
             name="Max cyclomatic complexity",
@@ -96,7 +100,8 @@ def main() -> int:
             name="Minimum maintainability index",
             expected=f">= {config.min_maintainability_index:.2f}",
             actual=f"{min_maintainability_index:.2f} ({min_maintainability_label})",
-            passed=min_maintainability_index >= config.min_maintainability_index,
+            passed=min_maintainability_index
+            >= config.min_maintainability_index,
         ),
         MetricResult(
             name="Max module logical lines",
@@ -214,7 +219,9 @@ def _write_report(
 
 def _print_results(results: tuple[MetricResult, ...]) -> None:
     name_width = max(len("Metric"), *(len(result.name) for result in results))
-    expected_width = max(len("Expected"), *(len(result.expected) for result in results))
+    expected_width = max(
+        len("Expected"), *(len(result.expected) for result in results)
+    )
     print("")
     print(
         f"{'Metric':<{name_width}}  "

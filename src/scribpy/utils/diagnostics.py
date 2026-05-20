@@ -69,7 +69,9 @@ def group_diagnostics_by_path(
 
     return {
         path: tuple(path_diagnostics)
-        for path, path_diagnostics in sorted(grouped.items(), key=_path_group_key)
+        for path, path_diagnostics in sorted(
+            grouped.items(), key=_path_group_key
+        )
     }
 
 

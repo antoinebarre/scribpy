@@ -75,7 +75,9 @@ def copy_assets(
                     code="ASS001",
                     message=f"Asset not found, skipping copy: {abs_path}",
                     path=abs_path,
-                    hint=("Ensure the asset file exists at the referenced path."),
+                    hint=(
+                        "Ensure the asset file exists at the referenced path."
+                    ),
                 )
             )
             continue
@@ -196,7 +198,9 @@ def rewrite_asset_links_single_page(
         for asset in document.source_document.assets:
             if asset.path is None or _is_external(asset.target):
                 continue
-            abs_path = (document.source_document.path.parent / asset.path).resolve()
+            abs_path = (
+                document.source_document.path.parent / asset.path
+            ).resolve()
             try:
                 rel = abs_path.relative_to(source_root)
             except ValueError:

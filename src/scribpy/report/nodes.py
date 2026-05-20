@@ -30,7 +30,9 @@ class Text:
         """Validate style value."""
         valid = {"plain", "bold", "italic", "code", "strikethrough"}
         if self.style not in valid:
-            raise ValueError(f"Invalid text style '{self.style}'. Choose from {valid}.")
+            raise ValueError(
+                f"Invalid text style '{self.style}'. Choose from {valid}."
+            )
 
 
 @dataclass

@@ -55,7 +55,9 @@ def apply_transforms(
         )
         transformed = result.documents
         diagnostics.extend(result.diagnostics)
-    return TransformResult(documents=transformed, diagnostics=tuple(diagnostics))
+    return TransformResult(
+        documents=transformed, diagnostics=tuple(diagnostics)
+    )
 
 
 def native_markdown_transforms() -> tuple[Transform, ...]:

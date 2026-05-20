@@ -192,4 +192,34 @@ printf "\n"
 print_failures
 print_summary
 
+# ---------------------------------------------------------------------------
+# Generate quality reports (always runs — never blocks the exit code)
+# ---------------------------------------------------------------------------
+generate_reports() {
+    printf "${B}Generating quality reports…${N}\n"
+    local report_ok=1
+
+    for script in report_files report_lint report_metrics report_tests; do
+        if uv run python "scripts/${script}.py" >>"work/reports.log" 2>&1; then
+            printf "  %-30s  ${G}✔${N}\n" "${script}.py"
+        else
+            printf "  %-30s  ${R}✘ failed (see work/reports.log)${N}\n" "${script}.py"
+            report_ok=0
+        fi
+    done
+
+    if uv run python scripts/assemble_report.py >>"work/reports.log" 2>&1; then
+        printf "  %-30s  ${G}✔${N}\n" "assemble_report.py"
+        printf "  ${G}→ work/quality_report.md${N}\n"
+        printf "  ${G}→ work/quality_artefacts.zip${N}\n"
+    else
+        printf "  %-30s  ${R}✘ failed (see work/reports.log)${N}\n" "assemble_report.py"
+        report_ok=0
+    fi
+
+    printf "\n"
+}
+
+generate_reports
+
 exit "$FAIL"

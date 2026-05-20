@@ -61,7 +61,9 @@ class TransformContext:
         Returns:
             Parsed source documents keyed by relative path.
         """
-        return {document.relative_path: document for document in self.documents}
+        return {
+            document.relative_path: document for document in self.documents
+        }
 
 
 @dataclass(frozen=True)

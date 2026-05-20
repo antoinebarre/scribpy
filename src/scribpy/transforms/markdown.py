@@ -36,7 +36,9 @@ def normalize_assembled_markdown_headings(
     )
     title = context.options.document_title or "Document"
     first, *rest = normalized
-    updated_first = replace(first, content=f"# {title}\n\n{first.content.lstrip()}")
+    updated_first = replace(
+        first, content=f"# {title}\n\n{first.content.lstrip()}"
+    )
     return TransformResult(documents=(updated_first, *rest))
 
 
@@ -104,7 +106,9 @@ def resolve_cross_references(context: TransformContext) -> TransformResult:
     if context.target != "markdown":
         return TransformResult(documents=context.transformed_documents)
 
-    anchor_lookup = _anchor_lookup(context.documents, context.transformed_documents)
+    anchor_lookup = _anchor_lookup(
+        context.documents, context.transformed_documents
+    )
     transformed = tuple(
         replace(
             document,
@@ -128,7 +132,9 @@ def rewrite_links_for_target(context: TransformContext) -> TransformResult:
         return TransformResult(documents=context.transformed_documents)
 
     transformed = tuple(
-        replace(document, content=_rewrite_markdown_links_to_html(document.content))
+        replace(
+            document, content=_rewrite_markdown_links_to_html(document.content)
+        )
         for document in context.transformed_documents
     )
     return TransformResult(documents=transformed)
@@ -201,13 +207,19 @@ def _anchor_lookup(
 ) -> dict[tuple[Path, str | None], str | None]:
     """Build an anchor for lookup."""
     lookup: dict[tuple[Path, str | None], str | None] = {}
-    for source, transformed in zip(documents, transformed_documents, strict=True):
+    for source, transformed in zip(
+        documents, transformed_documents, strict=True
+    ):
         transformed_headings = _extract_transformed_headings((transformed,))
         source_aligned_headings = (
-            transformed_headings[-len(source.headings) :] if source.headings else ()
+            transformed_headings[-len(source.headings) :]
+            if source.headings
+            else ()
         )
         lookup[(source.relative_path, None)] = (
-            source_aligned_headings[0].anchor if source_aligned_headings else None
+            source_aligned_headings[0].anchor
+            if source_aligned_headings
+            else None
         )
         for original, updated in zip(
             source.headings, source_aligned_headings, strict=False
@@ -259,7 +271,11 @@ def _rewrite_markdown_links_to_html(content: str) -> str:
         """
         text, target = match.groups()
         parts = urlsplit(target)
-        if parts.scheme or target.startswith("//") or not parts.path.endswith(".md"):
+        if (
+            parts.scheme
+            or target.startswith("//")
+            or not parts.path.endswith(".md")
+        ):
             return match.group(0)
         path = f"{parts.path[:-3]}.html"
         suffix = f"#{parts.fragment}" if parts.fragment else ""

@@ -25,7 +25,12 @@ from scribpy.core.project_pipeline import ProjectPipelineState
 from scribpy.extensions import ExtensionRegistry
 from scribpy.lint import LintContext, run_lint_rules
 from scribpy.logging import get_logger
-from scribpy.model import BuildArtifact, BuildResult, Diagnostic, TransformedDocument
+from scribpy.model import (
+    BuildArtifact,
+    BuildResult,
+    Diagnostic,
+    TransformedDocument,
+)
 from scribpy.model.protocols import (
     CodeBlockPlugin,
     DiagramRenderer,
@@ -68,7 +73,9 @@ def build_html_project(
     if state is None:
         return _blocked(diagnostics)
 
-    active_registry = registry if registry is not None else ExtensionRegistry.native()
+    active_registry = (
+        registry if registry is not None else ExtensionRegistry.native()
+    )
     diagnostics = _lint(state, diagnostics, active_registry)
     if has_errors(diagnostics):
         return _blocked(diagnostics)
@@ -82,12 +89,18 @@ def build_html_project(
         *_preflight_code_block_plugins(state, code_block_plugins),
     )
     if has_errors(diagnostics):
-        return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=diagnostics
+        )
 
     if html_config.mode == "single-page":
         logger.info("Starting single-page HTML build")
         return _build_single_page(
-            state, diagnostics, html_config, active_registry, code_block_plugins
+            state,
+            diagnostics,
+            html_config,
+            active_registry,
+            code_block_plugins,
         )
     logger.info("Starting site HTML build")
     return _build_site(
@@ -135,7 +148,9 @@ def _build_single_page(
     )
     diagnostics = (*diagnostics, *transform_result.diagnostics)
     if has_errors(diagnostics):
-        return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=diagnostics
+        )
 
     abs_output = state.project_root / html_config.resolve_output_dir()
     rendered_documents, diagram_artifacts, diagnostics = _render_code_blocks(
@@ -147,13 +162,17 @@ def _build_single_page(
         target="html",
     )
     if has_errors(diagnostics):
-        return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=diagnostics
+        )
     css_artifacts, css_diags, css_hrefs = copy_css_files_single_page(
         state.project_root, html_config.css_files, abs_output, state.filesystem
     )
     diagnostics = (*diagnostics, *css_diags)
     if has_errors(diagnostics):
-        return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=diagnostics
+        )
 
     source_root = (state.project_root / state.config.paths.source).resolve()
     rewritten_documents = rewrite_asset_links_single_page(
@@ -162,7 +181,9 @@ def _build_single_page(
     )
     assembled = merge_documents(rewritten_documents)
     body_html = render_markdown_to_html(assembled.content)
-    title = state.config.document.title or state.config.project.name or "Document"
+    title = (
+        state.config.document.title or state.config.project.name or "Document"
+    )
     full_html = build_single_page_html(body_html, title, css_hrefs)
 
     support_artifacts, support_diags = write_single_page_support_artifacts(
@@ -173,7 +194,9 @@ def _build_single_page(
     )
     diagnostics = (*diagnostics, *support_diags)
     if has_errors(diagnostics):
-        return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=diagnostics
+        )
 
     asset_paths = collect_asset_paths(state.documents, source_root)
     assets_dir = abs_output / "assets"
@@ -182,7 +205,9 @@ def _build_single_page(
     )
     diagnostics = (*diagnostics, *asset_diags)
     if has_errors(diagnostics):
-        return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=diagnostics
+        )
 
     result = BuildResult(
         success=True,
@@ -194,7 +219,9 @@ def _build_single_page(
         ),
         diagnostics=diagnostics,
     )
-    logger.info("Built single-page HTML with %d artifact(s)", len(result.artifacts))
+    logger.info(
+        "Built single-page HTML with %d artifact(s)", len(result.artifacts)
+    )
     return result
 
 
@@ -217,7 +244,9 @@ def _build_site(
     )
     diagnostics = (*diagnostics, *transform_result.diagnostics)
     if has_errors(diagnostics):
-        return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=diagnostics
+        )
 
     docs_dir = state.project_root / html_config.resolve_output_dir() / "docs"
     rendered_documents, diagram_artifacts, diagnostics = _render_code_blocks(
@@ -229,9 +258,13 @@ def _build_site(
         target="html-site",
     )
     if has_errors(diagnostics):
-        return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=diagnostics
+        )
 
-    site_name = html_config.site_name or state.config.project.name or "Documentation"
+    site_name = (
+        html_config.site_name or state.config.project.name or "Documentation"
+    )
     return _materialize_site(
         state,
         diagnostics,
@@ -279,7 +312,9 @@ def _materialize_site(
     )
     diagnostics = (*diagnostics, *site_diags)
     if has_errors(diagnostics):
-        return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=diagnostics
+        )
 
     source_root = (state.project_root / state.config.paths.source).resolve()
     asset_paths = collect_asset_paths(state.documents, source_root)
@@ -288,7 +323,9 @@ def _materialize_site(
     )
     diagnostics = (*diagnostics, *asset_diags)
     if has_errors(diagnostics):
-        return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=diagnostics
+        )
 
     rendered_site, mkdocs_diags = run_mkdocs_build(
         state.project_root,
@@ -296,12 +333,19 @@ def _materialize_site(
     )
     diagnostics = (*diagnostics, *mkdocs_diags)
     if has_errors(diagnostics):
-        return BuildResult(success=False, artifacts=(), diagnostics=diagnostics)
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=diagnostics
+        )
     assert rendered_site is not None
 
     result = BuildResult(
         success=True,
-        artifacts=(*artifacts, *asset_artifacts, *diagram_artifacts, rendered_site),
+        artifacts=(
+            *artifacts,
+            *asset_artifacts,
+            *diagram_artifacts,
+            rendered_site,
+        ),
         diagnostics=diagnostics,
     )
     logger.info("Built site HTML with %d artifact(s)", len(result.artifacts))
@@ -353,11 +397,13 @@ def _render_code_blocks(
     rendered_documents = documents
     artifacts: list[BuildArtifact] = []
     for plugin in plugins:
-        rendered_documents, plugin_artifacts, plugin_diags = plugin.render_documents(
-            rendered_documents,
-            output_dir=output_dir,
-            flattened=flattened,
-            target=target,
+        rendered_documents, plugin_artifacts, plugin_diags = (
+            plugin.render_documents(
+                rendered_documents,
+                output_dir=output_dir,
+                flattened=flattened,
+                target=target,
+            )
         )
         artifacts.extend(plugin_artifacts)
         diagnostics = (*diagnostics, *plugin_diags)
@@ -373,7 +419,9 @@ def _preflight_code_block_plugins(
     """Run early plugin validation only for plugins present in source Markdown."""
     diagnostics: list[Diagnostic] = []
     for plugin in plugins:
-        if any(plugin.has_blocks(document.source) for document in state.documents):
+        if any(
+            plugin.has_blocks(document.source) for document in state.documents
+        ):
             diagnostics.extend(plugin.preflight())
     return tuple(diagnostics)
 
@@ -397,7 +445,9 @@ def _custom_html_transforms(
     """Return custom html transforms."""
     native = native_html_transforms()
     return tuple(
-        transform for transform in registry.html_transforms if transform not in native
+        transform
+        for transform in registry.html_transforms
+        if transform not in native
     )
 
 

@@ -34,7 +34,9 @@ class InvalidChildError(TypeError):
             parent_type: Name of the container class.
             child_type: Name of the rejected child class.
         """
-        super().__init__(f"'{child_type}' is not a valid child of '{parent_type}'.")
+        super().__init__(
+            f"'{child_type}' is not a valid child of '{parent_type}'."
+        )
 
 
 class InvalidTableError(ValueError):

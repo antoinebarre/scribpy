@@ -176,7 +176,9 @@ def write_single_page_artifact(
             ),
         )
     return (
-        BuildArtifact(path=artifact_path, target="html", artifact_type="document"),
+        BuildArtifact(
+            path=artifact_path, target="html", artifact_type="document"
+        ),
         (),
     )
 
@@ -211,7 +213,9 @@ def write_single_page_script_artifact(
             ),
         )
     return (
-        BuildArtifact(path=artifact_path, target="html", artifact_type="script"),
+        BuildArtifact(
+            path=artifact_path, target="html", artifact_type="script"
+        ),
         (),
     )
 
@@ -269,10 +273,14 @@ def _inline(text: str) -> str:
     text = _IMAGE_RE.sub(
         lambda m: f'<img src="{m.group(2)}" alt="{_escape(m.group(1))}">', text
     )
-    text = _LINK_RE.sub(lambda m: f'<a href="{m.group(2)}">{m.group(1)}</a>', text)
+    text = _LINK_RE.sub(
+        lambda m: f'<a href="{m.group(2)}">{m.group(1)}</a>', text
+    )
     text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
     text = re.sub(r"\*(.+?)\*", r"<em>\1</em>", text)
-    text = re.sub(r"`(.+?)`", lambda m: f"<code>{_escape(m.group(1))}</code>", text)
+    text = re.sub(
+        r"`(.+?)`", lambda m: f"<code>{_escape(m.group(1))}</code>", text
+    )
     return text
 
 
