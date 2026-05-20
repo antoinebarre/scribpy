@@ -1114,7 +1114,8 @@ def generate_markdown(
         A complete UTF-8 Markdown string ready to be written to a ``.md`` file.
     """
     resolved = config if config is not None else _DEFAULT_CONFIG
-    rng = random.Random(seed)
+    # Reproducible sample content only; this is not used for cryptography.
+    rng = random.Random(seed)  # nosec B311
     footnote_sections, footnote_defs = _footnote_parts(rng, resolved.include_footnotes)
     tail = ["\n".join(footnote_defs)] if footnote_defs else []
     parts = (

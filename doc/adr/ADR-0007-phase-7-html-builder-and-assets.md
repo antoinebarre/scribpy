@@ -39,8 +39,9 @@ AssembledDocument + Theme + CSS
 ```
 
 La phase 7 reprend aussi la partie immediate de FC-09 necessaire au web :
-validation et copie des assets references, sans encore livrer le rendu de
-diagrammes.
+validation et copie des assets references, ainsi que le rendu de diagrammes
+utile au HTML : **PlantUML** et **Mermaid** via des plugins internes de blocs de
+code.
 
 MkDocs fournit deja un modele standard pour un site documentaire : un fichier
 `mkdocs.yml`, un repertoire `docs/`, une navigation `nav`, des liens Markdown
@@ -67,6 +68,51 @@ scribpy build html --mode site
 ```
 
 ou une API equivalente dans `build_project(...)`.
+
+### Plugins internes de blocs de code et rendu PlantUML
+
+La phase 7 introduira une abstraction interne de **plugins de blocs de code**.
+PlantUML sera la premiere implementation, mais le mecanisme devra aussi pouvoir
+accueillir Mermaid ou d'autres langages fenced qui produisent des artefacts puis
+remplacent leur bloc source dans le Markdown transforme :
+
+```text
+Markdown avec blocs fenced pris en charge
+  -> CodeBlockPlugin.has_blocks
+  -> CodeBlockPlugin.preflight
+  -> CodeBlockPlugin.render_documents
+  -> generated local assets
+  -> replace blocks with local HTML/image references
+  -> HTML final
+```
+
+La fonction centrale attendue sera :
+
+```python
+render_plantuml_blocks(
+    content: str,
+    *,
+    renderer: DiagramRenderer,
+    output_dir: Path,
+) -> PlantUmlRenderResult
+```
+
+`PlantUmlRenderResult` contiendra le contenu reecrit, les assets produits et les
+diagnostics associes. Le plugin PlantUML devra :
+
+- detecter les blocs fenced `plantuml` presents dans le Markdown ;
+- choisir le renderer PlantUML configure (`web` par defaut, `java` sur demande) ;
+- produire des assets SVG locaux deterministes ;
+- remplacer les blocs sources par du HTML ou des references d'image locales ;
+- retourner les diagnostics de rendu sans muter les sources ;
+- verifier Java au plus tot lorsque le backend `java` est explicitement demande.
+
+Le choix SVG est retenu pour le MVP HTML : il reste lisible, vectoriel et
+portable dans les deux modes de sortie. L'integration de PlantUML appartient a
+Scribpy ; le backend de rendu reste un adaptateur derriere le protocole
+`DiagramRenderer`, afin de conserver un pipeline testable. Le mode `web`
+favorise l'usage immediat ; le mode `java` preserve un chemin hors ligne quand
+le projet l'exige.
 
 ### Mode `single-page`
 
@@ -138,6 +184,8 @@ sur ces conventions plutot que les contourner.
     liens vers ancres internes, TOC et numerotation ;
   - jeu `site` : conservation de la structure multi-page et des liens Markdown
     relatifs compatibles MkDocs ;
+  - plugins de rendu de blocs de code communs aux sorties HTML, executes avant
+    la reecriture finale des liens et le rendu HTML ;
   - reutilisation de la configuration `[document]` pour TOC et numerotation quand
     elle s'applique au mode choisi.
 
@@ -154,6 +202,8 @@ sur ces conventions plutot que les contourner.
 - `scribpy.assets`
   - collecte des assets references ;
   - validation des assets locaux ;
+  - rendu PlantUML en SVG via `render_plantuml_blocks(...)` ;
+  - rendu Mermaid web-only en SVG via `render_mermaid_blocks(...)` ;
   - copie vers la destination adaptee au mode :
     - `build/html/assets/` pour `single-page` ;
     - `build/site/docs/...` pour `site` ;
@@ -188,7 +238,7 @@ sur ces conventions plutot que les contourner.
 - HTML multi-page rendu directement par Scribpy ;
 - moteur de theme MkDocs personnalise ;
 - rendu PDF ;
-- rendu Mermaid ou PlantUML ;
+- rendu Mermaid ;
 - bundling/minification CSS ou JavaScript ;
 - recherche client-side ;
 - preview server integre ;
@@ -235,6 +285,7 @@ A creer ou completer :
 | Liens inter-documents | ancres internes | liens Markdown relatifs conserves |
 | CSS | fichiers d'entree references/copied | fichiers d'entree copies et declares via `extra_css` |
 | Assets | `build/html/assets/` | `build/site/docs/...` |
+| Diagrammes | SVG locaux sous `assets/diagrams/` | SVG locaux sous `docs/assets/diagrams/` |
 | Navigation | TOC du document assemble | `nav` MkDocs depuis `DocumentIndex` |
 | Rendu HTML final | par Scribpy | par MkDocs, pilote par Scribpy |
 
@@ -244,6 +295,7 @@ Principes communs :
 - les transforms restent responsables de la preparation du contenu, pas de
   l'ecriture des fichiers ;
 - les CSS fournis sont des entrees de projet, pas des dependances codees en dur ;
+- les blocs pris en charge sont traites par des plugins internes ordonnes ;
 - le mode `site` s'appuie sur les conventions MkDocs au lieu de les repliquer ;
 - les outputs restent deterministes a configuration et sources identiques.
 
@@ -283,6 +335,7 @@ A faire :
 
 - assembler les documents transformes ;
 - rendre le Markdown assemble en HTML ;
+- integrer les references HTML locales produites pour les diagrammes PlantUML ;
 - injecter le contenu dans un template HTML par defaut ;
 - integrer ou referencer les CSS d'entree ;
 - ecrire `build/html/index.html` ;
@@ -305,6 +358,7 @@ A faire :
 - generer `build/site/mkdocs.yml` ;
 - produire `nav` dans l'ordre du `DocumentIndex` ;
 - copier les assets et CSS dans `docs/` ;
+- copier les SVG PlantUML generes dans `docs/assets/diagrams/` ;
 - declarer `extra_css` ;
 - lancer `mkdocs build` sur le squelette genere ;
 - retourner des artefacts pour `mkdocs.yml`, les pages, les ressources et le site
@@ -316,7 +370,39 @@ Diagnostics proposes :
 - `SITE002` : echec d'ecriture d'une page du site ;
 - `SITE003` : MkDocs indisponible ou echec de son rendu.
 
-### Etape 5 — Service applicatif et CLI
+### Etape 5 — Plugins de blocs et rendu PlantUML
+
+Objectif : transformer les blocs de code supportes du Markdown en assets HTML
+via une architecture interne extensible.
+
+A faire :
+
+- introduire le protocole `CodeBlockPlugin` ;
+- permettre l'enregistrement de plugins dans `ExtensionRegistry` ;
+- detecter les fences `plantuml` dans les documents transformes ;
+- ajouter `render_plantuml_blocks(...)` comme point d'entree de rendu ;
+- utiliser un `DiagramRenderer` injecte ;
+- choisir `web` par defaut et `java` lorsque ce backend est explicitement
+  configure ;
+- verifier la disponibilite de Java avant rendu quand `java` est selectionne ;
+- produire des fichiers SVG deterministes sous `assets/diagrams/` ;
+- remplacer les fences par des references HTML locales ;
+- exposer les assets produits au builder `single-page` et au builder `site` ;
+- garantir le fonctionnement hors ligne du backend `java` par des tests sans
+  acces reseau.
+
+Diagnostics proposes :
+
+- `UML001` : bloc PlantUML invalide ou non ferme ;
+- `UML002` : echec de rendu PlantUML Java ;
+- `UML003` : echec d'ecriture d'un SVG genere.
+- `UML004` : runtime Java indisponible ;
+- `UML005` : echec de rendu PlantUML web.
+- `MRM001` : bloc Mermaid invalide ou non ferme ;
+- `MRM002` : echec de rendu Mermaid web ;
+- `MRM003` : echec d'ecriture d'un SVG Mermaid genere.
+
+### Etape 6 — Service applicatif et CLI
 
 Objectif : exposer les deux modes sans dupliquer la logique metier.
 
@@ -328,7 +414,7 @@ A faire :
 - ajouter `scribpy build html --mode site` ;
 - afficher les artefacts produits.
 
-### Etape 6 — Tests et qualite
+### Etape 7 — Tests et qualite
 
 Objectif : verrouiller les deux chemins avant d'ouvrir le PDF.
 
@@ -339,6 +425,8 @@ A faire :
 - tests de CSS d'entree ;
 - tests du squelette MkDocs et de `nav` ;
 - tests d'assets par mode ;
+- tests de detection et de rendu PlantUML ;
+- tests de detection, logs et diagnostics du rendu Mermaid web-only ;
 - tests du service applicatif ;
 - tests CLI ;
 - `make check` avec 100% de couverture.
@@ -352,6 +440,9 @@ A faire :
 - Scribpy couvre deux usages web reels sans les confondre ;
 - le mode `single-page` reste simple et autonome ;
 - le mode `site` beneficie immediatement de l'ecosysteme MkDocs ;
+- les diagrammes PlantUML peuvent etre publies en mode web immediat ou en mode
+  Java hors ligne ;
+- Mermaid partage le meme pipeline de plugins sans changer les builders HTML ;
 - les CSS deviennent une vraie entree configurable ;
 - la future evolution vers un site complet ne demande pas de rearchitecturer le
   builder single-page.
@@ -363,7 +454,9 @@ A faire :
 - certaines options `[document]` n'ont pas exactement la meme portee selon le
   mode ;
 - les tests doivent verifier explicitement deux comportements de liens
-  differents.
+  differents ;
+- les integrations de diagrammes ajoutent des backends web et Java a
+  diagnostiquer proprement.
 
 Ces couts sont acceptes car ils correspondent a deux besoins utilisateurs
 legitimes et evitent de forcer un seul modele HTML a couvrir deux usages
@@ -387,10 +480,18 @@ La phase 7 est consideree terminee lorsque :
 6. le mode `site` copie les CSS fournis et les declare dans `extra_css` ;
 7. le mode `site` preserve des liens Markdown relatifs compatibles avec MkDocs ;
 8. les assets locaux sont copies dans la destination attendue par chaque mode ;
-9. aucun artefact n'est ecrit en cas d'erreur bloquante ;
-10. les tests couvrent config, transforms, builders, assets, service applicatif
+9. les blocs de code supportes sont traites par des plugins internes
+   extensibles ;
+10. les blocs `plantuml` presents dans le Markdown sont rendus en SVG puis
+    integres a la sortie HTML ;
+11. PlantUML utilise le backend `web` par defaut et peut etre force sur `java`
+    pour un usage hors ligne ;
+12. le backend PlantUML `java` verifie son environnement avant le rendu ;
+13. les blocs `mermaid` sont rendus en SVG via un backend web uniquement ;
+14. aucun artefact n'est ecrit en cas d'erreur bloquante ;
+15. les tests couvrent config, transforms, builders, assets, service applicatif
     et CLI ;
-11. `make check` passe avec 100% de couverture.
+16. `make check` passe avec 100% de couverture.
 
 ---
 
@@ -400,7 +501,7 @@ Les decisions suivantes sont explicitement repoussees a la phase 8 ou au-dela :
 
 - execution automatique de `mkdocs serve` ou `mkdocs build` ;
 - rendu PDF ;
-- rendu Mermaid et PlantUML ;
+- rendu Mermaid ;
 - generation de themes MkDocs personnalises ;
 - bundling/minification CSS ou JavaScript ;
 - recherche client-side ;

@@ -15,8 +15,11 @@ from scribpy.core.project_pipeline_setup_steps import (
     scan_sources_step,
 )
 from scribpy.core.project_pipeline_state import ProjectPipelineState
+from scribpy.logging import get_logger
 from scribpy.model.protocols import FileSystem, MarkdownParser
 from scribpy.utils.file_utils import RealFileSystem
+
+logger = get_logger(__name__)
 
 
 def run_project_parse_pipeline(
@@ -39,6 +42,7 @@ def run_project_parse_pipeline(
         filesystem=filesystem if filesystem is not None else RealFileSystem(),
         parser=parser,
     )
+    logger.info("Starting project parse pipeline from %s", initial.start)
     return (
         PipelineResult.ok(initial)
         .bind(resolve_config_step)

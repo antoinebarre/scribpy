@@ -15,7 +15,9 @@ _HEADING_RE = re.compile(r"^(#{1,6})[ \t]+(.+?)[ \t]*$", re.MULTILINE)
 _LINK_RE = re.compile(r"(?<!!)\[([^\]]+)\]\(([^)]+)\)")
 
 
-def normalize_assembled_markdown_headings(context: TransformContext) -> TransformResult:
+def normalize_assembled_markdown_headings(
+    context: TransformContext,
+) -> TransformResult:
     """Prepare one assembled Markdown hierarchy with a single global H1.
 
     Args:
@@ -54,7 +56,8 @@ def apply_section_numbering(context: TransformContext) -> TransformResult:
     transformed: list[TransformedDocument] = []
     for document in context.transformed_documents:
         content = _HEADING_RE.sub(
-            lambda match: _number_heading(match, counters, context), document.content
+            lambda match: _number_heading(match, counters, context),
+            document.content,
         )
         transformed.append(replace(document, content=content))
     return TransformResult(documents=tuple(transformed))
@@ -134,6 +137,7 @@ def rewrite_links_for_target(context: TransformContext) -> TransformResult:
 def _number_heading(
     match: re.Match[str], counters: list[int], context: TransformContext
 ) -> str:
+    """Number heading."""
     marks, title = match.groups()
     level = len(marks)
     if context.target == "markdown" and level == 1:
@@ -156,6 +160,7 @@ def _number_heading(
 def _extract_transformed_headings(
     documents: tuple[TransformedDocument, ...],
 ) -> tuple[Heading, ...]:
+    """Extract transformed headings."""
     headings: list[Heading] = []
     for document in documents:
         for match in _HEADING_RE.finditer(document.content):
@@ -167,6 +172,7 @@ def _extract_transformed_headings(
 
 
 def _render_toc(headings: list[Heading], style: str) -> str:
+    """Render toc."""
     lines = ["## Table of Contents"]
     for heading in headings:
         indent = "  " * (heading.level - 2)
@@ -179,6 +185,7 @@ def _render_toc(headings: list[Heading], style: str) -> str:
 
 
 def _insert_toc(content: str, toc: str) -> str:
+    """Handle insert toc."""
     first_h1 = re.search(r"^#\s+.+$", content, flags=re.MULTILINE)
     if first_h1 is None:
         return f"{toc}\n\n{content}" if content else f"{toc}\n"
@@ -192,6 +199,7 @@ def _anchor_lookup(
     documents: tuple[Document, ...],
     transformed_documents: tuple[TransformedDocument, ...],
 ) -> dict[tuple[Path, str | None], str | None]:
+    """Build an anchor for lookup."""
     lookup: dict[tuple[Path, str | None], str | None] = {}
     for source, transformed in zip(documents, transformed_documents, strict=True):
         transformed_headings = _extract_transformed_headings((transformed,))
@@ -212,6 +220,8 @@ def _rewrite_links(
     document: TransformedDocument,
     anchor_lookup: dict[tuple[Path, str | None], str | None],
 ) -> str:
+    """Rewrite links."""
+
     def replace_link(match: re.Match[str]) -> str:
         """Rewrite one local Markdown link when a target anchor is known.
 
@@ -236,6 +246,8 @@ def _rewrite_links(
 
 
 def _rewrite_markdown_links_to_html(content: str) -> str:
+    """Rewrite markdown links to html."""
+
     def replace_link(match: re.Match[str]) -> str:
         """Rewrite one Markdown document link to its HTML equivalent.
 
@@ -257,12 +269,14 @@ def _rewrite_markdown_links_to_html(content: str) -> str:
 
 
 def _anchor(title: str) -> str:
+    """Build an anchor for ."""
     lowered = title.lower()
     stripped = re.sub(r"[^\w\s-]", "", lowered)
     return re.sub(r"\s+", "-", stripped).strip("-")
 
 
 def _format_number(value: int, style: str) -> str:
+    """Format number."""
     if style == "alpha":
         return _to_alpha(value)
     if style == "roman":
@@ -271,6 +285,7 @@ def _format_number(value: int, style: str) -> str:
 
 
 def _to_alpha(value: int) -> str:
+    """Convert to alpha."""
     letters: list[str] = []
     while value:
         value, remainder = divmod(value - 1, 26)
@@ -279,6 +294,7 @@ def _to_alpha(value: int) -> str:
 
 
 def _to_roman(value: int) -> str:
+    """Convert to roman."""
     numerals = (
         (1000, "M"),
         (900, "CM"),
@@ -302,6 +318,8 @@ def _to_roman(value: int) -> str:
 
 
 def _demote_headings(content: str) -> str:
+    """Demote headings."""
+
     def replace_heading(match: re.Match[str]) -> str:
         """Demote one Markdown heading by a single level.
 

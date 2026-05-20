@@ -124,6 +124,7 @@ def extract_assets(ast: MarkdownAst) -> tuple[AssetRef, ...]:
 
 
 def _heading_level(token: Mapping[str, object]) -> int:
+    """Return heading level."""
     tag = str(token.get("tag", "h1"))
     # tag is "h1" … "h6"
     try:
@@ -133,6 +134,7 @@ def _heading_level(token: Mapping[str, object]) -> int:
 
 
 def _heading_line(token: Mapping[str, object]) -> int | None:
+    """Return heading line."""
     map_value = token.get("map")
     if isinstance(map_value, (list, tuple)) and map_value:
         try:
@@ -143,6 +145,7 @@ def _heading_line(token: Mapping[str, object]) -> int | None:
 
 
 def _inline_line(token: Mapping[str, object]) -> int | None:
+    """Render inline line."""
     map_value = token.get("map")
     if isinstance(map_value, (list, tuple)) and map_value:
         try:
@@ -166,6 +169,7 @@ def _github_anchor(title: str) -> str:
 
 
 def _get_children(token: Mapping[str, object]) -> list[Mapping[str, object]]:
+    """Handle get children."""
     raw = token.get("children")
     if not isinstance(raw, list):
         return []
@@ -173,6 +177,7 @@ def _get_children(token: Mapping[str, object]) -> list[Mapping[str, object]]:
 
 
 def _collect_link_text(children: list[Mapping[str, object]], start: int) -> str:
+    """Collect link text."""
     parts: list[str] = []
     for child in children[start:]:
         if child.get("type") == "link_close":
@@ -184,6 +189,7 @@ def _collect_link_text(children: list[Mapping[str, object]], start: int) -> str:
 
 
 def _build_reference(href: str, text: str, line: int | None) -> Reference:
+    """Build reference."""
     if href.startswith("#"):
         return Reference(kind="xref", target=href, text=text or None, line=line)
     path = _local_path(href)
@@ -191,6 +197,7 @@ def _build_reference(href: str, text: str, line: int | None) -> Reference:
 
 
 def _local_path(target: str) -> Path | None:
+    """Return local path."""
     if not target:
         return None
     # External URLs and anchors are not local paths

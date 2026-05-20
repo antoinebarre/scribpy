@@ -39,6 +39,8 @@ def _transformed(
 def test_build_mkdocs_yaml_minimal() -> None:
     yaml = build_mkdocs_yaml("My Site", [], [])
     assert "site_name: My Site" in yaml
+    assert 'site_url: ""' in yaml
+    assert "use_directory_urls: false" in yaml
 
 
 def test_build_mkdocs_yaml_with_nav() -> None:
@@ -52,6 +54,11 @@ def test_build_mkdocs_yaml_with_extra_css() -> None:
     yaml = build_mkdocs_yaml("Site", [], ["css/style.css"])
     assert "extra_css:" in yaml
     assert "css/style.css" in yaml
+
+
+def test_build_mkdocs_yaml_with_theme() -> None:
+    yaml = build_mkdocs_yaml("Site", [], [], theme="readthedocs")
+    assert "theme: readthedocs" in yaml
 
 
 def test_build_mkdocs_yaml_special_chars_quoted() -> None:
@@ -281,7 +288,10 @@ def test_run_mkdocs_build_returns_site_artifact(
         stdout = ""
         stderr = ""
 
-    monkeypatch.setattr("scribpy.builders.html_site.subprocess.run", lambda *a, **k: Completed())
+    monkeypatch.setattr(
+        "scribpy.builders.html_site.subprocess.run",
+        lambda *a, **k: Completed(),
+    )
 
     artifact, diagnostics = run_mkdocs_build(tmp_path, Path("build/site"))
 
@@ -297,7 +307,10 @@ def test_run_mkdocs_build_reports_failure(tmp_path: Path, monkeypatch) -> None:
         stdout = ""
         stderr = "No module named mkdocs"
 
-    monkeypatch.setattr("scribpy.builders.html_site.subprocess.run", lambda *a, **k: Completed())
+    monkeypatch.setattr(
+        "scribpy.builders.html_site.subprocess.run",
+        lambda *a, **k: Completed(),
+    )
 
     artifact, diagnostics = run_mkdocs_build(tmp_path, Path("build/site"))
 

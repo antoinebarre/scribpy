@@ -15,7 +15,9 @@ def _write_source(root: Path, relative_path: str, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
-def test_build_project_writes_markdown_in_explicit_index_order(tmp_path: Path) -> None:
+def test_build_project_writes_markdown_in_explicit_index_order(
+    tmp_path: Path,
+) -> None:
     _write_config(
         tmp_path,
         '[paths]\nsource = "doc"\n\n[index]\nmode = "explicit"\nfiles = ["b.md", "a.md"]\n',
@@ -40,7 +42,9 @@ def test_build_project_writes_markdown_in_explicit_index_order(tmp_path: Path) -
     )
 
 
-def test_build_project_stops_before_writing_when_lint_fails(tmp_path: Path) -> None:
+def test_build_project_stops_before_writing_when_lint_fails(
+    tmp_path: Path,
+) -> None:
     _write_config(tmp_path, '[paths]\nsource = "doc"\n')
     _write_source(tmp_path, "doc/index.md", "## Missing H1\n")
 
@@ -56,11 +60,16 @@ def test_build_project_stops_before_writing_when_lint_fails(tmp_path: Path) -> N
     assert not (tmp_path / "build/markdown/document.md").exists()
 
 
-def test_build_project_stops_when_project_preparation_fails(tmp_path: Path) -> None:
+def test_build_project_stops_when_project_preparation_fails(
+    tmp_path: Path,
+) -> None:
     result = build_project(tmp_path)
 
     assert result.success is False
-    assert [diagnostic.code for diagnostic in result.diagnostics] == ["CFG001", "BLD002"]
+    assert [diagnostic.code for diagnostic in result.diagnostics] == [
+        "CFG001",
+        "BLD002",
+    ]
 
 
 def test_build_project_rejects_unknown_target(tmp_path: Path) -> None:
@@ -70,7 +79,9 @@ def test_build_project_rejects_unknown_target(tmp_path: Path) -> None:
     assert [diagnostic.code for diagnostic in result.diagnostics] == ["BLD001"]
 
 
-def test_build_project_stops_when_transform_reports_error(tmp_path: Path) -> None:
+def test_build_project_stops_when_transform_reports_error(
+    tmp_path: Path,
+) -> None:
     from scribpy.extensions import ExtensionRegistry
     from scribpy.model import Diagnostic
     from scribpy.transforms import TransformResult
@@ -92,7 +103,9 @@ def test_build_project_stops_when_transform_reports_error(tmp_path: Path) -> Non
 
     result = build_project(
         tmp_path,
-        registry=ExtensionRegistry.native().with_markdown_transform(failing_transform),
+        registry=ExtensionRegistry.native().with_markdown_transform(
+            failing_transform
+        ),
     )
 
     assert result.success is False
@@ -115,13 +128,15 @@ def test_build_project_reports_artifact_write_failure(tmp_path: Path) -> None:
     assert [diagnostic.code for diagnostic in result.diagnostics] == ["BLD003"]
 
 
-def test_build_project_uses_document_transform_configuration(tmp_path: Path) -> None:
+def test_build_project_uses_document_transform_configuration(
+    tmp_path: Path,
+) -> None:
     _write_config(
         tmp_path,
         '[project]\nname = "Project Name"\n\n'
         '[paths]\nsource = "doc"\n\n'
         '[document]\ntitle = "Configured Manual"\n\n'
-        '[document.toc]\nenabled = false\n\n'
+        "[document.toc]\nenabled = false\n\n"
         '[document.numbering]\nstyle = "roman"\nmax_level = 2\n',
     )
     _write_source(tmp_path, "doc/index.md", "# Home\n\n## Setup\n")
@@ -130,7 +145,5 @@ def test_build_project_uses_document_transform_configuration(tmp_path: Path) -> 
 
     assert result.success is True
     assert result.artifacts[0].path.read_text(encoding="utf-8") == (
-        "# Configured Manual\n\n"
-        "## I Home\n\n"
-        "### Setup\n"
+        "# Configured Manual\n\n## I Home\n\n### Setup\n"
     )

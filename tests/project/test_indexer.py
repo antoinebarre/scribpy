@@ -4,7 +4,10 @@ from pathlib import Path
 
 from scribpy.config.types import Config, IndexConfig
 from scribpy.model import DocumentIndex, SourceFile
-from scribpy.project.indexer import build_document_index, validate_document_index
+from scribpy.project.indexer import (
+    build_document_index,
+    validate_document_index,
+)
 
 
 def test_build_document_index_uses_filesystem_scan_order() -> None:
@@ -40,7 +43,9 @@ def test_build_document_index_uses_explicit_config_order() -> None:
 def test_build_document_index_returns_idx001_for_hybrid_mode() -> None:
     config = Config(index=IndexConfig(mode="hybrid"))
 
-    index, diagnostics = build_document_index(config, _source_files("intro.md"))
+    index, diagnostics = build_document_index(
+        config, _source_files("intro.md")
+    )
 
     assert index is None
     assert len(diagnostics) == 1
@@ -59,7 +64,9 @@ def test_validate_document_index_returns_idx001_for_unsupported_mode() -> None:
     assert diagnostics[0].severity == "error"
 
 
-def test_validate_document_index_returns_idx002_for_missing_explicit_file() -> None:
+def test_validate_document_index_returns_idx002_for_missing_explicit_file() -> (
+    None
+):
     index = DocumentIndex(
         paths=(Path("intro.md"), Path("missing.md")),
         mode="explicit",
@@ -71,7 +78,9 @@ def test_validate_document_index_returns_idx002_for_missing_explicit_file() -> N
     assert diagnostics[0].path == Path("missing.md")
 
 
-def test_validate_document_index_returns_idx003_for_duplicate_entries() -> None:
+def test_validate_document_index_returns_idx003_for_duplicate_entries() -> (
+    None
+):
     index = DocumentIndex(
         paths=(Path("intro.md"), Path("intro.md")),
         mode="explicit",
@@ -98,7 +107,9 @@ def test_validate_document_index_returns_idx004_for_unsafe_entries() -> None:
     )
 
 
-def test_validate_document_index_returns_idx005_for_uncovered_discovered_file() -> None:
+def test_validate_document_index_returns_idx005_for_uncovered_discovered_file() -> (
+    None
+):
     index = DocumentIndex(paths=(Path("intro.md"),), mode="explicit")
 
     diagnostics = validate_document_index(
@@ -111,7 +122,9 @@ def test_validate_document_index_returns_idx005_for_uncovered_discovered_file() 
     assert diagnostics[0].path == Path("guide/setup.md")
 
 
-def test_filesystem_index_validation_does_not_warn_about_discovered_files() -> None:
+def test_filesystem_index_validation_does_not_warn_about_discovered_files() -> (
+    None
+):
     index = DocumentIndex(paths=(Path("intro.md"),), mode="filesystem")
 
     diagnostics = validate_document_index(

@@ -116,7 +116,9 @@ def test_project_composes_sources_and_optional_index() -> None:
         path=Path("/project/docs/index.md"),
         relative_path=Path("docs/index.md"),
     )
-    index = DocumentIndex(paths=(source_file.relative_path,), mode="filesystem")
+    index = DocumentIndex(
+        paths=(source_file.relative_path,), mode="filesystem"
+    )
 
     project = Project(
         root=Path("/project"),

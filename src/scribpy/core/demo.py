@@ -5,10 +5,24 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
+from scribpy.core.demo_assets import DEMO_CSS
+from scribpy.core.demo_mermaid import (
+    ci_timeline_mermaid,
+    delivery_flow_mermaid,
+    extension_architecture_mermaid,
+)
+from scribpy.core.demo_plantuml import (
+    data_model_plantuml,
+    deployment_plantuml,
+    pipeline_plantuml,
+)
+from scribpy.core.demo_readme import VALID_DEMO_README
+from scribpy.logging import get_logger, prepare_logging
 from scribpy.model import Diagnostic, LintResult
 from scribpy.utils import has_errors
 
 DemoVariant = Literal["valid", "invalid"]
+logger = get_logger(__name__)
 
 _VALID_DEMO_PAGES: tuple[tuple[str, str], ...] = (
     ("guide/getting-started/overview.md", "Getting Started Overview"),
@@ -47,6 +61,7 @@ _VALID_DEMO_PAGES: tuple[tuple[str, str], ...] = (
 
 
 def _valid_demo_config() -> str:
+    """Return valid demo config."""
     indexed_files = ("index.md", *(path for path, _ in _VALID_DEMO_PAGES))
     entries = "\n".join(f'  "{path}",' for path in indexed_files)
     return f"""\
@@ -72,6 +87,7 @@ style = "decimal"
 [builders.html]
 mode = "single-page"
 css_files = ["theme/demo.css"]
+theme = "readthedocs"
 
 [index]
 mode = "explicit"
@@ -82,6 +98,7 @@ files = [
 
 
 def _valid_demo_index() -> str:
+    """Return valid demo index."""
     return """\
 ---
 title: Scribpy Demo
@@ -123,21 +140,12 @@ The explicit index spans more than thirty Markdown documents across nested
 sections, so ordering and link resolution remain deterministic at realistic
 scale.
 
-![Scribpy architecture overview](assets/architecture.png)
+![Scribpy architecture overview](assets/architecture.svg)
 """
 
 
 def _valid_demo_page(index: int, relative_path: str, title: str) -> str:
-    previous_path = "index.md" if index == 0 else _VALID_DEMO_PAGES[index - 1][0]
-    next_path = (
-        "index.md"
-        if index == len(_VALID_DEMO_PAGES) - 1
-        else _VALID_DEMO_PAGES[index + 1][0]
-    )
-    current = Path(relative_path)
-    previous_link = _relative_link(current, previous_path)
-    next_link = _relative_link(current, next_path)
-    index_link = _relative_link(current, "index.md")
+    """Return valid demo page."""
     extra = _valid_demo_extra(relative_path)
     return f"""\
 ---
@@ -147,164 +155,55 @@ author: Demo Author
 
 # {title}
 
-This page belongs to the complex Scribpy demo manual.
+This section belongs to the complex Scribpy demo manual.
 
 ## Overview
 
-Use this page to exercise deterministic indexing, semantic extraction, and
+Use this section to exercise deterministic indexing, semantic extraction, and
 assembled output across nested documentation sections.
 
-## Navigation
+## In the assembled manual
 
-Return to the [manual index]({index_link}), visit the [previous page]({previous_link}),
-or continue to the [next page]({next_link}).
+When Scribpy builds the final document, this source file is merged into one
+continuous publication according to the explicit index order. The result is a
+single manual with deterministic section numbering, generated table of
+contents, and resolved cross-references.
 {extra}"""
 
 
 def _valid_demo_extra(relative_path: str) -> str:
-    if relative_path == "guide/getting-started/overview.md":
-        return (
+    """Return valid demo extra."""
+    extras = {
+        "guide/getting-started/overview.md": (
             "\nSee the [installation guide](installation.md) before the quickstart.\n"
-        )
-    if relative_path == "guide/getting-started/installation.md":
-        return "\n![Setup diagram](../../assets/setup.png)\n"
-    if relative_path == "architecture/pipeline.md":
-        return (
+        ),
+        "guide/getting-started/installation.md": (
+            "\n![Setup diagram](../../assets/setup.svg)\n"
+        ),
+        "architecture/pipeline.md": (
             "\n## Processing Stages\n\n"
             "Configure, scan, parse, lint, transform, assemble, then build.\n"
-        )
-    if relative_path == "reference/diagnostics.md":
-        return (
+            + pipeline_plantuml()
+        ),
+        "architecture/data-model.md": data_model_plantuml(),
+        "architecture/overview.md": deployment_plantuml(),
+        "architecture/extensions.md": extension_architecture_mermaid(),
+        "concepts/functional-chains.md": delivery_flow_mermaid(),
+        "operations/ci.md": ci_timeline_mermaid(),
+        "reference/diagnostics.md": (
             "\n## Lint Diagnostics\n\n"
             "- `LINT001`\n"
             "- `LINT002`\n"
             "- `LINT003`\n"
             "- `LINT004`\n"
-        )
-    return ""
-
-
-def _relative_link(current: Path, target: str) -> str:
-    import posixpath
-
-    current_dir = current.parent.as_posix()
-    start = current_dir if current_dir != "." else "."
-    return posixpath.relpath(target, start=start)
+        ),
+    }
+    return extras.get(relative_path, "")
 
 
 def _valid_demo_readme() -> str:
-    return """\
-# Scribpy Demo Project
-
-Generated by:
-
-```bash
-scribpy demo create
-```
-
-The generated manual contains 33 Markdown documents under `doc/`, arranged in a
-nested tree that exercises explicit indexing, link resolution, transforms,
-assembled Markdown builds, single-page HTML output, and MkDocs-backed site
-generation.
-
-## End-to-end walkthrough
-
-Run the commands below from this demo directory, in order. They mirror the
-normal Scribpy workflow: validate the project, inspect semantics, lint content,
-then build the publication targets.
-
-## Phase 2 — Project context
-
-```bash
-scribpy index check --root .
-```
-
-## Phase 3 — Parse and semantic extraction
-
-```bash
-scribpy parse check --root .
-```
-
-## Phase 4 — Lint-first user value
-
-```bash
-scribpy lint --root .
-```
-
-## Phases 5–6 — Markdown build and transforms
-
-```bash
-scribpy build markdown --root .
-```
-
-This writes:
-
-```text
-build/markdown/document.md
-```
-
-## Phase 7 — HTML outputs
-
-Build the portable single-page document:
-
-```bash
-scribpy build html --mode single-page --root .
-```
-
-Inspect:
-
-```text
-build/html/index.html
-build/html/css/demo.css
-build/html/assets/
-```
-
-Then build the multi-page documentation site:
-
-```bash
-scribpy build html --mode site --root .
-```
-
-Scribpy prepares the MkDocs inputs and wraps `mkdocs build` itself. Inspect:
-
-```text
-build/site/mkdocs.yml
-build/site/docs/
-build/site/site/index.html
-```
-
-Use `single-page` when you need one distributable document. Use `site` when you
-need a browsable multi-page documentation website.
-
-The demo `scribpy.toml` configures the assembled document title, generated table
-of contents, TOC depth, and section-numbering style:
-
-```toml
-[document]
-title = "Scribpy Demo Manual"
-
-[document.toc]
-enabled = true
-max_level = 3
-style = "bullet"
-
-[document.numbering]
-enabled = true
-max_level = 3
-style = "decimal"
-
-[builders.html]
-mode = "single-page"
-css_files = ["theme/demo.css"]
-```
-
-## Next steps
-
-Re-run checks after editing the files under `doc/` and observe how diagnostics,
-section numbering, generated table of contents, TOC depth, and link rewrites
-change. Then rebuild both HTML modes to compare how the same Markdown corpus is
-published as one document and as a MkDocs-rendered site.
-"""
+    """Return valid demo readme."""
+    return VALID_DEMO_README
 
 
 _VALID_DEMO_FILES: dict[Path, str] = {
@@ -314,25 +213,69 @@ _VALID_DEMO_FILES: dict[Path, str] = {
         Path("doc") / relative_path: _valid_demo_page(index, relative_path, title)
         for index, (relative_path, title) in enumerate(_VALID_DEMO_PAGES)
     },
-    Path("doc/assets/architecture.png"): "demo asset: architecture\n",
-    Path("doc/assets/setup.png"): "demo asset: setup\n",
-    Path("theme/demo.css"): """\
-body {
-  color: #1f2937;
-  font-family: system-ui, sans-serif;
-  line-height: 1.6;
-  margin: 2rem auto;
-  max-width: 72ch;
-}
-
-h1, h2, h3 {
-  color: #0f172a;
-}
-
-a {
-  color: #0369a1;
-}
+    Path("doc/assets/architecture.svg"): """\
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360"
+     viewBox="0 0 960 360" role="img" aria-labelledby="title desc">
+  <title id="title">Scribpy architecture overview</title>
+  <desc id="desc">
+    Source Markdown flows through parse, lint, transform, and build stages.
+  </desc>
+  <rect width="960" height="360" rx="24" fill="#f8fafc"/>
+  <g font-family="system-ui, sans-serif" font-size="24" text-anchor="middle">
+    <rect x="40" y="120" width="170" height="110" rx="16"
+          fill="#dbeafe" stroke="#2563eb"/>
+    <text x="125" y="170" fill="#1e3a8a">Markdown</text>
+    <text x="125" y="202" fill="#1e3a8a">sources</text>
+    <rect x="250" y="120" width="170" height="110" rx="16"
+          fill="#dcfce7" stroke="#16a34a"/>
+    <text x="335" y="186" fill="#166534">Parse</text>
+    <rect x="460" y="120" width="170" height="110" rx="16"
+          fill="#fef3c7" stroke="#d97706"/>
+    <text x="545" y="186" fill="#92400e">Lint</text>
+    <rect x="670" y="120" width="120" height="110" rx="16"
+          fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="730" y="186" fill="#5b21b6">Build</text>
+    <rect x="830" y="120" width="90" height="110" rx="16"
+          fill="#fee2e2" stroke="#dc2626"/>
+    <text x="875" y="172" fill="#991b1b">HTML</text>
+    <text x="875" y="204" fill="#991b1b">Site</text>
+  </g>
+  <g stroke="#475569" stroke-width="5" stroke-linecap="round">
+    <path d="M210 175h30"/>
+    <path d="M420 175h30"/>
+    <path d="M630 175h30"/>
+    <path d="M790 175h30"/>
+  </g>
+</svg>
 """,
+    Path("doc/assets/setup.svg"): """\
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="300"
+     viewBox="0 0 840 300" role="img" aria-labelledby="title desc">
+  <title id="title">Setup flow</title>
+  <desc id="desc">Install Scribpy, create a demo, run checks, then build outputs.</desc>
+  <rect width="840" height="300" rx="24" fill="#fff7ed"/>
+  <g font-family="system-ui, sans-serif" font-size="22" text-anchor="middle">
+    <circle cx="100" cy="150" r="62" fill="#ffedd5" stroke="#ea580c"/>
+    <text x="100" y="145" fill="#9a3412">Install</text>
+    <text x="100" y="174" fill="#9a3412">Scribpy</text>
+    <circle cx="300" cy="150" r="62" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="300" y="145" fill="#1e3a8a">Create</text>
+    <text x="300" y="174" fill="#1e3a8a">demo</text>
+    <circle cx="500" cy="150" r="62" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="500" y="145" fill="#166534">Run</text>
+    <text x="500" y="174" fill="#166534">checks</text>
+    <circle cx="700" cy="150" r="62" fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="700" y="145" fill="#5b21b6">Build</text>
+    <text x="700" y="174" fill="#5b21b6">outputs</text>
+  </g>
+  <g stroke="#9a3412" stroke-width="5" stroke-linecap="round">
+    <path d="M162 150h76"/>
+    <path d="M362 150h76"/>
+    <path d="M562 150h76"/>
+  </g>
+</svg>
+""",
+    Path("theme/demo.css"): DEMO_CSS,
     Path("README.md"): _valid_demo_readme(),
 }
 
@@ -480,9 +423,24 @@ def create_demo_project(
         Lint-style result containing user-facing diagnostics. A successful
         creation returns no diagnostics.
     """
+    if variant not in _DEMO_FILES_BY_VARIANT:
+        return LintResult(
+            diagnostics=(
+                Diagnostic(
+                    severity="error",
+                    code="DEMO003",
+                    message=f"Unsupported demo variant: {variant}",
+                    hint="Use variant='valid' or variant='invalid'.",
+                ),
+            ),
+            failed=True,
+        )
     files = _DEMO_FILES_BY_VARIANT[variant]
+    prepare_logging(target)
+    logger.info("Creating %s demo project at %s", variant, target)
     diagnostics = _validate_target(target, files=files, force=force)
     if has_errors(diagnostics):
+        logger.error("Demo creation failed with %d diagnostic(s)", len(diagnostics))
         return LintResult(diagnostics=diagnostics, failed=True)
 
     try:
@@ -500,7 +458,9 @@ def create_demo_project(
             ),
         )
 
-    return LintResult(diagnostics=diagnostics, failed=has_errors(diagnostics))
+    result = LintResult(diagnostics=diagnostics, failed=has_errors(diagnostics))
+    logger.info("Created demo project with %d managed file(s)", len(files))
+    return result
 
 
 def _validate_target(
@@ -509,6 +469,7 @@ def _validate_target(
     files: dict[Path, str],
     force: bool,
 ) -> tuple[Diagnostic, ...]:
+    """Validate target."""
     if target.exists() and not target.is_dir():
         return (
             Diagnostic(
@@ -542,6 +503,7 @@ def _validate_target(
 
 
 def _planned_paths(target: Path, *, files: dict[Path, str]) -> tuple[Path, ...]:
+    """Return planned paths."""
     return tuple(target / relative_path for relative_path in files)
 
 

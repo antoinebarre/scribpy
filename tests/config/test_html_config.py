@@ -13,7 +13,9 @@ def test_html_config_defaults() -> None:
     assert config.html.mode == "single-page"
     assert config.html.css_files == ()
     assert config.html.site_name is None
+    assert config.html.theme is None
     assert config.html.output_dir is None
+    assert config.html.plantuml.renderer == "web"
 
 
 def test_html_config_single_page_mode() -> None:
@@ -33,9 +35,16 @@ def test_html_config_invalid_mode_raises() -> None:
 
 def test_html_config_css_files() -> None:
     config = parse_config(
-        {"builders": {"html": {"css_files": ["assets/style.css", "custom.css"]}}}
+        {
+            "builders": {
+                "html": {"css_files": ["assets/style.css", "custom.css"]}
+            }
+        }
     )
-    assert config.html.css_files == (Path("assets/style.css"), Path("custom.css"))
+    assert config.html.css_files == (
+        Path("assets/style.css"),
+        Path("custom.css"),
+    )
 
 
 def test_html_config_css_files_not_a_list_raises() -> None:
@@ -49,9 +58,7 @@ def test_html_config_css_files_non_string_entry_raises() -> None:
 
 
 def test_html_config_site_name() -> None:
-    config = parse_config(
-        {"builders": {"html": {"site_name": "My Docs"}}}
-    )
+    config = parse_config({"builders": {"html": {"site_name": "My Docs"}}})
     assert config.html.site_name == "My Docs"
 
 
@@ -60,16 +67,87 @@ def test_html_config_site_name_non_string_raises() -> None:
         parse_config({"builders": {"html": {"site_name": 42}}})
 
 
+def test_html_config_theme() -> None:
+    config = parse_config({"builders": {"html": {"theme": "readthedocs"}}})
+    assert config.html.theme == "readthedocs"
+
+
+def test_html_config_theme_non_string_raises() -> None:
+    with pytest.raises(ConfigParseError, match="theme"):
+        parse_config({"builders": {"html": {"theme": 42}}})
+
+
 def test_html_config_output_dir() -> None:
-    config = parse_config(
-        {"builders": {"html": {"output_dir": "out/html"}}}
-    )
+    config = parse_config({"builders": {"html": {"output_dir": "out/html"}}})
     assert config.html.output_dir == Path("out/html")
 
 
 def test_html_config_output_dir_non_string_raises() -> None:
     with pytest.raises(ConfigParseError, match="output_dir"):
         parse_config({"builders": {"html": {"output_dir": 123}}})
+
+
+def test_html_config_plantuml_web_renderer() -> None:
+    config = parse_config(
+        {"builders": {"html": {"plantuml": {"renderer": "web"}}}}
+    )
+    assert config.html.plantuml.renderer == "web"
+
+
+def test_html_config_plantuml_server_url() -> None:
+    config = parse_config(
+        {
+            "builders": {
+                "html": {
+                    "plantuml": {
+                        "renderer": "web",
+                        "server_url": "https://plantuml.example/plantuml",
+                    }
+                }
+            }
+        }
+    )
+    assert config.html.plantuml.server_url == "https://plantuml.example/plantuml"
+
+
+def test_html_config_mermaid_defaults() -> None:
+    config = parse_config({})
+
+    assert config.html.mermaid.server_url == "https://mermaid.ink"
+    assert config.html.mermaid.theme == "default"
+
+
+def test_html_config_mermaid_server_url_and_theme() -> None:
+    config = parse_config(
+        {
+            "builders": {
+                "html": {
+                    "mermaid": {
+                        "server_url": "https://mermaid.example",
+                        "theme": "forest",
+                    }
+                }
+            }
+        }
+    )
+
+    assert config.html.mermaid.server_url == "https://mermaid.example"
+    assert config.html.mermaid.theme == "forest"
+
+
+def test_html_config_mermaid_server_url_non_string_raises() -> None:
+    with pytest.raises(ConfigParseError, match="builders.html.mermaid.server_url"):
+        parse_config({"builders": {"html": {"mermaid": {"server_url": 42}}}})
+
+
+def test_html_config_mermaid_theme_non_string_raises() -> None:
+    with pytest.raises(ConfigParseError, match="builders.html.mermaid.theme"):
+        parse_config({"builders": {"html": {"mermaid": {"theme": 42}}}})
+
+
+def test_html_config_invalid_plantuml_renderer_raises() -> None:
+    with pytest.raises(ConfigParseError, match="plantuml.renderer"):
+        parse_config({"builders": {"html": {"plantuml": {"renderer": "remote"}}}})
 
 
 def test_html_builder_config_resolve_output_dir_single_page() -> None:

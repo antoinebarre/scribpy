@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs local quality checks with readable progress and a final summary table.
+# Runs local quality checks with a readable progress table.
 # Unlike CI, formatting is mutating so local developers get automatic fixes.
 
 set -uo pipefail
@@ -7,23 +7,33 @@ set -uo pipefail
 G='\033[32m' R='\033[31m' Y='\033[33m' B='\033[1m' N='\033[0m'
 SEP='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
 
+# Keep all transient logs and tool caches under work/ so a repository cleanup is
+# predictable and no developer machine state leaks into the quality gate.
 mkdir -p work
 export UV_CACHE_DIR="${UV_CACHE_DIR:-work/.uv-cache}"
 
 PASS=0
 FAIL=0
 declare -a FAIL_NAMES=()
+
+# Each check can expose one compact detail in the progress table. The full log
+# remains available in work/*.log and is printed only for failing checks.
 DETAIL_FORMAT=''
 DETAIL_LINT=''
 DETAIL_DOCSTRINGS=''
 DETAIL_DOCSTRINGS_STRICT=''
 DETAIL_TYPE_CHECK=''
 DETAIL_METRICS=''
+DETAIL_SECURITY_CODE=''
+DETAIL_SECURITY_DEPS=''
 DETAIL_TESTS=''
 
 run() {
     local name=$1 log=$2; shift 2
     printf " %-20s  " "$name"
+
+    # Capture command output to a stable log file. This keeps the happy path
+    # readable while preserving enough context for maintenance and debugging.
     if "$@" >"$log" 2>&1; then
         printf "${G}✔ pass${N}"
         PASS=$((PASS + 1))
@@ -41,6 +51,10 @@ run() {
 
 details_for() {
     local name=$1 log=$2
+
+    # Every tool formats success and failure differently. These extractors keep
+    # the table useful without forcing the underlying tools to share an output
+    # format. If a pattern stops matching, the full log still appears on failure.
     case "$name" in
         format)
             tail -n 1 "$log" 2>/dev/null || true
@@ -60,6 +74,15 @@ details_for() {
         metrics)
             grep -E '^Code metrics (passed|check failed)' "$log" | head -n 1 || true
             ;;
+        security-code)
+            grep -E 'No issues identified|Issue: ' "$log" \
+                | tail -n 1 \
+                | sed 's/^[[:space:]]*//' \
+                || true
+            ;;
+        security-deps)
+            grep -E '^No known vulnerabilities found|^Found [0-9]+ known vulnerabilities' "$log" | tail -n 1 || true
+            ;;
         tests)
             local passed coverage
             passed=$(grep -oE '[0-9]+ passed' "$log" | tail -n 1 || true)
@@ -77,6 +100,9 @@ contains() {
 
 set_detail() {
     local name=$1 value=$2
+
+    # Bash has no portable associative arrays everywhere we run, so details are
+    # stored in explicit variables keyed by the public check names.
     case "$name" in
         format) DETAIL_FORMAT=$value ;;
         lint) DETAIL_LINT=$value ;;
@@ -85,6 +111,8 @@ set_detail() {
         init-modules) DETAIL_INIT_MODULES=$value ;;
         type-check) DETAIL_TYPE_CHECK=$value ;;
         metrics) DETAIL_METRICS=$value ;;
+        security-code) DETAIL_SECURITY_CODE=$value ;;
+        security-deps) DETAIL_SECURITY_DEPS=$value ;;
         tests) DETAIL_TESTS=$value ;;
     esac
 }
@@ -99,6 +127,8 @@ get_detail() {
         init-modules) printf "%s" "$DETAIL_INIT_MODULES" ;;
         type-check) printf "%s" "$DETAIL_TYPE_CHECK" ;;
         metrics) printf "%s" "$DETAIL_METRICS" ;;
+        security-code) printf "%s" "$DETAIL_SECURITY_CODE" ;;
+        security-deps) printf "%s" "$DETAIL_SECURITY_DEPS" ;;
         tests) printf "%s" "$DETAIL_TESTS" ;;
     esac
 }
@@ -111,26 +141,14 @@ print_failures() {
     for name in "${FAIL_NAMES[@]}"; do
         local log="work/${name}.log"
         printf "\n${Y}%s${N}\n${Y}── %s details ──${N}\n" "$SEP" "$name"
+        # Failed checks print their complete captured output after the table, so
+        # the first screen stays scannable but failures are immediately usable.
         [ -f "$log" ] && cat "$log"
     done
 }
 
 print_summary() {
     local total=$((PASS + FAIL))
-    printf "\n${B}%s${N}\n" "$SEP"
-    printf "${B} %-20s  %-10s  %s${N}\n" "Check" "Status" "Details"
-    printf "${B}%s${N}\n" "$SEP"
-
-    for name in format lint docstrings docstrings-strict init-modules type-check metrics tests; do
-        local status
-        if contains "$name" "${FAIL_NAMES[@]+"${FAIL_NAMES[@]}"}"; then
-            status="${R}✘ FAIL${N}"
-        else
-            status="${G}✔ pass${N}"
-        fi
-        printf " %-20s  %-19b  %s\n" "$name" "$status" "$(get_detail "$name")"
-    done
-
     printf "${B}%s${N}\n" "$SEP"
     if [ "$FAIL" -eq 0 ]; then
         printf " ${G}${B}All %d local checks passed.${N}\n\n" "$total"
@@ -140,6 +158,9 @@ print_summary() {
 }
 
 printf "\n${B}Running local quality checks…${N}\n\n"
+printf "${B}%s${N}\n" "$SEP"
+printf "${B} %-20s  %-10s  %s${N}\n" "Check" "Status" "Details"
+printf "${B}%s${N}\n" "$SEP"
 
 run "format"            work/format.log            uv run ruff format src/ scripts/
 run "lint"              work/lint.log              uv run ruff check src/ scripts/
@@ -148,7 +169,11 @@ run "docstrings-strict" work/docstrings-strict.log uv run python scripts/check_g
 run "init-modules"      work/init-modules.log      uv run python scripts/check_init_modules.py
 run "type-check"        work/type-check.log        uv run mypy src/
 run "metrics"           work/metrics.log           uv run python scripts/code_metrics.py
+run "security-code"     work/security-code.log     uv run bandit -c pyproject.toml -r src scripts
+run "security-deps"     work/security-deps.log     bash scripts/security_audit_deps.sh
 
+# Pytest uses exit code 5 when no tests are collected. Treating that as success
+# keeps this runner reusable for early project phases or filtered test runs.
 printf " %-20s  " "tests"
 uv run pytest >work/tests.log 2>&1; rc=$?
 [ "$rc" -eq 5 ] && rc=0

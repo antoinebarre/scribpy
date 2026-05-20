@@ -10,9 +10,12 @@ from scribpy.core.project_pipeline import (
 )
 from scribpy.extensions import ExtensionRegistry
 from scribpy.lint import LintContext, run_lint_rules
+from scribpy.logging import get_logger
 from scribpy.model import LintResult
 from scribpy.model.protocols import FileSystem, MarkdownParser
 from scribpy.utils import has_errors
+
+logger = get_logger(__name__)
 
 
 def lint_project(
@@ -40,10 +43,12 @@ def lint_project(
     active_registry = registry if registry is not None else ExtensionRegistry.native()
     lint_result = run_lint_rules(context, active_registry.lint_rules)
     diagnostics = (*prepared.diagnostics, *lint_result.diagnostics)
+    logger.info("Completed lint: %d diagnostic(s)", len(diagnostics))
     return LintResult(diagnostics=diagnostics, failed=has_errors(diagnostics))
 
 
 def _build_lint_context(state: ProjectPipelineState) -> LintContext:
+    """Build lint context."""
     assert state.project_root is not None
     assert state.config is not None
     assert state.index is not None

@@ -62,14 +62,43 @@ Requires **Python ≥ 3.12**.
 ## Quick Start
 
 ```python
-from scribpy.core import load_markdown, get_headings, build_project
+import scribpy
 
-doc = load_markdown("docs/architecture.md")
+scribpy.check_index(".")
+scribpy.check_parse(".")
+scribpy.lint(".")
 
-for heading in get_headings(doc):
-    print(heading.level, heading.title)
+scribpy.build_markdown(".")
+scribpy.build_html(".", mode="single-page")
+scribpy.build_html(".", mode="site")
+```
 
-result = build_project(".")
+The top-level Python API mirrors the main CLI workflows without requiring users
+to know Scribpy's internal package layout:
+
+```python
+import scribpy
+
+result = scribpy.build_html("docs-project", mode="site")
+if not result.success:
+    for diagnostic in result.diagnostics:
+        print(diagnostic.code, diagnostic.message)
+```
+
+Execution logging can be enabled for a whole Python workflow with one context:
+
+```python
+with scribpy.logging_context(level="INFO"):
+    scribpy.build_html("docs-project", mode="site")
+```
+
+By default, logs are written below the project at `build/logs/scribpy.log`.
+Use `file_path=` for another location and `console=True` to also stream logs to
+stderr. The CLI exposes the same capability:
+
+```bash
+scribpy --log-level INFO build html --mode site --root docs-project
+scribpy --log-level DEBUG --log-console --log-file logs/run.log lint --root docs-project
 ```
 
 ---
@@ -181,7 +210,7 @@ my-documentation/
 
 ```bash
 uv sync --dev       # install package + dev dependencies
-make check          # format · lint · typecheck · test
+make check          # format · lint · typecheck · security · test
 ```
 
 Individual commands:
@@ -191,6 +220,7 @@ Individual commands:
 | `make format`    | Auto-format with ruff              |
 | `make lint`      | Lint with ruff                     |
 | `make typecheck` | Type-check with mypy (strict mode) |
+| `make security`  | Run Bandit and pip-audit           |
 | `make test`      | Run tests with coverage report     |
 
 ---

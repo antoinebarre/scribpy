@@ -11,7 +11,9 @@ from scribpy.transforms import (
 )
 
 
-def _document(path: str, source: str, headings: tuple[Heading, ...]) -> Document:
+def _document(
+    path: str, source: str, headings: tuple[Heading, ...]
+) -> Document:
     return Document(
         path=Path("/project/doc") / path,
         relative_path=Path(path),
@@ -25,7 +27,9 @@ def _document(path: str, source: str, headings: tuple[Heading, ...]) -> Document
     )
 
 
-def test_markdown_transforms_number_headings_generate_toc_and_rewrite_links() -> None:
+def test_markdown_transforms_number_headings_generate_toc_and_rewrite_links() -> (
+    None
+):
     index = _document(
         "index.md",
         "---\ntitle: Home\n---\n# Home\n\n[Guide](guide.md#setup)\n",
@@ -123,7 +127,10 @@ def test_target_specific_transforms_are_noops_for_other_targets() -> None:
 
     assert rewrite_links_for_target(markdown_context).documents == transformed
     assert resolve_cross_references(html_context).documents == transformed
-    assert normalize_assembled_markdown_headings(html_context).documents == transformed
+    assert (
+        normalize_assembled_markdown_headings(html_context).documents
+        == transformed
+    )
 
 
 def test_heading_normalization_is_noop_for_empty_markdown_input() -> None:
@@ -174,7 +181,9 @@ def test_toc_is_inserted_after_global_title_when_source_has_no_h1() -> None:
         options=TransformOptions(document_title="Manual"),
     )
 
-    assert result.documents[0].content.startswith("# Manual\n\n## Table of Contents\n")
+    assert result.documents[0].content.startswith(
+        "# Manual\n\n## Table of Contents\n"
+    )
 
 
 def test_html_transforms_keep_external_and_anchor_links() -> None:

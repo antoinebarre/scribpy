@@ -87,6 +87,7 @@ def validate_document_index(
 
 
 def _validate_entry_scope(paths: tuple[Path, ...]) -> tuple[Diagnostic, ...]:
+    """Validate entry scope."""
     return tuple(
         Diagnostic(
             severity="error",
@@ -101,6 +102,7 @@ def _validate_entry_scope(paths: tuple[Path, ...]) -> tuple[Diagnostic, ...]:
 
 
 def _validate_duplicates(paths: tuple[Path, ...]) -> tuple[Diagnostic, ...]:
+    """Validate duplicates."""
     counts = Counter(paths)
     return tuple(
         Diagnostic(
@@ -119,6 +121,7 @@ def _validate_missing_explicit_files(
     paths: tuple[Path, ...],
     discovered_paths: frozenset[Path],
 ) -> tuple[Diagnostic, ...]:
+    """Validate missing explicit files."""
     return tuple(
         Diagnostic(
             severity="error",
@@ -139,6 +142,7 @@ def _validate_uncovered_discovered_files(
     indexed_paths: set[Path],
     files: tuple[SourceFile, ...],
 ) -> tuple[Diagnostic, ...]:
+    """Validate uncovered discovered files."""
     return tuple(
         Diagnostic(
             severity="warning",
@@ -153,6 +157,7 @@ def _validate_uncovered_discovered_files(
 
 
 def _is_safe_relative_path(path: Path) -> bool:
+    """Return whether safe relative path."""
     return not path.is_absolute() and ".." not in path.parts
 
 

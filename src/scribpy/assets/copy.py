@@ -5,7 +5,12 @@ from __future__ import annotations
 from dataclasses import replace
 from pathlib import Path
 
-from scribpy.model import BuildArtifact, Diagnostic, Document, TransformedDocument
+from scribpy.model import (
+    BuildArtifact,
+    Diagnostic,
+    Document,
+    TransformedDocument,
+)
 from scribpy.model.protocols import FileSystem
 
 
@@ -205,6 +210,7 @@ def rewrite_asset_links_single_page(
 
 
 def _is_external(path: str) -> bool:
+    """Return whether external."""
     return path.startswith(("http://", "https://", "//", "mailto:"))
 
 

@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import cast
 
+from scribpy.config.html import parse_mermaid_config, parse_plantuml_config
 from scribpy.config.types import (
     Config,
     DocumentConfig,
@@ -197,6 +198,7 @@ def load_config(path: Path) -> tuple[Config | None, tuple[Diagnostic, ...]]:
 
 
 def _section(raw: Mapping[str, object], name: str) -> RawSection:
+    """Return ."""
     value = raw.get(name, {})
     if not isinstance(value, Mapping):
         raise ConfigParseError(f"Configuration section [{name}] must be a table.")
@@ -204,6 +206,7 @@ def _section(raw: Mapping[str, object], name: str) -> RawSection:
 
 
 def _parse_project_config(raw: RawSection) -> ProjectConfig:
+    """Parse project config."""
     name = raw.get("name")
     if name is None:
         return ProjectConfig()
@@ -213,6 +216,7 @@ def _parse_project_config(raw: RawSection) -> ProjectConfig:
 
 
 def _parse_path_config(raw: RawSection) -> PathConfig:
+    """Parse path config."""
     source = raw.get("source", "doc")
     if not isinstance(source, str):
         raise ConfigParseError("Configuration value paths.source must be a string.")
@@ -220,6 +224,7 @@ def _parse_path_config(raw: RawSection) -> PathConfig:
 
 
 def _parse_index_config(raw: RawSection) -> IndexConfig:
+    """Parse index config."""
     mode = raw.get("mode", "filesystem")
     if not isinstance(mode, str):
         raise ConfigParseError("Configuration value index.mode must be a string.")
@@ -243,6 +248,7 @@ def _parse_index_config(raw: RawSection) -> IndexConfig:
 
 
 def _parse_document_config(raw: RawSection) -> DocumentConfig:
+    """Parse document config."""
     title = raw.get("title")
     if title is not None and not isinstance(title, str):
         raise ConfigParseError("Configuration value document.title must be a string.")
@@ -252,6 +258,7 @@ def _parse_document_config(raw: RawSection) -> DocumentConfig:
 
 
 def _parse_toc_config(raw: RawSection) -> TocConfig:
+    """Parse toc config."""
     enabled = _parse_bool(raw, "enabled", "document.toc", True)
     max_level = _parse_heading_level(raw, "max_level", "document.toc", 6)
     style = raw.get("style", "bullet")
@@ -263,6 +270,7 @@ def _parse_toc_config(raw: RawSection) -> TocConfig:
 
 
 def _parse_numbering_config(raw: RawSection) -> NumberingConfig:
+    """Parse numbering config."""
     enabled = _parse_bool(raw, "enabled", "document.numbering", True)
     max_level = _parse_heading_level(raw, "max_level", "document.numbering", 6)
     style = raw.get("style", "decimal")
@@ -275,20 +283,35 @@ def _parse_numbering_config(raw: RawSection) -> NumberingConfig:
 
 
 def _parse_html_builder_config(raw: RawSection) -> HtmlBuilderConfig:
+    """Parse html builder config."""
     mode = _parse_html_mode(raw)
     css_files = _parse_html_css_files(raw)
     site_name = _parse_optional_str(raw, "site_name", "builders.html")
+    theme = _parse_optional_str(raw, "theme", "builders.html")
     output_dir_raw = _parse_optional_str(raw, "output_dir", "builders.html")
     output_dir = Path(output_dir_raw) if output_dir_raw is not None else None
+    plantuml = parse_plantuml_config(
+        _nested_section(raw, "plantuml", "builders.html"),
+        parse_optional_str=_parse_optional_str,
+        error_type=ConfigParseError,
+    )
+    mermaid = parse_mermaid_config(
+        _nested_section(raw, "mermaid", "builders.html"),
+        parse_optional_str=_parse_optional_str,
+    )
     return HtmlBuilderConfig(
         mode=mode,
         css_files=tuple(css_files),
         site_name=site_name,
+        theme=theme,
         output_dir=output_dir,
+        plantuml=plantuml,
+        mermaid=mermaid,
     )
 
 
 def _parse_html_mode(raw: RawSection) -> HtmlMode:
+    """Parse html mode."""
     mode = raw.get("mode", "single-page")
     if not isinstance(mode, str) or mode not in _KNOWN_HTML_MODES:
         raise ConfigParseError(
@@ -298,6 +321,7 @@ def _parse_html_mode(raw: RawSection) -> HtmlMode:
 
 
 def _parse_html_css_files(raw: RawSection) -> list[Path]:
+    """Parse html css files."""
     css_raw = raw.get("css_files", ())
     if not isinstance(css_raw, Sequence) or isinstance(css_raw, str):
         raise ConfigParseError(
@@ -314,6 +338,7 @@ def _parse_html_css_files(raw: RawSection) -> list[Path]:
 
 
 def _parse_optional_str(raw: RawSection, key: str, section: str) -> str | None:
+    """Parse optional str."""
     value = raw.get(key)
     if value is not None and not isinstance(value, str):
         raise ConfigParseError(f"Configuration value {section}.{key} must be a string.")
@@ -321,6 +346,7 @@ def _parse_optional_str(raw: RawSection, key: str, section: str) -> str | None:
 
 
 def _nested_section(raw: RawSection, name: str, parent: str) -> RawSection:
+    """Return section."""
     value = raw.get(name, {})
     if not isinstance(value, Mapping):
         raise ConfigParseError(
@@ -330,6 +356,7 @@ def _nested_section(raw: RawSection, name: str, parent: str) -> RawSection:
 
 
 def _parse_bool(raw: RawSection, key: str, section: str, default: bool) -> bool:
+    """Parse bool."""
     value = raw.get(key, default)
     if not isinstance(value, bool):
         raise ConfigParseError(
@@ -339,6 +366,7 @@ def _parse_bool(raw: RawSection, key: str, section: str, default: bool) -> bool:
 
 
 def _parse_heading_level(raw: RawSection, key: str, section: str, default: int) -> int:
+    """Parse heading level."""
     value = raw.get(key, default)
     if not isinstance(value, int) or isinstance(value, bool) or not 1 <= value <= 6:
         raise ConfigParseError(
@@ -348,6 +376,7 @@ def _parse_heading_level(raw: RawSection, key: str, section: str, default: int) 
 
 
 def _is_safe_relative_path(path: Path) -> bool:
+    """Return whether safe relative path."""
     return not path.is_absolute() and ".." not in path.parts
 
 

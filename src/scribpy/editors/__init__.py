@@ -1,4 +1,8 @@
-"""Deprecated: document mutation is now handled via pure functions in scribpy.core.
+"""Document mutation helpers (future extension point).
 
-This package is kept for import compatibility during the transition.
+Document mutation is currently handled via pure transform functions in
+``scribpy.transforms``. This package is reserved for stateful or
+imperative editing helpers when that use-case arises.
 """
+
+__all__ = []

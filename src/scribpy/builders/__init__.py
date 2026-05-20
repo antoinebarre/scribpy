@@ -12,7 +12,7 @@ from scribpy.builders.html_site import (
     write_site_artifacts_with_css,
 )
 from scribpy.builders.markdown import (
-    MARKDOWN_OUTPUT_PATH,
+    MARKDOWN_OUTPUT_DIR,
     AssembledDocument,
     merge_documents,
     write_markdown_artifact,
@@ -20,7 +20,7 @@ from scribpy.builders.markdown import (
 
 __all__ = [
     "AssembledDocument",
-    "MARKDOWN_OUTPUT_PATH",
+    "MARKDOWN_OUTPUT_DIR",
     "build_mkdocs_yaml",
     "build_single_page_html",
     "merge_documents",

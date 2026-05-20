@@ -6,6 +6,8 @@ from scribpy.builders.html_single_page import (
     build_single_page_html,
     render_markdown_to_html,
     write_single_page_artifact,
+    write_single_page_script_artifact,
+    write_single_page_support_artifacts,
 )
 from scribpy.utils.file_utils import RealFileSystem
 
@@ -73,7 +75,23 @@ def test_build_single_page_html_structure() -> None:
     assert "<!DOCTYPE html>" in html
     assert "<title>My Doc</title>" in html
     assert "<p>body</p>" in html
+    assert 'class="page-shell"' in html
+    assert 'id="page-toc"' in html
+    assert 'id="toc-search"' in html
+    assert 'src="js/toc.js"' in html
     assert "</html>" in html
+
+
+def test_build_single_page_html_removes_generated_markdown_toc() -> None:
+    html = build_single_page_html(
+        '<h2 id="table-of-contents">Table of Contents</h2>\n'
+        "<p>- [Home](#home)</p>\n"
+        '<h2 id="home">Home</h2>',
+        "Doc",
+        [],
+    )
+    assert "Table of Contents" not in html
+    assert '<h2 id="home">Home</h2>' in html
 
 
 def test_build_single_page_html_with_css() -> None:
@@ -106,7 +124,9 @@ def test_write_single_page_artifact_creates_file(tmp_path: Path) -> None:
     assert artifact.path.read_text(encoding="utf-8") == html
 
 
-def test_write_single_page_artifact_reports_write_failure(tmp_path: Path) -> None:
+def test_write_single_page_artifact_reports_write_failure(
+    tmp_path: Path,
+) -> None:
     class FailFS(RealFileSystem):
         def write_text(self, path: Path, content: str) -> None:
             raise OSError("disk full")
@@ -118,3 +138,103 @@ def test_write_single_page_artifact_reports_write_failure(tmp_path: Path) -> Non
     assert artifact is None
     assert len(diagnostics) == 1
     assert diagnostics[0].code == "BLD005"
+
+
+def test_write_single_page_script_artifact_creates_file(
+    tmp_path: Path,
+) -> None:
+    artifact, diagnostics = write_single_page_script_artifact(
+        tmp_path, Path("build/html"), RealFileSystem()
+    )
+
+    assert diagnostics == ()
+    assert artifact is not None
+    assert artifact.path == tmp_path / "build/html/js/toc.js"
+    assert artifact.artifact_type == "script"
+    assert "IntersectionObserver" in artifact.path.read_text(encoding="utf-8")
+    assert "toc-collapse" in artifact.path.read_text(encoding="utf-8")
+
+
+def test_write_single_page_script_artifact_reports_write_failure(
+    tmp_path: Path,
+) -> None:
+    class FailFS(RealFileSystem):
+        def write_text(self, path: Path, content: str) -> None:
+            raise OSError("disk full")
+
+    artifact, diagnostics = write_single_page_script_artifact(
+        tmp_path,
+        Path("build/html"),
+        FailFS(),
+    )
+
+    assert artifact is None
+    assert diagnostics[0].code == "BLD006"
+
+
+def test_write_support_artifacts_stops_when_script_write_fails(
+    tmp_path: Path,
+) -> None:
+    class FailScriptFS(RealFileSystem):
+        def write_text(self, path: Path, content: str) -> None:
+            if path.name == "toc.js":
+                raise OSError("disk full")
+            super().write_text(path, content)
+
+    artifacts, diagnostics = write_single_page_support_artifacts(
+        tmp_path,
+        "<html></html>",
+        Path("build/html"),
+        FailScriptFS(),
+    )
+
+    assert artifacts == ()
+    assert diagnostics[0].code == "BLD006"
+
+
+def test_write_support_artifacts_stops_when_html_write_fails(
+    tmp_path: Path,
+) -> None:
+    class FailHtmlFS(RealFileSystem):
+        def write_text(self, path: Path, content: str) -> None:
+            if path.name == "index.html":
+                raise OSError("disk full")
+            super().write_text(path, content)
+
+    artifacts, diagnostics = write_single_page_support_artifacts(
+        tmp_path,
+        "<html></html>",
+        Path("build/html"),
+        FailHtmlFS(),
+    )
+
+    assert artifacts == ()
+    assert any(d.code == "BLD005" for d in diagnostics)
+
+
+def test_write_support_artifacts_success(tmp_path: Path) -> None:
+    artifacts, diagnostics = write_single_page_support_artifacts(
+        tmp_path,
+        "<!DOCTYPE html><html><body></body></html>",
+        Path("build/html"),
+        RealFileSystem(),
+    )
+
+    assert diagnostics == ()
+    assert len(artifacts) == 2
+    types = {a.artifact_type for a in artifacts}
+    assert types == {"document", "script"}
+
+
+def test_toc_script_skips_h1_and_has_h2_h3_logic() -> None:
+    from scribpy.builders.html_single_page import write_single_page_script_artifact
+
+    artifact, _ = write_single_page_script_artifact(
+        __import__("pathlib").Path("/tmp"),
+        __import__("pathlib").Path("build/html"),
+        RealFileSystem(),
+    )
+    assert artifact is not None
+    script = artifact.path.read_text(encoding="utf-8")
+    assert "h2, h3" in script.lower() or "H2" in script
+    assert "H1" not in script or "Skip H1" in script

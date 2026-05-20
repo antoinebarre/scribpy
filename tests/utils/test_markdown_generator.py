@@ -100,7 +100,10 @@ class TestInlineEmphasis:
 
 class TestLinksAndImages:
     def test_link(self) -> None:
-        assert _link("label", "https://example.com") == "[label](https://example.com)"
+        assert (
+            _link("label", "https://example.com")
+            == "[label](https://example.com)"
+        )
 
     def test_image(self) -> None:
         assert _image("alt text", "https://example.com/img.png") == (
@@ -476,7 +479,12 @@ class TestGenerateMarkdown:
 
     def test_all_optional_sections_present_by_default(self) -> None:
         result = generate_markdown(seed=0)
-        for marker in ("## Mathematics", "## Diagrams", "## Alerts", "## Footnotes"):
+        for marker in (
+            "## Mathematics",
+            "## Diagrams",
+            "## Alerts",
+            "## Footnotes",
+        ):
             assert marker in result or "Alerts" in result
 
     def test_custom_separator_used(self) -> None:
@@ -485,4 +493,6 @@ class TestGenerateMarkdown:
         assert "\n\nXXX_SEP_XXX\n\n" in result
 
     def test_none_config_uses_defaults(self) -> None:
-        assert generate_markdown(seed=5) == generate_markdown(seed=5, config=None)
+        assert generate_markdown(seed=5) == generate_markdown(
+            seed=5, config=None
+        )

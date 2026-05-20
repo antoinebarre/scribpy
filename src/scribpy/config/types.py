@@ -11,6 +11,7 @@ from scribpy.model import IndexMode
 TocStyle = Literal["bullet", "numbered"]
 NumberingStyle = Literal["decimal", "alpha", "roman"]
 HtmlMode = Literal["single-page", "site"]
+PlantUmlRendererMode = Literal["java", "web"]
 
 
 @dataclass(frozen=True)
@@ -95,6 +96,33 @@ class DocumentConfig:
 
 
 @dataclass(frozen=True)
+class PlantUmlConfig:
+    """PlantUML rendering configuration.
+
+    Attributes:
+        renderer: Rendering backend. ``"java"`` uses the bundled JAR;
+            ``"web"`` calls a PlantUML server.
+        server_url: Base URL of the PlantUML server used by ``"web"`` mode.
+    """
+
+    renderer: PlantUmlRendererMode = "web"
+    server_url: str = "http://www.plantuml.com/plantuml"
+
+
+@dataclass(frozen=True)
+class MermaidConfig:
+    """Mermaid rendering configuration.
+
+    Attributes:
+        server_url: Base URL of the Mermaid web rendering service.
+        theme: Mermaid theme passed to the rendering service.
+    """
+
+    server_url: str = "https://mermaid.ink"
+    theme: str = "default"
+
+
+@dataclass(frozen=True)
 class HtmlBuilderConfig:
     """HTML builder configuration.
 
@@ -105,14 +133,21 @@ class HtmlBuilderConfig:
             the output in the order given.
         site_name: Site name written into ``mkdocs.yml`` when ``mode`` is
             ``"site"``. Falls back to the project name when omitted.
+        theme: Optional MkDocs theme name written into ``mkdocs.yml`` for site
+            output, for example ``"readthedocs"``.
         output_dir: Output directory relative to the project root. Defaults to
             ``build/html`` for ``single-page`` and ``build/site`` for ``site``.
+        plantuml: PlantUML rendering settings.
+        mermaid: Mermaid rendering settings.
     """
 
     mode: HtmlMode = "single-page"
     css_files: tuple[Path, ...] = ()
     site_name: str | None = None
+    theme: str | None = None
     output_dir: Path | None = None
+    plantuml: PlantUmlConfig = PlantUmlConfig()
+    mermaid: MermaidConfig = MermaidConfig()
 
     def resolve_output_dir(self) -> Path:
         """Return the effective output directory for the configured mode.
@@ -150,9 +185,12 @@ __all__ = [
     "HtmlBuilderConfig",
     "HtmlMode",
     "IndexConfig",
+    "MermaidConfig",
     "NumberingConfig",
     "NumberingStyle",
     "PathConfig",
+    "PlantUmlConfig",
+    "PlantUmlRendererMode",
     "ProjectConfig",
     "TocConfig",
     "TocStyle",

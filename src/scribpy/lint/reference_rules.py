@@ -39,6 +39,7 @@ class BrokenInternalLinkRule:
         document: Document,
         documents: dict[Path, Document],
     ) -> tuple[Diagnostic, ...]:
+        """Lint document."""
         diagnostics: list[Diagnostic] = []
         for reference in document.links:
             if is_external_target(reference.target):
@@ -60,6 +61,7 @@ class BrokenInternalLinkRule:
         raw_path: str,
         documents: dict[Path, Document],
     ) -> Document | None:
+        """Return target document."""
         if raw_path == "":
             return document
         relative_path = resolve_relative_path(document, raw_path)
@@ -73,6 +75,7 @@ def _missing_link_target(
     target: str,
     line: int | None,
 ) -> Diagnostic:
+    """Create link target."""
     return Diagnostic(
         severity="error",
         code="LINT003",
@@ -84,6 +87,7 @@ def _missing_link_target(
 
 
 def _missing_anchor(document: Document, anchor: str, line: int | None) -> Diagnostic:
+    """Create anchor."""
     return Diagnostic(
         severity="error",
         code="LINT003",
@@ -95,6 +99,7 @@ def _missing_anchor(document: Document, anchor: str, line: int | None) -> Diagno
 
 
 def _has_anchor(document: Document, anchor: str) -> bool:
+    """Return whether anchor."""
     return any(heading.anchor == anchor for heading in document.headings)
 
 

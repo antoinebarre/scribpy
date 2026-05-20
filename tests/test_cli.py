@@ -1,8 +1,14 @@
 """Tests for the Scribpy command-line entry point."""
 
+import importlib
 from pathlib import Path
 
-from scribpy.cli.main import _exit_code, main
+import click
+import pytest
+
+from scribpy.cli.main import _exit_code, _runtime, main
+
+cli_main_module = importlib.import_module("scribpy.cli.main")
 
 
 def test_index_check_returns_zero_for_valid_project(
@@ -16,8 +22,24 @@ def test_index_check_returns_zero_for_valid_project(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert captured.out == ""
+    assert "Resolve project configuration" in captured.out
+    assert "Build document index" in captured.out
     assert captured.err == ""
+
+
+def test_cli_logging_writes_default_log_file(tmp_path: Path, capsys) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md")
+
+    exit_code = main(
+        ["--log-level", "INFO", "index", "check", "--root", str(tmp_path)]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "Build document index" in captured.out
+    assert captured.err == ""
+    assert (tmp_path / "build/logs/scribpy.log").exists()
 
 
 def test_demo_create_returns_zero_and_creates_valid_project(
@@ -77,7 +99,10 @@ def test_demo_create_help_documents_variants_and_examples(capsys) -> None:
         "valid    creates a project expected to pass index, parse, and lint checks"
         in captured.out
     )
-    assert "invalid  creates a project with intentional lint diagnostics" in captured.out
+    assert (
+        "invalid  creates a project with intentional lint diagnostics"
+        in captured.out
+    )
 
 
 def test_root_help_documents_common_workflows(capsys) -> None:
@@ -139,6 +164,9 @@ def test_demo_create_force_overwrites_demo_files(
     captured = capsys.readouterr()
     assert exit_code == 0
     assert "Next steps:" in captured.out
+    assert "scribpy build markdown --root" in captured.out
+    assert "scribpy build html --mode single-page --root" in captured.out
+    assert "scribpy build html --mode site --root" in captured.out
     assert "scribpy index check" in captured.out
     assert "scribpy parse check" in captured.out
     assert "scribpy lint" in captured.out
@@ -154,7 +182,7 @@ def test_index_check_returns_one_and_prints_diagnostics_for_invalid_project(
     captured = capsys.readouterr()
     assert exit_code == 1
     assert "error CFG001" in captured.err
-    assert captured.out == ""
+    assert "failed" in captured.out
 
 
 def test_index_check_returns_zero_and_prints_warning_diagnostics(
@@ -169,7 +197,7 @@ def test_index_check_returns_zero_and_prints_warning_diagnostics(
     captured = capsys.readouterr()
     assert exit_code == 0
     assert "warning PRJ002" in captured.err
-    assert captured.out == ""
+    assert "Build document index" in captured.out
 
 
 def test_invalid_cli_usage_returns_two(capsys) -> None:
@@ -178,6 +206,38 @@ def test_invalid_cli_usage_returns_two(capsys) -> None:
     captured = capsys.readouterr()
     assert exit_code == 2
     assert "invalid choice" in captured.err
+
+
+def test_build_html_cli_accepts_plantuml_overrides(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
+
+    class FakeRenderer:
+        def render(self, source: str, output_format: str) -> bytes:
+            return b"<svg/>"
+
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.WebPlantUmlRenderer", lambda _: FakeRenderer()
+    )
+
+    exit_code = main(
+        [
+            "build",
+            "html",
+            "--root",
+            str(tmp_path),
+            "--plantuml-renderer",
+            "web",
+            "--plantuml-server-url",
+            "https://example.test/plantuml",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "HTML (single-page)" in captured.out
 
 
 def test_missing_subcommand_returns_two(capsys) -> None:
@@ -192,6 +252,40 @@ def test_non_integer_system_exit_code_maps_to_usage_error() -> None:
     assert _exit_code(SystemExit("bad usage")) == 2
 
 
+def test_integer_system_exit_code_is_preserved() -> None:
+    assert _exit_code(SystemExit(7)) == 7
+
+
+def test_main_returns_click_exit_code(monkeypatch) -> None:
+    def fake_app(*args, **kwargs):
+        raise click.exceptions.Exit(7)
+
+    monkeypatch.setattr(cli_main_module, "app", fake_app)
+
+    assert main(["lint"]) == 7
+
+
+def test_main_renders_generic_click_exception(monkeypatch, capsys) -> None:
+    def fake_app(*args, **kwargs):
+        raise click.ClickException("boom")
+
+    monkeypatch.setattr(cli_main_module, "app", fake_app)
+
+    assert main(["lint"]) == 1
+    assert "Error: boom" in capsys.readouterr().err
+
+
+def test_runtime_rejects_uninitialized_context() -> None:
+    class Context:
+        def find_root(self):
+            return self
+
+        obj = None
+
+    with pytest.raises(RuntimeError, match="CLI runtime was not initialized"):
+        _runtime(Context())
+
+
 def test_parse_check_returns_zero_for_valid_project(
     tmp_path: Path,
     capsys,
@@ -203,7 +297,8 @@ def test_parse_check_returns_zero_for_valid_project(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert "1 document(s) successfully" in captured.out
+    assert "Parse Markdown documents" in captured.out
+    assert "Parsed 1 document(s)." in captured.out
     assert captured.err == ""
 
 
@@ -216,7 +311,7 @@ def test_parse_check_returns_one_when_config_missing(
     captured = capsys.readouterr()
     assert exit_code == 1
     assert "error CFG001" in captured.err
-    assert captured.out == ""
+    assert "failed" in captured.out
 
 
 def test_parse_check_prints_warning_but_returns_zero(
@@ -231,7 +326,7 @@ def test_parse_check_prints_warning_but_returns_zero(
     captured = capsys.readouterr()
     assert exit_code == 0
     assert "PRS002" in captured.err
-    assert "1 document(s) successfully" in captured.out
+    assert "Parsed 1 document(s)." in captured.out
 
 
 def test_parse_check_help_documents_examples_and_exit_codes(capsys) -> None:
@@ -252,11 +347,13 @@ def test_lint_returns_zero_for_valid_project(tmp_path: Path, capsys) -> None:
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert captured.out == ""
+    assert "Run lint rules" in captured.out
     assert captured.err == ""
 
 
-def test_lint_returns_one_and_prints_diagnostics(tmp_path: Path, capsys) -> None:
+def test_lint_returns_one_and_prints_diagnostics(
+    tmp_path: Path, capsys
+) -> None:
     _write_config(tmp_path, '[paths]\nsource = "doc"\n')
     _write_source(tmp_path, "doc/index.md", "## Missing H1\n")
 
@@ -266,6 +363,7 @@ def test_lint_returns_one_and_prints_diagnostics(tmp_path: Path, capsys) -> None
     assert exit_code == 1
     assert "error LINT001" in captured.err
     assert "error LINT002" in captured.err
+    assert "Run lint rules — failed" in captured.out
 
 
 def test_lint_help_documents_examples(capsys) -> None:
@@ -274,7 +372,6 @@ def test_lint_help_documents_examples(capsys) -> None:
     captured = capsys.readouterr()
     assert exit_code == 0
     assert "scribpy lint --root dd1" in captured.out
-
 
 
 def test_build_markdown_returns_zero_and_prints_artifact_path(
@@ -288,9 +385,33 @@ def test_build_markdown_returns_zero_and_prints_artifact_path(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert "Built markdown artifact:" in captured.out
+    assert "Build Markdown — done" in captured.out
+    assert "Primary artifact:" in captured.out
     assert "build/markdown/document.md" in captured.out
     assert captured.err == ""
+
+
+def test_build_markdown_accepts_output_dir_override(
+    tmp_path: Path, capsys
+) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n")
+
+    exit_code = main(
+        [
+            "build",
+            "markdown",
+            "--root",
+            str(tmp_path),
+            "--output-dir",
+            "ci/markdown",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "ci/markdown/document.md" in captured.out
+    assert (tmp_path / "ci/markdown/document.md").is_file()
 
 
 def test_build_markdown_returns_one_when_lint_fails(
@@ -306,7 +427,7 @@ def test_build_markdown_returns_one_when_lint_fails(
     assert exit_code == 1
     assert "error LINT001" in captured.err
     assert "error BLD002" in captured.err
-    assert captured.out == ""
+    assert "Run lint rules — failed" in captured.out
 
 
 def test_build_markdown_help_documents_examples(capsys) -> None:
@@ -324,6 +445,7 @@ def test_build_without_subcommand_returns_usage_error(capsys) -> None:
     assert exit_code == 2
     assert "usage:" in captured.err
 
+
 def test_build_html_single_page_returns_zero_and_prints_artifact(
     tmp_path: Path,
     capsys,
@@ -337,7 +459,7 @@ def test_build_html_single_page_returns_zero_and_prints_artifact(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert "Built html artifact:" in captured.out
+    assert "Build HTML (single-page) — done" in captured.out
     assert "index.html" in captured.out
     assert captured.err == ""
 
@@ -364,7 +486,7 @@ def test_build_html_site_returns_zero_and_prints_site_artifact(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert "Built html-site artifact:" in captured.out
+    assert "Build HTML (site) — done" in captured.out
     assert "build/site/site" in captured.out
 
 
@@ -382,7 +504,7 @@ def test_build_html_returns_one_when_lint_fails(
     captured = capsys.readouterr()
     assert exit_code == 1
     assert "LINT001" in captured.err
-    assert captured.out == ""
+    assert "Run lint rules — failed" in captured.out
 
 
 def test_build_html_defaults_to_single_page_mode(
@@ -397,6 +519,29 @@ def test_build_html_defaults_to_single_page_mode(
     captured = capsys.readouterr()
     assert exit_code == 0
     assert (tmp_path / "build/html/index.html").exists()
+
+
+def test_build_html_accepts_output_dir_override(
+    tmp_path: Path, capsys
+) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n")
+
+    exit_code = main(
+        [
+            "build",
+            "html",
+            "--root",
+            str(tmp_path),
+            "--output-dir",
+            "ci/html",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "ci/html/index.html" in captured.out
+    assert (tmp_path / "ci/html/index.html").is_file()
 
 
 def test_build_html_help_documents_modes(capsys) -> None:

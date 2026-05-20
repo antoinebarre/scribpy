@@ -28,6 +28,8 @@ dependencies = [
     "tomlkit>=0.13",
     "markdown-it-py>=3",
     "mkdocs>=1.6",
+    "rich>=13",
+    "typer>=0.16",
 ]
 
 [project.urls]
@@ -41,6 +43,7 @@ scribpy = "scribpy.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/scribpy"]
+include = ["src/scribpy/vendor/*.jar"]
 
 [tool.hatch.version]
 source = "vcs"
@@ -63,7 +66,7 @@ omit = [
 ]
 
 [tool.coverage.report]
-fail_under = 80
+fail_under = 100
 show_missing = true
 
 [tool.coverage.html]
@@ -106,8 +109,19 @@ max_module_logical_lines = 300
 max_module_source_lines = 500
 report_path = "work/code-metrics-report.md"
 
+[tool.bandit]
+exclude_dirs = ["tests", "work", "dist", "site"]
+skips = ["B101"]
+
+[tool.scribpy.security_audit]
+# PYSEC-2026-89 affects Python-Markdown versions before 3.8.1; the lockfile
+# currently resolves markdown to 3.10.2, so pip-audit's match is a false positive.
+ignore_vulns = ["PYSEC-2026-89"]
+
 [dependency-groups]
 dev = [
+    "bandit>=1.8",
+    "pip-audit>=2.8",
     "pytest>=8",
     "pytest-cov>=6",
     "radon>=6",

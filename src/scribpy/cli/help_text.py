@@ -157,7 +157,7 @@ What it creates:
   dd1/doc/tutorials/*.md
   dd1/doc/operations/*.md
   dd1/doc/appendix/*.md
-  dd1/doc/assets/*.png
+  dd1/doc/assets/*.svg
 
 The valid variant contains 33 Markdown documents across a nested manual tree.
 
@@ -165,6 +165,9 @@ Next steps:
   scribpy index check --root dd1
   scribpy parse check --root dd1
   scribpy lint --root dd1
+  scribpy build markdown --root dd1
+  scribpy build html --mode single-page --root dd1
+  scribpy build html --mode site --root dd1
 
 Variants:
   valid    creates a project expected to pass index, parse, and lint checks

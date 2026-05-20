@@ -40,7 +40,9 @@ def test_lint_result_exposes_diagnostics_and_failure_state() -> None:
         result.failed = False
 
 
-def test_parse_result_exposes_documents_diagnostics_and_failure_state() -> None:
+def test_parse_result_exposes_documents_diagnostics_and_failure_state() -> (
+    None
+):
     document = Document(
         path=Path("doc/index.md"),
         relative_path=Path("index.md"),
@@ -86,7 +88,9 @@ def test_build_artifact_captures_path_target_type_and_metadata() -> None:
     assert artifact.metadata == {"content_type": "text/html", "bytes": 2048}
 
 
-def test_successful_build_result_can_report_artifacts_and_diagnostics() -> None:
+def test_successful_build_result_can_report_artifacts_and_diagnostics() -> (
+    None
+):
     artifact = BuildArtifact(
         path=Path("build/markdown/document.md"),
         target="markdown",
@@ -109,7 +113,9 @@ def test_successful_build_result_can_report_artifacts_and_diagnostics() -> None:
     assert result.diagnostics == (diagnostic,)
 
 
-def test_failed_build_result_can_report_diagnostics_without_artifacts() -> None:
+def test_failed_build_result_can_report_diagnostics_without_artifacts() -> (
+    None
+):
     diagnostic = Diagnostic(
         severity="error",
         code="BUILD002",

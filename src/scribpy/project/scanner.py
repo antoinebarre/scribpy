@@ -84,6 +84,7 @@ def scan_project(
 
 
 def _is_relative_to(path: Path, parent: Path) -> bool:
+    """Return whether relative to."""
     try:
         path.relative_to(parent)
     except ValueError:

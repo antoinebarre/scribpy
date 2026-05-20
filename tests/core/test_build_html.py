@@ -6,6 +6,8 @@ import pytest
 
 from scribpy.config.types import HtmlBuilderConfig
 from scribpy.core import build_project
+from scribpy.core.build_options import HtmlBuildOverrides
+from scribpy.core.build_project import build_html_with_overrides
 from scribpy.core.build_html import build_html_project
 from scribpy.model import BuildArtifact, Diagnostic
 
@@ -31,6 +33,22 @@ def _write_source(root: Path, relative_path: str, content: str) -> None:
     path = root / relative_path
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+class FakePlantUmlRenderer:
+    """Offline renderer used by build-chain tests."""
+
+    def render(self, source: str, output_format: str) -> bytes:
+        """Return a tiny deterministic SVG."""
+        return f"<svg>{source.strip()}</svg>".encode()
+
+
+class FailingPlantUmlRenderer:
+    """Renderer that simulates Java PlantUML failure."""
+
+    def render(self, source: str, output_format: str) -> bytes:
+        """Fail deterministically."""
+        raise RuntimeError("bad uml")
 
 
 def test_build_html_single_page_creates_index_html(tmp_path: Path) -> None:
@@ -93,15 +111,20 @@ def test_build_html_single_page_copies_css(tmp_path: Path) -> None:
     assert (tmp_path / "build/html/css/style.css").exists()
     html = (tmp_path / "build/html/index.html").read_text(encoding="utf-8")
     assert "css/style.css" in html
+    assert (tmp_path / "build/html/js/toc.js").exists()
 
 
-def test_build_html_single_page_flattens_links_and_assets(tmp_path: Path) -> None:
+def test_build_html_single_page_flattens_links_and_assets(
+    tmp_path: Path,
+) -> None:
     _write_config(
         tmp_path,
         '[paths]\nsource = "doc"\n'
         '[index]\nmode = "explicit"\nfiles = ["index.md", "guide/page.md"]\n',
     )
-    _write_source(tmp_path, "doc/index.md", "# Home\n\n[Guide](guide/page.md#setup)\n")
+    _write_source(
+        tmp_path, "doc/index.md", "# Home\n\n[Guide](guide/page.md#setup)\n"
+    )
     _write_source(
         tmp_path,
         "doc/guide/page.md",
@@ -118,6 +141,56 @@ def test_build_html_single_page_flattens_links_and_assets(tmp_path: Path) -> Non
     assert '<a href="#21-setup">Guide</a>' in html
     assert 'src="assets/assets/diagram.png"' in html
     assert (tmp_path / "build/html/assets/assets/diagram.png").exists()
+
+
+def test_build_html_single_page_renders_plantuml_locally(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.validate_java_plantuml_environment", lambda: ()
+    )
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.JavaPlantUmlRenderer", FakePlantUmlRenderer
+    )
+    _write_config(
+        tmp_path,
+        '[paths]\nsource = "doc"\n'
+        '[builders.html.plantuml]\nrenderer = "java"\n',
+    )
+    _write_source(
+        tmp_path,
+        "doc/index.md",
+        "# Home\n\n```plantuml\nAlice -> Bob\n```\n",
+    )
+
+    result = build_project(tmp_path, target="html", html_mode="single-page")
+
+    assert result.success is True
+    assert any(a.artifact_type == "diagram" for a in result.artifacts)
+    html = (tmp_path / "build/html/index.html").read_text(encoding="utf-8")
+    assert 'src="assets/diagrams/plantuml-' in html
+
+
+def test_build_html_single_page_stops_on_plantuml_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.validate_java_plantuml_environment", lambda: ()
+    )
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.JavaPlantUmlRenderer", FailingPlantUmlRenderer
+    )
+    _write_config(
+        tmp_path,
+        '[paths]\nsource = "doc"\n'
+        '[builders.html.plantuml]\nrenderer = "java"\n',
+    )
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
+
+    result = build_project(tmp_path, target="html", html_mode="single-page")
+
+    assert result.success is False
+    assert any(d.code == "UML002" for d in result.diagnostics)
 
 
 def test_build_html_single_page_missing_css_fails(tmp_path: Path) -> None:
@@ -156,14 +229,174 @@ def test_build_html_site_creates_docs_directory(tmp_path: Path) -> None:
     assert (tmp_path / "build/site/docs/index.md").exists()
 
 
-def test_build_html_site_returns_rendered_site_artifact(tmp_path: Path) -> None:
+def test_build_html_site_renders_plantuml_locally(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.validate_java_plantuml_environment", lambda: ()
+    )
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.JavaPlantUmlRenderer", FakePlantUmlRenderer
+    )
+    _write_config(
+        tmp_path,
+        '[paths]\nsource = "doc"\n'
+        '[builders.html.plantuml]\nrenderer = "java"\n',
+    )
+    _write_source(
+        tmp_path,
+        "doc/guide/page.md",
+        "# Page\n\n```plantuml\nA -> B\n```\n",
+    )
+
+    result = build_project(tmp_path, target="html", html_mode="site")
+
+    assert result.success is True
+    page = (tmp_path / "build/site/docs/guide/page.md").read_text(encoding="utf-8")
+    assert "../assets/diagrams/plantuml-" in page
+    assert any(a.artifact_type == "diagram" for a in result.artifacts)
+
+
+def test_build_html_site_stops_on_plantuml_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.validate_java_plantuml_environment", lambda: ()
+    )
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.JavaPlantUmlRenderer", FailingPlantUmlRenderer
+    )
+    _write_config(
+        tmp_path,
+        '[paths]\nsource = "doc"\n'
+        '[builders.html.plantuml]\nrenderer = "java"\n',
+    )
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
+
+    result = build_project(tmp_path, target="html", html_mode="site")
+
+    assert result.success is False
+    assert any(d.code == "UML002" for d in result.diagnostics)
+
+
+def test_build_html_java_plantuml_fails_early_without_java(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.validate_java_plantuml_environment",
+        lambda: (Diagnostic("error", "UML004", "no java"),),
+    )
+    _write_config(
+        tmp_path,
+        '[paths]\nsource = "doc"\n'
+        '[builders.html.plantuml]\nrenderer = "java"\n',
+    )
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
+
+    result = build_project(tmp_path, target="html", html_mode="single-page")
+
+    assert result.success is False
+    assert any(d.code == "UML004" for d in result.diagnostics)
+
+
+def test_build_html_web_plantuml_skips_java_preflight(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.validate_java_plantuml_environment",
+        lambda: (_ for _ in ()).throw(AssertionError("should not be called")),
+    )
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.WebPlantUmlRenderer", lambda _: FakePlantUmlRenderer()
+    )
+    _write_config(
+        tmp_path,
+        '[paths]\nsource = "doc"\n'
+        '[builders.html.plantuml]\nrenderer = "web"\n',
+    )
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
+
+    result = build_project(tmp_path, target="html", html_mode="single-page")
+
+    assert result.success is True
+
+
+def test_build_html_single_page_renders_mermaid_web(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "scribpy.plugins.mermaid.WebMermaidRenderer",
+        lambda *args: FakePlantUmlRenderer(),
+    )
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(
+        tmp_path,
+        "doc/index.md",
+        "# Home\n\n```mermaid\nflowchart LR\nA-->B\n```\n",
+    )
+
+    result = build_project(tmp_path, target="html", html_mode="single-page")
+
+    assert result.success is True
+    assert any("mermaid-" in str(a.path) for a in result.artifacts)
+    html = (tmp_path / "build/html/index.html").read_text(encoding="utf-8")
+    assert 'src="assets/diagrams/mermaid-' in html
+
+
+def test_build_html_site_renders_mermaid_web(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "scribpy.plugins.mermaid.WebMermaidRenderer",
+        lambda *args: FakePlantUmlRenderer(),
+    )
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(
+        tmp_path,
+        "doc/guide/page.md",
+        "# Page\n\n```mermaid\nflowchart LR\nA-->B\n```\n",
+    )
+
+    result = build_project(tmp_path, target="html", html_mode="site")
+
+    assert result.success is True
+    page = (tmp_path / "build/site/docs/guide/page.md").read_text(encoding="utf-8")
+    assert "../assets/diagrams/mermaid-" in page
+
+
+def test_build_html_uses_injected_renderer_without_selecting_configured_backend(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.validate_java_plantuml_environment", lambda: ()
+    )
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
+
+    result = build_html_project(
+        tmp_path,
+        html_config=HtmlBuilderConfig(),
+        filesystem=None,
+        parser=None,
+        registry=None,
+        diagram_renderer=FakePlantUmlRenderer(),
+    )
+
+    assert result.success is True
+
+
+def test_build_html_site_returns_rendered_site_artifact(
+    tmp_path: Path,
+) -> None:
     _write_config(tmp_path, '[paths]\nsource = "doc"\n')
     _write_source(tmp_path, "doc/index.md", "# Home\n")
 
     result = build_project(tmp_path, target="html", html_mode="site")
 
     assert result.success is True
-    assert any(artifact.artifact_type == "site" for artifact in result.artifacts)
+    assert any(
+        artifact.artifact_type == "site" for artifact in result.artifacts
+    )
 
 
 def test_build_html_site_nav_order_matches_index(tmp_path: Path) -> None:
@@ -196,6 +429,20 @@ def test_build_html_site_uses_site_name_from_config(tmp_path: Path) -> None:
     assert "My Project" in content
 
 
+def test_build_html_site_uses_theme_from_config(tmp_path: Path) -> None:
+    _write_config(
+        tmp_path,
+        '[paths]\nsource = "doc"\n[builders.html]\ntheme = "readthedocs"\n',
+    )
+    _write_source(tmp_path, "doc/index.md", "# Home\n")
+
+    result = build_project(tmp_path, target="html", html_mode="site")
+
+    assert result.success is True
+    content = (tmp_path / "build/site/mkdocs.yml").read_text(encoding="utf-8")
+    assert "theme: readthedocs" in content
+
+
 def test_build_html_site_copies_css_and_declares_extra_css(
     tmp_path: Path,
 ) -> None:
@@ -226,7 +473,9 @@ def test_build_html_stops_when_project_preparation_fails(
     assert "CFG001" in codes
 
 
-def test_build_html_project_blocks_when_preparation_fails(tmp_path: Path) -> None:
+def test_build_html_project_blocks_when_preparation_fails(
+    tmp_path: Path,
+) -> None:
     result = build_html_project(
         tmp_path,
         html_config=HtmlBuilderConfig(),
@@ -263,6 +512,42 @@ def test_build_html_rejects_invalid_html_mode(tmp_path: Path) -> None:
     assert result.success is False
     codes = [d.code for d in result.diagnostics]
     assert "BLD001" in codes
+
+
+def test_build_html_rejects_invalid_plantuml_renderer(tmp_path: Path) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n")
+
+    result = build_html_with_overrides(
+        tmp_path, HtmlBuildOverrides(plantuml_renderer="remote")
+    )
+
+    assert result.success is False
+    assert any(d.code == "BLD001" for d in result.diagnostics)
+
+
+def test_build_html_plantuml_override_replaces_project_config(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.WebPlantUmlRenderer", lambda _: FakePlantUmlRenderer()
+    )
+    _write_config(
+        tmp_path,
+        '[paths]\nsource = "doc"\n'
+        '[builders.html.plantuml]\nrenderer = "java"\n',
+    )
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
+
+    result = build_html_with_overrides(
+        tmp_path,
+        HtmlBuildOverrides(
+            plantuml_renderer="web",
+            plantuml_server_url="https://example.test/plantuml",
+        ),
+    )
+
+    assert result.success is True
 
 
 def test_build_html_target_alias_defaults_to_single_page(
@@ -413,7 +698,10 @@ def test_build_html_site_mkdocs_failure_returns_error(
 
     monkeypatch.setattr(
         "scribpy.core.build_html.run_mkdocs_build",
-        lambda *_args: (None, (Diagnostic(severity="error", code="SITE003", message="failed"),)),
+        lambda *_args: (
+            None,
+            (Diagnostic(severity="error", code="SITE003", message="failed"),),
+        ),
     )
 
     result = build_project(tmp_path, target="html", html_mode="site")
@@ -432,9 +720,7 @@ def test_build_html_single_page_asset_copy_error_returns_error(
     doc_dir.mkdir()
     img = doc_dir / "photo.png"
     img.write_bytes(b"PNG")
-    _write_source(
-        tmp_path, "doc/index.md", "# Home\n\n![photo](photo.png)\n"
-    )
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n![photo](photo.png)\n")
 
     class FailAssetWriteFS(RealFileSystem):
         def write_text(self, path: Path, content: str) -> None:
@@ -464,9 +750,7 @@ def test_build_html_site_asset_copy_error_returns_error(
     doc_dir.mkdir()
     img = doc_dir / "photo.png"
     img.write_bytes(b"PNG")
-    _write_source(
-        tmp_path, "doc/index.md", "# Home\n\n![photo](photo.png)\n"
-    )
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n![photo](photo.png)\n")
 
     class FailAssetWriteFS(RealFileSystem):
         written: list[str] = []

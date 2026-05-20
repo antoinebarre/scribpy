@@ -6,9 +6,12 @@ from dataclasses import replace
 
 from scribpy.core.pipeline import PipelineResult
 from scribpy.core.project_pipeline_state import ProjectPipelineState
+from scribpy.logging import get_logger
 from scribpy.parser.document import order_by_index, parse_documents
 from scribpy.project import build_document_index
 from scribpy.utils import has_errors
+
+logger = get_logger(__name__)
 
 
 def build_index_step(
@@ -26,7 +29,12 @@ def build_index_step(
     index, diagnostics = build_document_index(state.config, state.source_files)
     next_state = replace(state, index=index)
     if index is None or has_errors(diagnostics):
+        logger.error(
+            "Document index build failed with %d diagnostic(s)",
+            len(diagnostics),
+        )
         return PipelineResult.fail(diagnostics, next_state)
+    logger.info("Built document index with %d path(s)", len(index.paths))
     return PipelineResult.ok(next_state, diagnostics)
 
 
@@ -51,7 +59,9 @@ def parse_documents_step(
         documents=parse_result.documents,
     )
     if parse_result.failed:
+        logger.error("Document parsing failed with %d diagnostic(s)", len(diagnostics))
         return PipelineResult.fail(diagnostics, next_state)
+    logger.info("Parsed %d document(s)", len(parse_result.documents))
     return PipelineResult.ok(next_state, diagnostics)
 
 

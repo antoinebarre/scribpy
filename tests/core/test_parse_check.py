@@ -19,7 +19,9 @@ def _write_config(root: Path, content: str) -> Path:
     return config_path
 
 
-def _write_source(root: Path, relative_path: str, content: str = "# Title\n") -> Path:
+def _write_source(
+    root: Path, relative_path: str, content: str = "# Title\n"
+) -> Path:
     source_path = root / relative_path
     source_path.parent.mkdir(parents=True, exist_ok=True)
     source_path.write_text(content, encoding="utf-8")
@@ -61,7 +63,9 @@ class TestParseProjectDocumentsSuccess:
 
         assert result.documents[0].title == "My Title"
 
-    def test_multiple_files_parsed_in_index_order(self, tmp_path: Path) -> None:
+    def test_multiple_files_parsed_in_index_order(
+        self, tmp_path: Path
+    ) -> None:
         _write_config(tmp_path, '[paths]\nsource = "doc"\n')
         _write_source(tmp_path, "doc/a.md", "# A\n")
         _write_source(tmp_path, "doc/b.md", "# B\n")
@@ -106,7 +110,9 @@ class TestParseProjectDocumentsSuccess:
 
     def test_yaml_frontmatter_preserved(self, tmp_path: Path) -> None:
         _write_config(tmp_path, '[paths]\nsource = "doc"\n')
-        _write_source(tmp_path, "doc/index.md", "---\nauthor: Alice\n---\n# Doc\n")
+        _write_source(
+            tmp_path, "doc/index.md", "---\nauthor: Alice\n---\n# Doc\n"
+        )
 
         result = parse_project_documents(tmp_path)
 
@@ -144,7 +150,9 @@ class TestParseProjectDocumentsErrors:
         assert result.failed is True
         assert "CFG001" in _codes(result)
 
-    def test_cfg001_for_missing_direct_config_path(self, tmp_path: Path) -> None:
+    def test_cfg001_for_missing_direct_config_path(
+        self, tmp_path: Path
+    ) -> None:
         result = parse_project_documents(tmp_path / "scribpy.toml")
 
         assert result.failed is True
@@ -183,7 +191,9 @@ class TestParseProjectDocumentsErrors:
 
     def test_prs002_warning_does_not_set_failed(self, tmp_path: Path) -> None:
         _write_config(tmp_path, '[paths]\nsource = "doc"\n')
-        _write_source(tmp_path, "doc/index.md", "---\nbad: [unclosed\n---\n# T\n")
+        _write_source(
+            tmp_path, "doc/index.md", "---\nbad: [unclosed\n---\n# T\n"
+        )
 
         result = parse_project_documents(tmp_path)
 

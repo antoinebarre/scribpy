@@ -1,4 +1,6 @@
-"""Deprecated: use scribpy.extensions instead.
+"""Built-in internal code-block plugins."""
 
-This package is kept for import compatibility during the transition.
-"""
+from scribpy.plugins.mermaid import MermaidPlugin
+from scribpy.plugins.plantuml import PlantUmlPlugin
+
+__all__ = ["MermaidPlugin", "PlantUmlPlugin"]
