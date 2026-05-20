@@ -229,6 +229,25 @@ renderer = "java"
 available before starting an HTML build that contains PlantUML blocks and emits
 a dedicated diagnostic when the runtime cannot be used.
 
+#### `[builders.html.mermaid]`
+
+Controls how fenced `mermaid` blocks are rendered during HTML builds. Mermaid
+rendering is web-only.
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `server_url` | `string` | `https://mermaid.ink` | Base URL of the Mermaid web renderer. |
+| `theme` | `string` | `"default"` | Mermaid theme passed to the renderer. |
+
+```toml
+[builders.html.mermaid]
+server_url = "https://mermaid.ink"
+theme = "default"
+```
+
+The Mermaid source is sent to the configured server. Scribpy writes the returned
+SVG into local generated assets and links to that local file from the output.
+
 ---
 
 ## Complete example

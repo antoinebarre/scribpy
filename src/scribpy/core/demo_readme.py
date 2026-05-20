@@ -13,7 +13,7 @@ scribpy demo create
 
 The generated manual contains 33 Markdown documents under `doc/`, arranged in a
 nested tree that exercises explicit indexing, link resolution, transforms,
-assembled Markdown builds, offline PlantUML rendering, single-page HTML output,
+assembled Markdown builds, web diagram rendering, single-page HTML output,
 and MkDocs-backed site generation.
 
 ## End-to-end walkthrough
@@ -60,9 +60,10 @@ Build the portable single-page document:
 scribpy build html --mode single-page --root .
 ```
 
-The demo contains complex PlantUML diagrams rendered into SVG assets. Scribpy
-uses web rendering by default; configure `renderer = "java"` when you want the
-bundled PlantUML engine to run offline on a machine with Java installed.
+The demo contains complex PlantUML and Mermaid diagrams rendered into SVG
+assets. Scribpy uses web rendering by default; configure PlantUML with
+`renderer = "java"` when you want the bundled PlantUML engine to run offline on
+a machine with Java installed. Mermaid rendering is web-only.
 
 Inspect:
 

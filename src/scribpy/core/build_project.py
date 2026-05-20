@@ -140,6 +140,7 @@ def _dispatch_html_build(
         if overrides.output_dir is not None
         else base_html_config.output_dir,
         plantuml=effective_plantuml,
+        mermaid=base_html_config.mermaid,
     )
 
     return build_html_project(

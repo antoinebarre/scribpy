@@ -32,7 +32,7 @@ from scribpy.model.protocols import (
     FileSystem,
     MarkdownParser,
 )
-from scribpy.plugins import PlantUmlPlugin
+from scribpy.plugins import MermaidPlugin, PlantUmlPlugin
 from scribpy.transforms import Transform, TransformOptions, apply_transforms
 from scribpy.transforms.pipeline import native_html_transforms
 from scribpy.utils import has_errors
@@ -386,6 +386,7 @@ def _code_block_plugins(
     """Return built-in and registry-provided code-block plugins."""
     return (
         PlantUmlPlugin(html_config.plantuml, override),
+        MermaidPlugin(html_config.mermaid),
         *registry.code_block_plugins,
     )
 

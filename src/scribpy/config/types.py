@@ -110,6 +110,19 @@ class PlantUmlConfig:
 
 
 @dataclass(frozen=True)
+class MermaidConfig:
+    """Mermaid rendering configuration.
+
+    Attributes:
+        server_url: Base URL of the Mermaid web rendering service.
+        theme: Mermaid theme passed to the rendering service.
+    """
+
+    server_url: str = "https://mermaid.ink"
+    theme: str = "default"
+
+
+@dataclass(frozen=True)
 class HtmlBuilderConfig:
     """HTML builder configuration.
 
@@ -125,6 +138,7 @@ class HtmlBuilderConfig:
         output_dir: Output directory relative to the project root. Defaults to
             ``build/html`` for ``single-page`` and ``build/site`` for ``site``.
         plantuml: PlantUML rendering settings.
+        mermaid: Mermaid rendering settings.
     """
 
     mode: HtmlMode = "single-page"
@@ -133,6 +147,7 @@ class HtmlBuilderConfig:
     theme: str | None = None
     output_dir: Path | None = None
     plantuml: PlantUmlConfig = PlantUmlConfig()
+    mermaid: MermaidConfig = MermaidConfig()
 
     def resolve_output_dir(self) -> Path:
         """Return the effective output directory for the configured mode.
@@ -170,6 +185,7 @@ __all__ = [
     "HtmlBuilderConfig",
     "HtmlMode",
     "IndexConfig",
+    "MermaidConfig",
     "NumberingConfig",
     "NumberingStyle",
     "PathConfig",

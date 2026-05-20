@@ -190,6 +190,32 @@ For HTML builds, Scribpy writes deterministic SVG files below the generated
 `assets/diagrams/` directory and replaces each source block with a local image
 reference in the generated output.
 
+## Mermaid diagrams
+
+Scribpy also renders fenced `mermaid` blocks when building HTML:
+
+````markdown
+```mermaid
+flowchart LR
+  Author --> Scribpy
+  Scribpy --> HTML
+```
+````
+
+Mermaid rendering is web-only:
+
+```toml
+[builders.html.mermaid]
+server_url = "https://mermaid.ink"
+theme = "default"
+```
+
+The diagram source is sent to the configured Mermaid server. Scribpy stores the
+returned SVG below `assets/diagrams/` and replaces the source block with a local
+image reference in the generated output. Mermaid failures use `MRM*`
+diagnostics and are logged with the source document, diagram digest, output path,
+and web-rendering failure details.
+
 ---
 
 ## Tables

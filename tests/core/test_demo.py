@@ -212,6 +212,26 @@ def test_created_demo_project_contains_complex_plantuml_examples(
     assert "Bundled PlantUML MIT JAR" in overview
 
 
+def test_created_demo_project_contains_complex_mermaid_examples(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "external-demo"
+    create_demo_project(target)
+
+    functional_chains = (target / "doc/concepts/functional-chains.md").read_text(
+        encoding="utf-8"
+    )
+    extensions = (target / "doc/architecture/extensions.md").read_text(
+        encoding="utf-8"
+    )
+    ci = (target / "doc/operations/ci.md").read_text(encoding="utf-8")
+
+    assert "```mermaid" in functional_chains
+    assert "Delivery Control Flow" in functional_chains
+    assert "classDiagram" in extensions
+    assert "sequenceDiagram" in ci
+
+
 def test_created_demo_project_frontmatter_extracted(tmp_path: Path) -> None:
     target = tmp_path / "external-demo"
     create_demo_project(target)
@@ -319,8 +339,8 @@ def test_created_demo_project_readme_documents_end_to_end_html_flow(
     assert "## Execution logs" in readme
     assert "scribpy --log-level INFO build html --mode site --root ." in readme
     assert "with scribpy.logging_context" in readme
-    assert "complex PlantUML diagrams" in readme
-    assert 'configure `renderer = "java"`' in readme
+    assert "complex PlantUML and Mermaid diagrams" in readme
+    assert 'renderer = "java"' in readme
 
 
 def test_invalid_demo_reports_phase_4_lint_diagnostics(tmp_path: Path) -> None:

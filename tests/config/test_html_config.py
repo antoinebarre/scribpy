@@ -110,6 +110,41 @@ def test_html_config_plantuml_server_url() -> None:
     assert config.html.plantuml.server_url == "https://plantuml.example/plantuml"
 
 
+def test_html_config_mermaid_defaults() -> None:
+    config = parse_config({})
+
+    assert config.html.mermaid.server_url == "https://mermaid.ink"
+    assert config.html.mermaid.theme == "default"
+
+
+def test_html_config_mermaid_server_url_and_theme() -> None:
+    config = parse_config(
+        {
+            "builders": {
+                "html": {
+                    "mermaid": {
+                        "server_url": "https://mermaid.example",
+                        "theme": "forest",
+                    }
+                }
+            }
+        }
+    )
+
+    assert config.html.mermaid.server_url == "https://mermaid.example"
+    assert config.html.mermaid.theme == "forest"
+
+
+def test_html_config_mermaid_server_url_non_string_raises() -> None:
+    with pytest.raises(ConfigParseError, match="builders.html.mermaid.server_url"):
+        parse_config({"builders": {"html": {"mermaid": {"server_url": 42}}}})
+
+
+def test_html_config_mermaid_theme_non_string_raises() -> None:
+    with pytest.raises(ConfigParseError, match="builders.html.mermaid.theme"):
+        parse_config({"builders": {"html": {"mermaid": {"theme": 42}}}})
+
+
 def test_html_config_invalid_plantuml_renderer_raises() -> None:
     with pytest.raises(ConfigParseError, match="plantuml.renderer"):
         parse_config({"builders": {"html": {"plantuml": {"renderer": "remote"}}}})

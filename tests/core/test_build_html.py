@@ -321,6 +321,49 @@ def test_build_html_web_plantuml_skips_java_preflight(
     assert result.success is True
 
 
+def test_build_html_single_page_renders_mermaid_web(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "scribpy.plugins.mermaid.WebMermaidRenderer",
+        lambda *args: FakePlantUmlRenderer(),
+    )
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(
+        tmp_path,
+        "doc/index.md",
+        "# Home\n\n```mermaid\nflowchart LR\nA-->B\n```\n",
+    )
+
+    result = build_project(tmp_path, target="html", html_mode="single-page")
+
+    assert result.success is True
+    assert any("mermaid-" in str(a.path) for a in result.artifacts)
+    html = (tmp_path / "build/html/index.html").read_text(encoding="utf-8")
+    assert 'src="assets/diagrams/mermaid-' in html
+
+
+def test_build_html_site_renders_mermaid_web(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "scribpy.plugins.mermaid.WebMermaidRenderer",
+        lambda *args: FakePlantUmlRenderer(),
+    )
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(
+        tmp_path,
+        "doc/guide/page.md",
+        "# Page\n\n```mermaid\nflowchart LR\nA-->B\n```\n",
+    )
+
+    result = build_project(tmp_path, target="html", html_mode="site")
+
+    assert result.success is True
+    page = (tmp_path / "build/site/docs/guide/page.md").read_text(encoding="utf-8")
+    assert "../assets/diagrams/mermaid-" in page
+
+
 def test_build_html_uses_injected_renderer_without_selecting_configured_backend(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -7,7 +7,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import cast
 
-from scribpy.config.html import parse_plantuml_config
+from scribpy.config.html import parse_mermaid_config, parse_plantuml_config
 from scribpy.config.types import (
     Config,
     DocumentConfig,
@@ -295,6 +295,10 @@ def _parse_html_builder_config(raw: RawSection) -> HtmlBuilderConfig:
         parse_optional_str=_parse_optional_str,
         error_type=ConfigParseError,
     )
+    mermaid = parse_mermaid_config(
+        _nested_section(raw, "mermaid", "builders.html"),
+        parse_optional_str=_parse_optional_str,
+    )
     return HtmlBuilderConfig(
         mode=mode,
         css_files=tuple(css_files),
@@ -302,6 +306,7 @@ def _parse_html_builder_config(raw: RawSection) -> HtmlBuilderConfig:
         theme=theme,
         output_dir=output_dir,
         plantuml=plantuml,
+        mermaid=mermaid,
     )
 
 

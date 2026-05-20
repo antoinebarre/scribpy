@@ -6,6 +6,11 @@ from pathlib import Path
 from typing import Literal
 
 from scribpy.core.demo_assets import DEMO_CSS
+from scribpy.core.demo_mermaid import (
+    ci_timeline_mermaid,
+    delivery_flow_mermaid,
+    extension_architecture_mermaid,
+)
 from scribpy.core.demo_plantuml import (
     data_model_plantuml,
     deployment_plantuml,
@@ -182,6 +187,9 @@ def _valid_demo_extra(relative_path: str) -> str:
         ),
         "architecture/data-model.md": data_model_plantuml(),
         "architecture/overview.md": deployment_plantuml(),
+        "architecture/extensions.md": extension_architecture_mermaid(),
+        "concepts/functional-chains.md": delivery_flow_mermaid(),
+        "operations/ci.md": ci_timeline_mermaid(),
         "reference/diagnostics.md": (
             "\n## Lint Diagnostics\n\n"
             "- `LINT001`\n"

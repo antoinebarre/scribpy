@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 
-from scribpy.config.types import PlantUmlConfig, PlantUmlRendererMode
+from scribpy.config.types import MermaidConfig, PlantUmlConfig, PlantUmlRendererMode
 
 type RawSection = Mapping[str, object]
 
@@ -39,4 +39,27 @@ def parse_plantuml_config(
     )
 
 
-__all__ = ["parse_plantuml_config"]
+def parse_mermaid_config(
+    raw: RawSection,
+    *,
+    parse_optional_str: Callable[[RawSection, str, str], str | None],
+) -> MermaidConfig:
+    """Parse Mermaid web renderer config.
+
+    Args:
+        raw: Raw nested TOML section.
+        parse_optional_str: Shared optional-string parser from the loader.
+
+    Returns:
+        Typed Mermaid configuration.
+    """
+    defaults = MermaidConfig()
+    server_url = parse_optional_str(raw, "server_url", "builders.html.mermaid")
+    theme = parse_optional_str(raw, "theme", "builders.html.mermaid")
+    return MermaidConfig(
+        server_url=server_url or defaults.server_url,
+        theme=theme or defaults.theme,
+    )
+
+
+__all__ = ["parse_mermaid_config", "parse_plantuml_config"]

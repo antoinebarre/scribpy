@@ -39,8 +39,9 @@ AssembledDocument + Theme + CSS
 ```
 
 La phase 7 reprend aussi la partie immediate de FC-09 necessaire au web :
-validation et copie des assets references, ainsi que le premier rendu de
-diagrammes utile au HTML : **PlantUML hors ligne**.
+validation et copie des assets references, ainsi que le rendu de diagrammes
+utile au HTML : **PlantUML** et **Mermaid** via des plugins internes de blocs de
+code.
 
 MkDocs fournit deja un modele standard pour un site documentaire : un fichier
 `mkdocs.yml`, un repertoire `docs/`, une navigation `nav`, des liens Markdown
@@ -183,8 +184,8 @@ sur ces conventions plutot que les contourner.
     liens vers ancres internes, TOC et numerotation ;
   - jeu `site` : conservation de la structure multi-page et des liens Markdown
     relatifs compatibles MkDocs ;
-  - transform de rendu PlantUML commun aux sorties HTML, execute avant la
-    reecriture finale des liens et le rendu HTML ;
+  - plugins de rendu de blocs de code communs aux sorties HTML, executes avant
+    la reecriture finale des liens et le rendu HTML ;
   - reutilisation de la configuration `[document]` pour TOC et numerotation quand
     elle s'applique au mode choisi.
 
@@ -201,8 +202,8 @@ sur ces conventions plutot que les contourner.
 - `scribpy.assets`
   - collecte des assets references ;
   - validation des assets locaux ;
-  - rendu PlantUML hors ligne en SVG via `render_plantuml_blocks(...)` et un
-    `DiagramRenderer` local ;
+  - rendu PlantUML en SVG via `render_plantuml_blocks(...)` ;
+  - rendu Mermaid web-only en SVG via `render_mermaid_blocks(...)` ;
   - copie vers la destination adaptee au mode :
     - `build/html/assets/` pour `single-page` ;
     - `build/site/docs/...` pour `site` ;
@@ -284,7 +285,7 @@ A creer ou completer :
 | Liens inter-documents | ancres internes | liens Markdown relatifs conserves |
 | CSS | fichiers d'entree references/copied | fichiers d'entree copies et declares via `extra_css` |
 | Assets | `build/html/assets/` | `build/site/docs/...` |
-| PlantUML | SVG locaux sous `assets/diagrams/` | SVG locaux sous `docs/assets/diagrams/` |
+| Diagrammes | SVG locaux sous `assets/diagrams/` | SVG locaux sous `docs/assets/diagrams/` |
 | Navigation | TOC du document assemble | `nav` MkDocs depuis `DocumentIndex` |
 | Rendu HTML final | par Scribpy | par MkDocs, pilote par Scribpy |
 
@@ -397,6 +398,9 @@ Diagnostics proposes :
 - `UML003` : echec d'ecriture d'un SVG genere.
 - `UML004` : runtime Java indisponible ;
 - `UML005` : echec de rendu PlantUML web.
+- `MRM001` : bloc Mermaid invalide ou non ferme ;
+- `MRM002` : echec de rendu Mermaid web ;
+- `MRM003` : echec d'ecriture d'un SVG Mermaid genere.
 
 ### Etape 6 — Service applicatif et CLI
 
@@ -421,8 +425,8 @@ A faire :
 - tests de CSS d'entree ;
 - tests du squelette MkDocs et de `nav` ;
 - tests d'assets par mode ;
-- tests de detection et de rendu PlantUML hors ligne ;
-- tests garantissant l'absence de dependance a un service web externe ;
+- tests de detection et de rendu PlantUML ;
+- tests de detection, logs et diagnostics du rendu Mermaid web-only ;
 - tests du service applicatif ;
 - tests CLI ;
 - `make check` avec 100% de couverture.
@@ -436,8 +440,9 @@ A faire :
 - Scribpy couvre deux usages web reels sans les confondre ;
 - le mode `single-page` reste simple et autonome ;
 - le mode `site` beneficie immediatement de l'ecosysteme MkDocs ;
-- les diagrammes PlantUML peuvent etre publies sans fuite de donnees et sans
-  connexion internet ;
+- les diagrammes PlantUML peuvent etre publies en mode web immediat ou en mode
+  Java hors ligne ;
+- Mermaid partage le meme pipeline de plugins sans changer les builders HTML ;
 - les CSS deviennent une vraie entree configurable ;
 - la future evolution vers un site complet ne demande pas de rearchitecturer le
   builder single-page.
@@ -450,7 +455,7 @@ A faire :
   mode ;
 - les tests doivent verifier explicitement deux comportements de liens
   differents ;
-- l'integration PlantUML ajoute une dependance locale de rendu a piloter et a
+- les integrations de diagrammes ajoutent des backends web et Java a
   diagnostiquer proprement.
 
 Ces couts sont acceptes car ils correspondent a deux besoins utilisateurs
@@ -482,10 +487,11 @@ La phase 7 est consideree terminee lorsque :
 11. PlantUML utilise le backend `web` par defaut et peut etre force sur `java`
     pour un usage hors ligne ;
 12. le backend PlantUML `java` verifie son environnement avant le rendu ;
-13. aucun artefact n'est ecrit en cas d'erreur bloquante ;
-14. les tests couvrent config, transforms, builders, assets, service applicatif
+13. les blocs `mermaid` sont rendus en SVG via un backend web uniquement ;
+14. aucun artefact n'est ecrit en cas d'erreur bloquante ;
+15. les tests couvrent config, transforms, builders, assets, service applicatif
     et CLI ;
-15. `make check` passe avec 100% de couverture.
+16. `make check` passe avec 100% de couverture.
 
 ---
 
