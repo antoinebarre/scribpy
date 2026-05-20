@@ -6,7 +6,7 @@ import shutil
 import sys
 from pathlib import Path
 
-# Allow `python main.py` from the repository root without installing the package.
+# Allow `python demo_API.py` from the repository root without installing the package.
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 import scribpy

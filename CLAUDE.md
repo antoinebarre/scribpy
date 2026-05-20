@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 pip install -e .
-python main.py        # prints placeholder "Hello from scribpy!"
+python demo_API.py    # runs the public API demo
 ```
 
 No test or lint tooling is configured yet. When adding them, prefer `ruff` for linting/formatting and `pytest` for tests.

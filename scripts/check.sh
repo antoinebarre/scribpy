@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs local quality checks with readable progress and a final summary table.
+# Runs local quality checks with a readable progress table.
 # Unlike CI, formatting is mutating so local developers get automatic fixes.
 
 set -uo pipefail
@@ -117,20 +117,6 @@ print_failures() {
 
 print_summary() {
     local total=$((PASS + FAIL))
-    printf "\n${B}%s${N}\n" "$SEP"
-    printf "${B} %-20s  %-10s  %s${N}\n" "Check" "Status" "Details"
-    printf "${B}%s${N}\n" "$SEP"
-
-    for name in format lint docstrings docstrings-strict init-modules type-check metrics tests; do
-        local status
-        if contains "$name" "${FAIL_NAMES[@]+"${FAIL_NAMES[@]}"}"; then
-            status="${R}✘ FAIL${N}"
-        else
-            status="${G}✔ pass${N}"
-        fi
-        printf " %-20s  %-19b  %s\n" "$name" "$status" "$(get_detail "$name")"
-    done
-
     printf "${B}%s${N}\n" "$SEP"
     if [ "$FAIL" -eq 0 ]; then
         printf " ${G}${B}All %d local checks passed.${N}\n\n" "$total"
@@ -140,6 +126,9 @@ print_summary() {
 }
 
 printf "\n${B}Running local quality checks…${N}\n\n"
+printf "${B}%s${N}\n" "$SEP"
+printf "${B} %-20s  %-10s  %s${N}\n" "Check" "Status" "Details"
+printf "${B}%s${N}\n" "$SEP"
 
 run "format"            work/format.log            uv run ruff format src/ scripts/
 run "lint"              work/lint.log              uv run ruff check src/ scripts/

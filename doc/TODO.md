@@ -10,5 +10,5 @@ warning pour utilisation web
 avoir des test cyber securité
 séparer validation et vérification
 mettre a jour le SDD avec des vrais requirements comme l'INCOSE
-aveoir un clean
+
 
