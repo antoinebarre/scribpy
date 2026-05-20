@@ -10,6 +10,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path, PurePosixPath
 from typing import cast
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
 from scribpy.logging import get_logger
@@ -71,6 +72,7 @@ class WebMermaidRenderer:
         """
         encoded = _encode_mermaid_payload(source, self._theme)
         url = f"{self._server_url}/{output_format}/{encoded}"
+        _validate_http_url(url)
         request = Request(url, headers={"User-Agent": self._USER_AGENT})
         logger.info(
             "Rendering Mermaid through web server %s with theme %s",
@@ -79,7 +81,7 @@ class WebMermaidRenderer:
         )
         logger.debug("Mermaid encoded payload length: %d", len(encoded))
         try:
-            with urlopen(request, timeout=30) as response:
+            with urlopen(request, timeout=30) as response:  # nosec B310
                 return cast("bytes", response.read())
         except HTTPError as exc:
             detail = exc.read(500).decode("utf-8", errors="replace").strip()
@@ -250,6 +252,13 @@ def _href_prefix(
         return _DIAGRAMS_DIR
     depth = len(document.relative_path.parent.parts)
     return PurePosixPath(*([".."] * depth), *_DIAGRAMS_DIR.parts)
+
+
+def _validate_http_url(url: str) -> None:
+    """Validate that a renderer URL targets an HTTP(S) endpoint."""
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise MermaidRenderError("Mermaid renderer URL must use http or https.")
 
 
 def _render_failure_diagnostic(detail: str) -> Diagnostic:

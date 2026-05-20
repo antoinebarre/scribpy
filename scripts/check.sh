@@ -19,6 +19,8 @@ DETAIL_DOCSTRINGS=''
 DETAIL_DOCSTRINGS_STRICT=''
 DETAIL_TYPE_CHECK=''
 DETAIL_METRICS=''
+DETAIL_SECURITY_CODE=''
+DETAIL_SECURITY_DEPS=''
 DETAIL_TESTS=''
 
 run() {
@@ -60,6 +62,15 @@ details_for() {
         metrics)
             grep -E '^Code metrics (passed|check failed)' "$log" | head -n 1 || true
             ;;
+        security-code)
+            grep -E 'No issues identified|Issue: ' "$log" \
+                | tail -n 1 \
+                | sed 's/^[[:space:]]*//' \
+                || true
+            ;;
+        security-deps)
+            grep -E '^No known vulnerabilities found|^Found [0-9]+ known vulnerabilities' "$log" | tail -n 1 || true
+            ;;
         tests)
             local passed coverage
             passed=$(grep -oE '[0-9]+ passed' "$log" | tail -n 1 || true)
@@ -85,6 +96,8 @@ set_detail() {
         init-modules) DETAIL_INIT_MODULES=$value ;;
         type-check) DETAIL_TYPE_CHECK=$value ;;
         metrics) DETAIL_METRICS=$value ;;
+        security-code) DETAIL_SECURITY_CODE=$value ;;
+        security-deps) DETAIL_SECURITY_DEPS=$value ;;
         tests) DETAIL_TESTS=$value ;;
     esac
 }
@@ -99,6 +112,8 @@ get_detail() {
         init-modules) printf "%s" "$DETAIL_INIT_MODULES" ;;
         type-check) printf "%s" "$DETAIL_TYPE_CHECK" ;;
         metrics) printf "%s" "$DETAIL_METRICS" ;;
+        security-code) printf "%s" "$DETAIL_SECURITY_CODE" ;;
+        security-deps) printf "%s" "$DETAIL_SECURITY_DEPS" ;;
         tests) printf "%s" "$DETAIL_TESTS" ;;
     esac
 }
@@ -137,6 +152,8 @@ run "docstrings-strict" work/docstrings-strict.log uv run python scripts/check_g
 run "init-modules"      work/init-modules.log      uv run python scripts/check_init_modules.py
 run "type-check"        work/type-check.log        uv run mypy src/
 run "metrics"           work/metrics.log           uv run python scripts/code_metrics.py
+run "security-code"     work/security-code.log     uv run bandit -c pyproject.toml -r src scripts
+run "security-deps"     work/security-deps.log     bash scripts/security_audit_deps.sh
 
 printf " %-20s  " "tests"
 uv run pytest >work/tests.log 2>&1; rc=$?

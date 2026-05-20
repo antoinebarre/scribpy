@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import hashlib
 import shutil
-import subprocess
+import subprocess  # nosec B404
 import zlib
 from dataclasses import dataclass, replace
 from importlib import resources
 from pathlib import Path, PurePosixPath
 from typing import cast
 from urllib.error import URLError
+from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
 from scribpy.logging import get_logger
@@ -81,7 +82,7 @@ class JavaPlantUmlRenderer:
             input=source.encode("utf-8"),
             capture_output=True,
             check=False,
-        )
+        )  # nosec B603
         if completed.returncode != 0:
             detail = completed.stderr.decode("utf-8", errors="replace").strip()
             logger.error(
@@ -120,10 +121,11 @@ class WebPlantUmlRenderer:
         """
         encoded = _encode_server_payload(source)
         url = f"{self._server_url}/{output_format}/{encoded}"
+        _validate_http_url(url)
         request = Request(url, headers={"User-Agent": self._USER_AGENT})
         logger.info("Rendering PlantUML through web server %s", self._server_url)
         try:
-            with urlopen(request, timeout=30) as response:
+            with urlopen(request, timeout=30) as response:  # nosec B310
                 return cast("bytes", response.read())
         except (OSError, URLError) as exc:
             raise PlantUmlRenderError("web", str(exc)) from exc
@@ -143,7 +145,7 @@ def validate_java_plantuml_environment() -> tuple[Diagnostic, ...]:
             (java, "-version"),
             capture_output=True,
             check=False,
-        )
+        )  # nosec B603
     except OSError as exc:
         return (_java_missing_diagnostic(f"Could not execute Java: {exc}"),)
     if completed.returncode != 0:
@@ -154,6 +156,15 @@ def validate_java_plantuml_environment() -> tuple[Diagnostic, ...]:
             ),
         )
     return ()
+
+
+def _validate_http_url(url: str) -> None:
+    """Validate that a renderer URL targets an HTTP(S) endpoint."""
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise PlantUmlRenderError(
+            "web", "PlantUML renderer URL must use http or https."
+        )
 
 
 def render_plantuml_blocks(

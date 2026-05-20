@@ -213,6 +213,16 @@ def test_web_renderer_reports_server_failure(monkeypatch) -> None:
         raise AssertionError("Expected PlantUmlRenderError")
 
 
+def test_web_renderer_rejects_non_http_url() -> None:
+    try:
+        WebPlantUmlRenderer("file:///tmp/plantuml").render("A -> B", "svg")
+    except PlantUmlRenderError as exc:
+        assert exc.backend == "web"
+        assert "http or https" in str(exc)
+    else:
+        raise AssertionError("Expected PlantUmlRenderError")
+
+
 def test_encode_server_payload_uses_full_plantuml_alphabet() -> None:
     assert _encode6bit(62) == "-"
     assert _encode6bit(63) == "_"

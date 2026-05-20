@@ -9,8 +9,8 @@
 ## 1. Purpose
 
 This document explains the quality checks used during Scribpy development:
-formatting, linting, docstring validation, typing, tests, coverage, and
-distribution checks.
+formatting, linting, docstring validation, typing, security analysis, tests,
+coverage, and distribution checks.
 
 The goal is to make `make check` understandable and reproducible. Each check
 must have a clear purpose, a stable command, and an explicit configuration
@@ -29,7 +29,7 @@ make check
 Execution order:
 
 ```text
-format -> lint -> docstrings -> docstrings-strict -> typecheck -> metrics -> test
+format -> lint -> docstrings -> docstrings-strict -> typecheck -> metrics -> security-code -> security-deps -> test
 ```
 
 Defined in `Makefile`:
@@ -42,15 +42,18 @@ Defined in `Makefile`:
 | `docstrings-strict` | `uv run python scripts/check_google_docstrings.py` | Enforce Scribpy's strict public API docstring contract |
 | `typecheck` | `uv run mypy src/` | Run strict static typing |
 | `metrics` | `uv run python scripts/code_metrics.py` | Check code metrics thresholds |
+| `security-code` | `uv run bandit -c pyproject.toml -r src scripts` | Run Bandit SAST checks |
+| `security-deps` | `bash scripts/security_audit_deps.sh` | Audit runtime dependencies with pip-audit |
+| `security` | `make security-code security-deps` | Run all package security checks |
 | `test` | `uv run pytest` | Run tests and coverage |
-| `check` | `bash scripts/check.sh` | Run the full local quality gate with a progress table and final summary |
+| `check` | `bash scripts/check.sh` | Run the full local quality gate with a progress table and final status |
 
 `make check` is intentionally mutating because `format` rewrites files. Its
 output is intentionally compact while checks are running, then prints:
 
 - one live status row per check;
 - detailed logs only for failed checks;
-- one final summary table with the most useful detail for each step.
+- one final pass/fail summary.
 
 For a non-mutating formatting check, use:
 
@@ -128,6 +131,40 @@ Rationale:
 - it catches common correctness issues without forcing broad style rules too
   early.
 
+---
+
+## 5. Security Analysis
+
+Code security command:
+
+```text
+uv run bandit -c pyproject.toml -r src scripts
+```
+
+Dependency security command:
+
+```text
+bash scripts/security_audit_deps.sh
+```
+
+Configuration:
+
+```toml
+[tool.bandit]
+exclude_dirs = ["tests", "work", "dist", "site"]
+skips = ["B101"]
+```
+
+Controlled points:
+
+- Bandit scans source and development scripts for common Python security risks;
+- pip-audit checks the locked runtime dependency tree exported by uv;
+- the dependency audit intentionally excludes development-only tools.
+
+`scripts/security_audit_deps.sh` currently ignores `PYSEC-2026-89` because it
+flags `markdown 3.10.2`, while the advisory affects Python-Markdown versions
+before `3.8.1`.
+
 Metric thresholds are configured in `pyproject.toml`:
 
 ```toml
@@ -143,7 +180,7 @@ max-statements = 50
 
 ---
 
-## 5. Docstring Rules
+## 6. Docstring Rules
 
 Command:
 
@@ -209,7 +246,7 @@ Rationale:
 
 ---
 
-## 6. Type Checking
+## 7. Type Checking
 
 Command:
 
@@ -242,7 +279,7 @@ Rationale:
 
 ---
 
-## 7. Code Metrics
+## 8. Code Metrics
 
 Command:
 
@@ -299,7 +336,7 @@ Rationale:
 
 ---
 
-## 8. Tests and Coverage
+## 9. Tests and Coverage
 
 Command:
 
@@ -378,7 +415,7 @@ false sense of test safety.
 
 ---
 
-## 9. CI Command
+## 10. CI Command
 
 Command:
 
@@ -402,7 +439,7 @@ Purpose:
 
 ---
 
-## 10. Distribution Checks
+## 11. Distribution Checks
 
 Commands:
 
@@ -427,7 +464,7 @@ Rationale:
 
 ---
 
-## 11. Current Quality Gate
+## 12. Current Quality Gate
 
 The current local gate is:
 
@@ -442,8 +479,10 @@ It controls:
 3. Google-style source docstrings;
 4. strict typing;
 5. code metrics and metrics report;
-6. tests;
-7. coverage threshold and reports.
+6. static security analysis;
+7. runtime dependency vulnerability audit;
+8. tests;
+9. coverage threshold and reports.
 
 Expected successful output includes:
 
@@ -453,13 +492,15 @@ ruff check: All checks passed
 docstrings: All checks passed
 mypy: Success
 metrics: Code metrics passed
+security-code: No issues identified
+security-deps: No known vulnerabilities found
 pytest: all tests passed
 coverage: fail_under reached
 ```
 
 ---
 
-## 12. Documentation Layout
+## 13. Documentation Layout
 
 Development decision records live under:
 

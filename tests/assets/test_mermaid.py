@@ -206,6 +206,15 @@ def test_web_mermaid_renderer_reports_network_failure(monkeypatch) -> None:
         raise AssertionError("Expected MermaidRenderError")
 
 
+def test_web_mermaid_renderer_rejects_non_http_url() -> None:
+    try:
+        WebMermaidRenderer("file:///tmp/mermaid").render("A-->B", "svg")
+    except MermaidRenderError as exc:
+        assert "http or https" in str(exc)
+    else:
+        raise AssertionError("Expected MermaidRenderError")
+
+
 def test_encode_mermaid_payload_uses_pako_prefix() -> None:
     encoded = _encode_mermaid_payload("flowchart LR\nA-->B", "default")
 

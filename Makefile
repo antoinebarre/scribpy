@@ -1,4 +1,4 @@
-.PHONY: clean clean-work format lint docstrings docstrings-strict init-modules format-check typecheck metrics test check ci clean-dist build check-dist publish-test publish
+.PHONY: clean clean-work format lint docstrings docstrings-strict init-modules format-check typecheck metrics security-code security-deps security test check ci clean-dist build check-dist publish-test publish
 
 clean-work:
 	@mkdir -p work
@@ -6,7 +6,7 @@ clean-work:
 
 clean: clean-work
 
-format lint docstrings docstrings-strict init-modules format-check typecheck metrics test check ci clean-dist build check-dist publish-test publish: clean-work
+format lint docstrings docstrings-strict init-modules format-check typecheck metrics security-code security-deps security test check ci clean-dist build check-dist publish-test publish: clean-work
 
 format:
 	uv run ruff format src/ scripts/
@@ -31,6 +31,14 @@ typecheck:
 
 metrics:
 	uv run python scripts/code_metrics.py
+
+security-code:
+	uv run bandit -c pyproject.toml -r src scripts
+
+security-deps:
+	@bash scripts/security_audit_deps.sh
+
+security: security-code security-deps
 
 test:
 	@mkdir -p work

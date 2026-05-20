@@ -210,7 +210,7 @@ my-documentation/
 
 ```bash
 uv sync --dev       # install package + dev dependencies
-make check          # format · lint · typecheck · test
+make check          # format · lint · typecheck · security · test
 ```
 
 Individual commands:
@@ -220,6 +220,7 @@ Individual commands:
 | `make format`    | Auto-format with ruff              |
 | `make lint`      | Lint with ruff                     |
 | `make typecheck` | Type-check with mypy (strict mode) |
+| `make security`  | Run Bandit and pip-audit           |
 | `make test`      | Run tests with coverage report     |
 
 ---

@@ -47,6 +47,8 @@ run "docstrings-strict" work/docstrings-strict.log uv run python scripts/check_g
 run "init-modules"      work/init-modules.log      uv run python scripts/check_init_modules.py
 run "type-check"    work/typecheck.log uv run mypy src/
 run "metrics"       work/metrics.log   uv run python scripts/code_metrics.py
+run "security-code" work/security-code.log uv run bandit -c pyproject.toml -r src scripts
+run "security-deps" work/security-deps.log bash scripts/security_audit_deps.sh
 
 # Tests — exit code 5 means no tests were collected; treat as pass.
 printf " %-16s  " "tests"
@@ -76,6 +78,8 @@ if [ "${#FAIL_NAMES[@]}" -gt 0 ]; then
             init-modules) log=work/init-modules.log ;;
             type-check)   log=work/typecheck.log ;;
             metrics)      log=work/metrics.log   ;;
+            security-code) log=work/security-code.log ;;
+            security-deps) log=work/security-deps.log ;;
             tests)        log=work/test.log      ;;
             *)            log=''                 ;;
         esac
@@ -91,9 +95,11 @@ printf "\n${B}%s${N}\n" "$SEP"
 printf "${B} %-16s  %-10s  %s${N}\n" "Check" "Status" "Details"
 printf "${B}%s${N}\n" "$SEP"
 
-for name in "format-check" "lint" "docstrings" "docstrings-strict" "init-modules" "type-check" "metrics" "tests"; do
+for name in "format-check" "lint" "docstrings" "docstrings-strict" "init-modules" "type-check" "metrics" "security-code" "security-deps" "tests"; do
     case "$name" in
         metrics) details="report work/code-metrics-report.md" ;;
+        security-code) details="Bandit SAST" ;;
+        security-deps) details="pip-audit runtime dependencies" ;;
         tests)   details="$TEST_INFO" ;;
         *)       details='' ;;
     esac

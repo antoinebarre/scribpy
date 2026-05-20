@@ -109,8 +109,14 @@ max_module_logical_lines = 300
 max_module_source_lines = 500
 report_path = "work/code-metrics-report.md"
 
+[tool.bandit]
+exclude_dirs = ["tests", "work", "dist", "site"]
+skips = ["B101"]
+
 [dependency-groups]
 dev = [
+    "bandit>=1.8",
+    "pip-audit>=2.8",
     "pytest>=8",
     "pytest-cov>=6",
     "radon>=6",
