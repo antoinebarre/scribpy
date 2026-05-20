@@ -113,6 +113,11 @@ report_path = "work/code-metrics-report.md"
 exclude_dirs = ["tests", "work", "dist", "site"]
 skips = ["B101"]
 
+[tool.scribpy.security_audit]
+# PYSEC-2026-89 affects Python-Markdown versions before 3.8.1; the lockfile
+# currently resolves markdown to 3.10.2, so pip-audit's match is a false positive.
+ignore_vulns = ["PYSEC-2026-89"]
+
 [dependency-groups]
 dev = [
     "bandit>=1.8",

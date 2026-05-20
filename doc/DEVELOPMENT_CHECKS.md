@@ -153,6 +153,9 @@ Configuration:
 [tool.bandit]
 exclude_dirs = ["tests", "work", "dist", "site"]
 skips = ["B101"]
+
+[tool.scribpy.security_audit]
+ignore_vulns = ["PYSEC-2026-89"]
 ```
 
 Controlled points:
@@ -161,9 +164,10 @@ Controlled points:
 - pip-audit checks the locked runtime dependency tree exported by uv;
 - the dependency audit intentionally excludes development-only tools.
 
-`scripts/security_audit_deps.sh` currently ignores `PYSEC-2026-89` because it
-flags `markdown 3.10.2`, while the advisory affects Python-Markdown versions
-before `3.8.1`.
+Vulnerability exceptions belong to the project configuration, not to the runner
+script. `PYSEC-2026-89` is configured there because pip-audit flags
+`markdown 3.10.2`, while the advisory affects Python-Markdown versions before
+`3.8.1`.
 
 Metric thresholds are configured in `pyproject.toml`:
 

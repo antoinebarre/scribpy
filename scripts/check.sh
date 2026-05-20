@@ -7,12 +7,17 @@ set -uo pipefail
 G='\033[32m' R='\033[31m' Y='\033[33m' B='\033[1m' N='\033[0m'
 SEP='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
 
+# Keep all transient logs and tool caches under work/ so a repository cleanup is
+# predictable and no developer machine state leaks into the quality gate.
 mkdir -p work
 export UV_CACHE_DIR="${UV_CACHE_DIR:-work/.uv-cache}"
 
 PASS=0
 FAIL=0
 declare -a FAIL_NAMES=()
+
+# Each check can expose one compact detail in the progress table. The full log
+# remains available in work/*.log and is printed only for failing checks.
 DETAIL_FORMAT=''
 DETAIL_LINT=''
 DETAIL_DOCSTRINGS=''
@@ -26,6 +31,9 @@ DETAIL_TESTS=''
 run() {
     local name=$1 log=$2; shift 2
     printf " %-20s  " "$name"
+
+    # Capture command output to a stable log file. This keeps the happy path
+    # readable while preserving enough context for maintenance and debugging.
     if "$@" >"$log" 2>&1; then
         printf "${G}✔ pass${N}"
         PASS=$((PASS + 1))
@@ -43,6 +51,10 @@ run() {
 
 details_for() {
     local name=$1 log=$2
+
+    # Every tool formats success and failure differently. These extractors keep
+    # the table useful without forcing the underlying tools to share an output
+    # format. If a pattern stops matching, the full log still appears on failure.
     case "$name" in
         format)
             tail -n 1 "$log" 2>/dev/null || true
@@ -88,6 +100,9 @@ contains() {
 
 set_detail() {
     local name=$1 value=$2
+
+    # Bash has no portable associative arrays everywhere we run, so details are
+    # stored in explicit variables keyed by the public check names.
     case "$name" in
         format) DETAIL_FORMAT=$value ;;
         lint) DETAIL_LINT=$value ;;
@@ -126,6 +141,8 @@ print_failures() {
     for name in "${FAIL_NAMES[@]}"; do
         local log="work/${name}.log"
         printf "\n${Y}%s${N}\n${Y}── %s details ──${N}\n" "$SEP" "$name"
+        # Failed checks print their complete captured output after the table, so
+        # the first screen stays scannable but failures are immediately usable.
         [ -f "$log" ] && cat "$log"
     done
 }
@@ -155,6 +172,8 @@ run "metrics"           work/metrics.log           uv run python scripts/code_me
 run "security-code"     work/security-code.log     uv run bandit -c pyproject.toml -r src scripts
 run "security-deps"     work/security-deps.log     bash scripts/security_audit_deps.sh
 
+# Pytest uses exit code 5 when no tests are collected. Treating that as success
+# keeps this runner reusable for early project phases or filtered test runs.
 printf " %-20s  " "tests"
 uv run pytest >work/tests.log 2>&1; rc=$?
 [ "$rc" -eq 5 ] && rc=0

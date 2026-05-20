@@ -4,6 +4,10 @@
 set -euo pipefail
 
 mkdir -p work
+
+# pip-audit can resolve requirements itself, but doing so creates a temporary
+# virtualenv and can be fragile across platforms. uv already owns resolution for
+# this project, so export the locked runtime dependency set first.
 uv export \
     --quiet \
     --frozen \
@@ -14,12 +18,21 @@ uv export \
     --no-hashes \
     --format requirements-txt \
     --output-file work/requirements-audit.txt
-# PYSEC-2026-89 affects Python-Markdown versions before 3.8.1; the lockfile
-# currently resolves markdown to 3.10.2, so pip-audit's match is a false positive.
+
+# Vulnerability exceptions are project policy, not runner policy. The helper
+# reads [tool.scribpy.security_audit] from pyproject.toml and prints one ID per
+# line, which this shell script turns into repeated --ignore-vuln arguments.
+ignore_args=()
+while IFS= read -r vuln_id; do
+    ignore_args+=(--ignore-vuln "$vuln_id")
+done < <(uv run python scripts/security_audit_ignored_vulns.py)
+
+# --no-deps and --disable-pip tell pip-audit to audit exactly the pinned export
+# above instead of trying to resolve dependencies a second time.
 uv run pip-audit \
     --strict \
     --progress-spinner off \
     --requirement work/requirements-audit.txt \
     --no-deps \
     --disable-pip \
-    --ignore-vuln PYSEC-2026-89
+    "${ignore_args[@]}"

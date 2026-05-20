@@ -7,6 +7,8 @@ set -uo pipefail
 G='\033[32m' R='\033[31m' Y='\033[33m' B='\033[1m' N='\033[0m'
 SEP='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
 
+# CI writes every tool output under work/ so the same files can be uploaded as
+# artifacts by the pipeline when a job fails.
 mkdir -p work
 export UV_CACHE_DIR="${UV_CACHE_DIR:-work/.uv-cache}"
 
@@ -20,6 +22,9 @@ TEST_INFO=''
 run() {
     local name=$1 log=$2; shift 2
     printf " %-16s  " "$name"
+
+    # Unlike a normal Make recipe, CI should continue after failures to reveal
+    # all broken gates in one run. The final exit code is the number of failures.
     if "$@" >"$log" 2>&1; then
         printf "${G}✔ pass${N}\n"
         PASS=$((PASS + 1))
@@ -40,6 +45,8 @@ contains() {
 
 printf "\n${B}Running CI checks…${N}\n\n"
 
+# CI uses format-check instead of format so it never mutates the checked-out
+# source tree. The local check script intentionally formats files for developers.
 run "format-check"  work/format.log    uv run ruff format --check src/ scripts/
 run "lint"          work/lint.log      uv run ruff check  src/ scripts/
 run "docstrings"    work/docstrings.log uv run ruff check src/ --select D --ignore D100,D104
@@ -70,6 +77,8 @@ fi
 
 if [ "${#FAIL_NAMES[@]}" -gt 0 ]; then
     for name in "${FAIL_NAMES[@]}"; do
+        # Keep this mapping close to the check list above. If a check is added,
+        # add its log here so CI failure output stays actionable.
         case $name in
             format-check) log=work/format.log    ;;
             lint)         log=work/lint.log      ;;
@@ -96,6 +105,8 @@ printf "${B} %-16s  %-10s  %s${N}\n" "Check" "Status" "Details"
 printf "${B}%s${N}\n" "$SEP"
 
 for name in "format-check" "lint" "docstrings" "docstrings-strict" "init-modules" "type-check" "metrics" "security-code" "security-deps" "tests"; do
+    # This summary is intentionally compact. Detailed diagnostics have already
+    # been printed for failed checks and full logs remain in work/.
     case "$name" in
         metrics) details="report work/code-metrics-report.md" ;;
         security-code) details="Bandit SAST" ;;

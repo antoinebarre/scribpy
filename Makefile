@@ -2,7 +2,8 @@
 
 clean-work:
 	@mkdir -p work
-	@find work -mindepth 1 -maxdepth 1 ! -name .gitignore -exec rm -rf {} +
+	@find work -mindepth 1 -maxdepth 1 ! -name .gitignore -exec rm -rf {} + || \
+		( sleep 0.2 && find work -mindepth 1 -maxdepth 1 ! -name .gitignore -exec rm -rf {} + )
 
 clean: clean-work
 
