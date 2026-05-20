@@ -476,7 +476,7 @@ def test_build_html_site_returns_zero_and_prints_site_artifact(
         site_dir.mkdir(parents=True, exist_ok=True)
         return BuildArtifact(site_dir, "html-site", "site"), ()
 
-    monkeypatch.setattr("scribpy.core.build_html.run_mkdocs_build", fake_run)
+    monkeypatch.setattr("scribpy.core.build_html_site.run_mkdocs_build", fake_run)
     _write_config(tmp_path, '[paths]\nsource = "doc"\n')
     _write_source(tmp_path, "doc/index.md", "# Home\n")
 

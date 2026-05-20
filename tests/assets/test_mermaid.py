@@ -160,7 +160,7 @@ def test_web_mermaid_renderer_fetches_svg(monkeypatch) -> None:
         assert timeout == 30
         return FakeResponse()
 
-    monkeypatch.setattr("scribpy.assets.mermaid.urlopen", fake_urlopen)
+    monkeypatch.setattr("scribpy.assets.mermaid_renderer.urlopen", fake_urlopen)
 
     rendered = WebMermaidRenderer("https://example.test", "forest").render(
         "flowchart LR\nA-->B", "svg"
@@ -181,7 +181,7 @@ def test_web_mermaid_renderer_reports_http_failure(monkeypatch) -> None:
             fp=BytesIO(b"bad diagram"),
         )
 
-    monkeypatch.setattr("scribpy.assets.mermaid.urlopen", fail_urlopen)
+    monkeypatch.setattr("scribpy.assets.mermaid_renderer.urlopen", fail_urlopen)
 
     try:
         WebMermaidRenderer("https://example.test").render("broken", "svg")
@@ -194,7 +194,7 @@ def test_web_mermaid_renderer_reports_http_failure(monkeypatch) -> None:
 
 def test_web_mermaid_renderer_reports_network_failure(monkeypatch) -> None:
     monkeypatch.setattr(
-        "scribpy.assets.mermaid.urlopen",
+        "scribpy.assets.mermaid_renderer.urlopen",
         lambda *args, **kwargs: (_ for _ in ()).throw(URLError("offline")),
     )
 

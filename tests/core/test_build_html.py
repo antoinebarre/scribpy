@@ -22,7 +22,7 @@ def _fake_mkdocs_build(monkeypatch: pytest.MonkeyPatch):
         (site_dir / "index.html").write_text("<html></html>", encoding="utf-8")
         return BuildArtifact(site_dir, "html-site", "site"), ()
 
-    monkeypatch.setattr("scribpy.core.build_html.run_mkdocs_build", fake_run)
+    monkeypatch.setattr("scribpy.core.build_html_site.run_mkdocs_build", fake_run)
 
 
 def _write_config(root: Path, content: str) -> None:
@@ -697,7 +697,7 @@ def test_build_html_site_mkdocs_failure_returns_error(
     _write_source(tmp_path, "doc/index.md", "# Home\n")
 
     monkeypatch.setattr(
-        "scribpy.core.build_html.run_mkdocs_build",
+        "scribpy.core.build_html_site.run_mkdocs_build",
         lambda *_args: (
             None,
             (Diagnostic(severity="error", code="SITE003", message="failed"),),

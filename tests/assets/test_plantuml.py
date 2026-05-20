@@ -9,9 +9,9 @@ from scribpy.assets.plantuml import (
     PlantUmlRenderError,
     WebPlantUmlRenderer,
     _encode6bit,
-    validate_java_plantuml_environment,
     render_plantuml_blocks,
     render_plantuml_documents,
+    validate_java_plantuml_environment,
 )
 from scribpy.model import Document, MarkdownAst, TransformedDocument
 
@@ -95,7 +95,9 @@ def test_java_renderer_invokes_local_jar(monkeypatch) -> None:
         seen["input"] = kwargs["input"]
         return SimpleNamespace(returncode=0, stdout=b"<svg/>", stderr=b"")
 
-    monkeypatch.setattr("scribpy.assets.plantuml.subprocess.run", fake_run)
+    monkeypatch.setattr(
+        "scribpy.assets.plantuml_renderers.subprocess.run", fake_run
+    )
 
     rendered = JavaPlantUmlRenderer().render("A -> B", "svg")
 
@@ -111,7 +113,9 @@ def test_java_renderer_reports_local_process_error(monkeypatch) -> None:
     def fake_run(command, **kwargs):
         return SimpleNamespace(returncode=1, stdout=b"", stderr=b"syntax error")
 
-    monkeypatch.setattr("scribpy.assets.plantuml.subprocess.run", fake_run)
+    monkeypatch.setattr(
+        "scribpy.assets.plantuml_renderers.subprocess.run", fake_run
+    )
 
     try:
         JavaPlantUmlRenderer().render("broken", "svg")
@@ -123,7 +127,9 @@ def test_java_renderer_reports_local_process_error(monkeypatch) -> None:
 
 
 def test_validate_java_environment_reports_missing_java(monkeypatch) -> None:
-    monkeypatch.setattr("scribpy.assets.plantuml.shutil.which", lambda _: None)
+    monkeypatch.setattr(
+        "scribpy.assets.plantuml_renderers.shutil.which", lambda _: None
+    )
 
     diagnostics = validate_java_plantuml_environment()
 
@@ -131,9 +137,12 @@ def test_validate_java_environment_reports_missing_java(monkeypatch) -> None:
 
 
 def test_validate_java_environment_accepts_java(monkeypatch) -> None:
-    monkeypatch.setattr("scribpy.assets.plantuml.shutil.which", lambda _: "/bin/java")
     monkeypatch.setattr(
-        "scribpy.assets.plantuml.subprocess.run",
+        "scribpy.assets.plantuml_renderers.shutil.which",
+        lambda _: "/bin/java",
+    )
+    monkeypatch.setattr(
+        "scribpy.assets.plantuml_renderers.subprocess.run",
         lambda *args, **kwargs: SimpleNamespace(returncode=0),
     )
 
@@ -141,12 +150,17 @@ def test_validate_java_environment_accepts_java(monkeypatch) -> None:
 
 
 def test_validate_java_environment_reports_unexecutable_java(monkeypatch) -> None:
-    monkeypatch.setattr("scribpy.assets.plantuml.shutil.which", lambda _: "/bin/java")
+    monkeypatch.setattr(
+        "scribpy.assets.plantuml_renderers.shutil.which",
+        lambda _: "/bin/java",
+    )
 
     def fail_run(*args, **kwargs):
         raise OSError("broken")
 
-    monkeypatch.setattr("scribpy.assets.plantuml.subprocess.run", fail_run)
+    monkeypatch.setattr(
+        "scribpy.assets.plantuml_renderers.subprocess.run", fail_run
+    )
 
     diagnostics = validate_java_plantuml_environment()
 
@@ -154,9 +168,12 @@ def test_validate_java_environment_reports_unexecutable_java(monkeypatch) -> Non
 
 
 def test_validate_java_environment_reports_nonzero_java(monkeypatch) -> None:
-    monkeypatch.setattr("scribpy.assets.plantuml.shutil.which", lambda _: "/bin/java")
     monkeypatch.setattr(
-        "scribpy.assets.plantuml.subprocess.run",
+        "scribpy.assets.plantuml_renderers.shutil.which",
+        lambda _: "/bin/java",
+    )
+    monkeypatch.setattr(
+        "scribpy.assets.plantuml_renderers.subprocess.run",
         lambda *args, **kwargs: SimpleNamespace(
             returncode=1, stderr=b"runtime missing"
         ),
@@ -187,7 +204,7 @@ def test_web_renderer_fetches_svg(monkeypatch) -> None:
         assert timeout == 30
         return FakeResponse()
 
-    monkeypatch.setattr("scribpy.assets.plantuml.urlopen", fake_urlopen)
+    monkeypatch.setattr("scribpy.assets.plantuml_renderers.urlopen", fake_urlopen)
 
     rendered = WebPlantUmlRenderer("https://example.test/plantuml").render(
         "A -> B", "svg"
@@ -200,7 +217,7 @@ def test_web_renderer_fetches_svg(monkeypatch) -> None:
 
 def test_web_renderer_reports_server_failure(monkeypatch) -> None:
     monkeypatch.setattr(
-        "scribpy.assets.plantuml.urlopen",
+        "scribpy.assets.plantuml_renderers.urlopen",
         lambda *args, **kwargs: (_ for _ in ()).throw(URLError("offline")),
     )
 

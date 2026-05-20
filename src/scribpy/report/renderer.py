@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 from .nodes import (
     BlockQuote,
@@ -25,6 +27,14 @@ from .nodes import (
 )
 from .numbering import NumberingContext, numbered_title
 from .toc import generate_toc
+
+# ---------------------------------------------------------------------------
+# Dispatch tables — extend here to add new node types without touching
+# the dispatch functions below.
+# ---------------------------------------------------------------------------
+
+_BLOCK_LEAF_RENDERERS: dict[type, Callable[..., str]] = {}
+_INLINE_LEAF_RENDERERS: dict[type, Callable[..., str]] = {}
 
 
 def render_report(report: Report) -> str:
@@ -227,7 +237,7 @@ def _render_child(
 
 
 def _render_block_leaf(child: object) -> str | None:
-    """Render block-level leaf nodes.
+    """Render block-level leaf nodes via the dispatch table.
 
     Args:
         child: A candidate leaf node.
@@ -235,24 +245,14 @@ def _render_block_leaf(child: object) -> str | None:
     Returns:
         Rendered GFM string, or None if child is not a block leaf.
     """
-    if isinstance(child, Paragraph):
-        return _render_paragraph(child)
-    if isinstance(child, CodeBlock):
-        return _render_code_block(child)
-    if isinstance(child, Table):
-        return _render_table(child)
-    if isinstance(child, BulletList):
-        return _render_bullet_list(child)
-    if isinstance(child, NumberedList):
-        return _render_numbered_list(child)
-    return None
+    renderer = _BLOCK_LEAF_RENDERERS.get(type(child))
+    if renderer is None:
+        return None
+    return renderer(child)
 
 
 def _render_inline_leaf(child: object, assets_dir: Path | None) -> str | None:
-    """Render inline or simple block leaf nodes.
-
-    Media nodes (``Image``, ``ImageFile``, ``FigureAsset``) are delegated
-    to ``_render_media_leaf`` to keep return-statement count within limits.
+    """Render inline or simple block leaf nodes via the dispatch table.
 
     Args:
         child: A candidate leaf node.
@@ -262,33 +262,10 @@ def _render_inline_leaf(child: object, assets_dir: Path | None) -> str | None:
     Returns:
         Rendered GFM string, or None if child is not handled here.
     """
-    if isinstance(child, Text):
-        return _render_text(child)
-    if isinstance(child, HorizontalRule):
-        return "---"
-    if isinstance(child, BlockQuote):
-        return _render_block_quote(child)
-    return _render_media_leaf(child, assets_dir)
-
-
-def _render_media_leaf(child: object, assets_dir: Path | None) -> str | None:
-    """Render media leaf nodes: Image, ImageFile, FigureAsset.
-
-    Args:
-        child: A candidate leaf node.
-        assets_dir: Target assets directory for ``ImageFile`` copying,
-            or None when rendering to a plain string.
-
-    Returns:
-        Rendered GFM string, or None if child is not a media leaf.
-    """
-    if isinstance(child, Image):
-        return _render_image(child)
-    if isinstance(child, ImageFile):
-        return _render_image_file(child, assets_dir)
-    if isinstance(child, FigureAsset):
-        return _render_figure_asset(child)
-    return None
+    renderer = _INLINE_LEAF_RENDERERS.get(type(child))
+    if renderer is None:
+        return None
+    return renderer(child, assets_dir)
 
 
 # ---------------------------------------------------------------------------
@@ -453,7 +430,8 @@ def _render_figure_asset(node: FigureAsset) -> str:
     from .assets import AssetRenderer
 
     assert isinstance(node.renderer, AssetRenderer), (
-        f"FigureAsset.renderer must implement AssetRenderer, got {type(node.renderer)}"
+        "FigureAsset.renderer must implement AssetRenderer, "
+        f"got {type(node.renderer)}"
     )
     embedded_path = node.renderer.render(node.output_path)
     img = f"![{node.alt}]({embedded_path})"
@@ -542,3 +520,40 @@ def _add_tags(lines: list[str], tags: list[str] | None) -> None:
     lines.append("tags:")
     for tag in tags:
         lines.append(f"  - {tag}")
+
+
+# ---------------------------------------------------------------------------
+# Populate dispatch tables after all leaf renderers are defined.
+# Add a new node type here without touching the dispatch functions above.
+# ---------------------------------------------------------------------------
+
+
+def _inline_no_assets(
+    renderer: Callable[[Any], str],
+) -> Callable[[Any, Any], str]:
+    """Wrap a no-assets renderer to match the inline dispatch signature."""
+    return lambda node, _assets_dir: renderer(node)
+
+
+_BLOCK_LEAF_RENDERERS.update(
+    {
+        Paragraph: _render_paragraph,
+        CodeBlock: _render_code_block,
+        Table: _render_table,
+        BulletList: _render_bullet_list,
+        NumberedList: _render_numbered_list,
+    }
+)
+
+_INLINE_LEAF_RENDERERS.update(
+    {
+        Text: _inline_no_assets(_render_text),
+        HorizontalRule: lambda _node, _assets_dir: "---",
+        BlockQuote: _inline_no_assets(_render_block_quote),
+        Image: _inline_no_assets(_render_image),
+        ImageFile: lambda node, assets_dir: _render_image_file(
+            node, assets_dir
+        ),
+        FigureAsset: _inline_no_assets(_render_figure_asset),
+    }
+)

@@ -7,7 +7,11 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from scribpy.report.assets import AssetRenderer, MatplotlibRenderer, copy_image_file
+from scribpy.report.assets import (
+    AssetRenderer,
+    MatplotlibRenderer,
+    copy_image_file,
+)
 
 
 class TestAssetRendererProtocol:

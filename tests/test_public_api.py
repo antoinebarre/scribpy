@@ -41,7 +41,7 @@ def test_top_level_api_build_html_supports_site_mode(
         site_dir.mkdir(parents=True, exist_ok=True)
         return scribpy.BuildArtifact(site_dir, "html-site", "site"), ()
 
-    monkeypatch.setattr("scribpy.core.build_html.run_mkdocs_build", fake_run)
+    monkeypatch.setattr("scribpy.core.build_html_site.run_mkdocs_build", fake_run)
 
     result = scribpy.build_html(tmp_path, mode="site")
 
