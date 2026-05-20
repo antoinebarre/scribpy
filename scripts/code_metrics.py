@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import ast
 import fnmatch
+import json
 import tomllib
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -29,6 +31,19 @@ class MetricsConfig:
 
 
 @dataclass(frozen=True)
+class FileMetrics:
+    """Per-file code metrics."""
+
+    path: str
+    max_cc: int
+    avg_cc: float
+    mi: float
+    sloc: int
+    lloc: int
+    docstring_pct: float
+
+
+@dataclass(frozen=True)
 class MetricResult:
     """A single code metric comparison."""
 
@@ -36,6 +51,36 @@ class MetricResult:
     expected: str
     actual: str
     passed: bool
+
+
+def _docstring_pct(source: str) -> float:
+    """Return the fraction of functions/classes with a docstring (0–100).
+
+    Args:
+        source: Python source text.
+
+    Returns:
+        Percentage as a float in [0, 100].
+    """
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return 0.0
+    total = 0
+    with_doc = 0
+    for node in ast.walk(tree):
+        if isinstance(
+            node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef
+        ):
+            total += 1
+            if (
+                node.body
+                and isinstance(node.body[0], ast.Expr)
+                and isinstance(node.body[0].value, ast.Constant)
+                and isinstance(node.body[0].value.value, str)
+            ):
+                with_doc += 1
+    return (with_doc / total * 100) if total else 100.0
 
 
 def main() -> int:
@@ -52,12 +97,28 @@ def main() -> int:
     max_logical_lines_label = "no analyzed file"
     max_source_lines = 0
     max_source_lines_label = "no analyzed file"
+    file_metrics: list[FileMetrics] = []
 
     for file_path in files:
         source = file_path.read_text(encoding="utf-8")
         blocks = cc_visit(source)
         raw_metrics = analyze(source)
         maintainability_index = mi_visit(source, True)
+
+        file_max_cc = max((b.complexity for b in blocks), default=0)
+        file_total_cc = sum(b.complexity for b in blocks)
+        file_avg_cc = file_total_cc / len(blocks) if blocks else 0.0
+        file_metrics.append(
+            FileMetrics(
+                path=file_path.as_posix(),
+                max_cc=file_max_cc,
+                avg_cc=round(file_avg_cc, 2),
+                mi=round(maintainability_index, 1),
+                sloc=raw_metrics.sloc,
+                lloc=raw_metrics.lloc,
+                docstring_pct=round(_docstring_pct(source), 1),
+            )
+        )
 
         for block in blocks:
             total_complexity += block.complexity
@@ -117,6 +178,9 @@ def main() -> int:
         ),
     )
     _write_report(config.report_path, files, total_blocks, results)
+    _write_file_metrics_json(
+        Path("work") / "metrics_by_file.json", file_metrics
+    )
     failures = tuple(result for result in results if not result.passed)
 
     if failures:
@@ -141,8 +205,11 @@ def main() -> int:
 
 
 def _load_config(path: Path) -> MetricsConfig:
+    from quality_config import load_quality_config
+
     raw = tomllib.loads(path.read_text(encoding="utf-8"))
-    table = raw["tool"]["scribpy"]["code_metrics"]
+    namespace = load_quality_config(path).config_namespace
+    table = raw["tool"][namespace]["code_metrics"]
 
     return MetricsConfig(
         paths=tuple(Path(value) for value in _tuple(table["paths"])),
@@ -180,6 +247,24 @@ def _tuple(value: Any) -> tuple[str, ...]:
     if isinstance(value, list | tuple):
         return tuple(str(item) for item in value)
     raise TypeError("Expected a TOML array of strings")
+
+
+def _write_file_metrics_json(
+    path: Path,
+    metrics: list[FileMetrics],
+) -> None:
+    """Write per-file metrics to a JSON file.
+
+    Args:
+        path: Destination path for the JSON file.
+        metrics: Per-file metric records.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    data = [asdict(m) for m in metrics]
+    path.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
 
 
 def _write_report(

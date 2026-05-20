@@ -1,4 +1,4 @@
-.PHONY: clean clean-work format lint docstrings docstrings-strict init-modules format-check typecheck metrics security-code security-deps security test check ci clean-dist build check-dist publish-test publish
+.PHONY: clean clean-work format lint flake8 docstrings docstrings-strict init-modules format-check typecheck metrics security-code security-deps security test check ci clean-dist build check-dist publish-test publish
 
 clean-work:
 	@mkdir -p work
@@ -7,7 +7,7 @@ clean-work:
 
 clean: clean-work
 
-format lint docstrings docstrings-strict init-modules format-check typecheck metrics security-code security-deps security test check ci clean-dist build check-dist publish-test publish: clean-work
+format lint flake8 docstrings docstrings-strict init-modules format-check typecheck metrics security-code security-deps security test check ci clean-dist build check-dist publish-test publish: clean-work
 
 format:
 	uv run ruff format src/ scripts/
@@ -17,6 +17,9 @@ format-check:
 
 lint:
 	uv run ruff check src/ scripts/
+
+flake8:
+	uv run flake8 src/scribpy/
 
 docstrings:
 	uv run ruff check src/ --select D --ignore D100,D104

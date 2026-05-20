@@ -20,6 +20,7 @@ declare -a FAIL_NAMES=()
 # remains available in work/*.log and is printed only for failing checks.
 DETAIL_FORMAT=''
 DETAIL_LINT=''
+DETAIL_FLAKE8=''
 DETAIL_DOCSTRINGS=''
 DETAIL_DOCSTRINGS_STRICT=''
 DETAIL_TYPE_CHECK=''
@@ -61,6 +62,11 @@ details_for() {
             ;;
         lint | docstrings)
             grep -E 'All checks passed|Found [0-9]+ errors?' "$log" | tail -n 1 || true
+            ;;
+        flake8)
+            local count
+            count=$(grep -E '^[^:]+:[0-9]+:[0-9]+: [A-Z][0-9]+' "$log" 2>/dev/null | wc -l | tr -d ' ')
+            [ "${count:-0}" -eq 0 ] && echo "No issues" || echo "${count} violation(s)"
             ;;
         docstrings-strict)
             tail -n 1 "$log" 2>/dev/null || true
@@ -106,6 +112,7 @@ set_detail() {
     case "$name" in
         format) DETAIL_FORMAT=$value ;;
         lint) DETAIL_LINT=$value ;;
+        flake8) DETAIL_FLAKE8=$value ;;
         docstrings) DETAIL_DOCSTRINGS=$value ;;
         docstrings-strict) DETAIL_DOCSTRINGS_STRICT=$value ;;
         init-modules) DETAIL_INIT_MODULES=$value ;;
@@ -122,6 +129,7 @@ get_detail() {
     case "$name" in
         format) printf "%s" "$DETAIL_FORMAT" ;;
         lint) printf "%s" "$DETAIL_LINT" ;;
+        flake8) printf "%s" "$DETAIL_FLAKE8" ;;
         docstrings) printf "%s" "$DETAIL_DOCSTRINGS" ;;
         docstrings-strict) printf "%s" "$DETAIL_DOCSTRINGS_STRICT" ;;
         init-modules) printf "%s" "$DETAIL_INIT_MODULES" ;;
@@ -164,6 +172,7 @@ printf "${B}%s${N}\n" "$SEP"
 
 run "format"            work/format.log            uv run ruff format src/ scripts/
 run "lint"              work/lint.log              uv run ruff check src/ scripts/
+run "flake8"            work/flake8.log            uv run flake8 src/scribpy/
 run "docstrings"        work/docstrings.log        uv run ruff check src/ --select D --ignore D100,D104
 run "docstrings-strict" work/docstrings-strict.log uv run python scripts/check_google_docstrings.py
 run "init-modules"      work/init-modules.log      uv run python scripts/check_init_modules.py

@@ -1,4 +1,4 @@
-"""Enforce Scribpy's strict public API docstring contract."""
+"""Enforce strict public API docstring contract for the configured project."""
 
 from __future__ import annotations
 
@@ -6,7 +6,9 @@ import ast
 from dataclasses import dataclass
 from pathlib import Path
 
-SOURCE_ROOT = Path("src/scribpy")
+from quality_config import load_quality_config
+
+SOURCE_ROOT = load_quality_config().source_root
 
 
 @dataclass(frozen=True)

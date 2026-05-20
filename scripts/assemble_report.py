@@ -10,7 +10,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from quality_config import load_quality_config
+
 from scribpy.report import MergeSection, merge_markdown
+
+_QC = load_quality_config()
 
 WORK = Path("work")
 REPORTS_DIR = WORK / "reports"
@@ -165,12 +169,12 @@ def _make_header(
         "---",
         "title: Quality Report",
         f"date: {now}",
-        "description: Consolidated quality gate report — scribpy.",
+        f"description: Consolidated quality gate report — {_QC.project_name}.",
         "tags:",
         "  - quality",
         "  - ci",
-        "  - scribpy",
-        "generator: scribpy.report",
+        f"  - {_QC.project_name}",
+        f"generator: {_QC.project_name}.report",
         "---",
         "",
         "# Quality Report",

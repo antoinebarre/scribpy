@@ -56,7 +56,7 @@ class PipelineResult[T]:
         """
         return cls(value=value, diagnostics=diagnostics, failed=True)
 
-    def bind[U](
+    def bind[U](  # noqa: D102
         self,
         step: Callable[[T], PipelineResult[U]],
     ) -> PipelineResult[U]:

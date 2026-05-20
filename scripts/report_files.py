@@ -9,6 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from quality_config import load_quality_config
 from report_common import base_metadata
 
 from scribpy.report import (
@@ -21,7 +22,8 @@ from scribpy.report import (
     file_checksum,
 )
 
-SRC_DIR = Path("src/scribpy")
+_QC = load_quality_config()
+SRC_DIR = _QC.source_root
 OUT_PATH = Path("work/reports/report_files.md")
 PYPROJECT = Path("pyproject.toml")
 
@@ -45,7 +47,7 @@ def main() -> None:
                     [
                         Text(f"{len(src_files)} Python files", style="bold"),
                         Text(" found under "),
-                        Text("src/scribpy/", style="code"),
+                        Text(f"{SRC_DIR}/", style="code"),
                         Text("."),
                     ]
                 )

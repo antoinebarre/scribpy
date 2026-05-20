@@ -14,7 +14,8 @@
       "Bash(.venv/bin/python -m radon cc src/scribpy/transforms/markdown.py -s)",
       "Bash(.venv/bin/python -m radon hal src/scribpy/transforms/markdown.py)",
       "Bash(.venv/bin/python -m radon mi src/scribpy/transforms/ -s)",
-      "Bash(.venv/bin/python -m radon mi src/scribpy/transforms/markdown_headings.py -s)"
+      "Bash(.venv/bin/python -m radon mi src/scribpy/transforms/markdown_headings.py -s)",
+      "Bash(uv sync *)"
     ]
   }
 }

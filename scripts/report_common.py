@@ -9,7 +9,11 @@ from pathlib import Path
 # Allow running scripts from the repo root without installing the package.
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from quality_config import load_quality_config
+
 from scribpy.report import Metadata
+
+_PROJECT_NAME = load_quality_config().project_name
 
 
 def now_iso() -> str:
@@ -30,5 +34,5 @@ def base_metadata(title: str, check: str) -> Metadata:
     return Metadata(
         title=title,
         date=now_iso(),
-        extra={"check": check, "generator": "scribpy.report"},
+        extra={"check": check, "generator": f"{_PROJECT_NAME}.report"},
     )

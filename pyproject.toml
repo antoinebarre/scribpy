@@ -104,6 +104,12 @@ max-branches = 12
 max-returns = 6
 max-statements = 50
 
+[tool.quality-gate]
+project_name = "scribpy"
+source_root = "src/scribpy"
+source_base = "src"
+config_namespace = "scribpy"
+
 [tool.scribpy.code_metrics]
 paths = ["src/scribpy"]
 exclude = []
@@ -131,6 +137,10 @@ ignore_vulns = ["PYSEC-2026-89"]
 [dependency-groups]
 dev = [
     "bandit>=1.8",
+    "flake8>=7",
+    "flake8-bugbear>=24",
+    "flake8-docstrings>=1.7",
+    "pep8-naming>=0.14",
     "pip-audit>=2.8",
     "pytest>=8",
     "pytest-cov>=6",

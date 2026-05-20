@@ -9,6 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from quality_config import load_quality_config
 from report_common import base_metadata
 
 from scribpy.report import (
@@ -24,6 +25,7 @@ from scribpy.report import (
 )
 
 WORK = Path("work")
+_NAMESPACE = load_quality_config().config_namespace
 OUT_PATH = WORK / "reports" / "report_lint.md"
 PYPROJECT = Path("pyproject.toml")
 
@@ -34,6 +36,7 @@ FAIL_ICON = "❌ FAIL"
 SUCCESS_PATTERNS: dict[str, re.Pattern[str]] = {
     "format": re.compile(r"\d+ files? (?:left unchanged|reformatted)"),
     "lint": re.compile(r"All checks passed!"),
+    "flake8": re.compile(r"^$", re.MULTILINE),
     "docstrings": re.compile(r"All checks passed!"),
     "docstrings-strict": re.compile(r"Strict Google docstring check passed"),
     "init-modules": re.compile(r"Initializer module check passed"),
@@ -46,6 +49,7 @@ SUCCESS_PATTERNS: dict[str, re.Pattern[str]] = {
 CODE_QUALITY_CHECKS: list[tuple[str, str]] = [
     ("format", "Code Formatting (ruff format)"),
     ("lint", "Lint Rules (ruff check)"),
+    ("flake8", "PEP8 + Naming + Bugbear (flake8)"),
     ("docstrings", "Docstring Presence (ruff D)"),
     ("docstrings-strict", "Google Docstring Style"),
     ("init-modules", "Init Module Compliance"),
@@ -92,6 +96,8 @@ def _is_passed(name: str, body: str) -> bool:
     Returns:
         ``True`` if the check passed.
     """
+    if name == "flake8":
+        return body.strip() == ""
     pattern = SUCCESS_PATTERNS.get(name)
     return bool(pattern.search(body)) if pattern else False
 
@@ -106,6 +112,13 @@ def _extract_summary(name: str, body: str) -> str:
     Returns:
         A short summary string (max 120 chars).
     """
+    if name == "flake8":
+        violations = re.findall(
+            r"^[^:]+:\d+:\d+: [A-Z]\d+", body, re.MULTILINE
+        )
+        if not violations:
+            return "No issues"
+        return f"{len(violations)} violation(s)"
     patterns: dict[str, str] = {
         "format": r"(\d+ files? (?:left unchanged|reformatted))",
         "lint": r"(All checks passed!|Found \d+ errors?\.)",
@@ -137,6 +150,7 @@ def _issue_filter(name: str) -> re.Pattern[str] | None:
     """
     patterns: dict[str, str] = {
         "lint": r"\s*(E|W|F|D)\d+",
+        "flake8": r"\s*(E|W|F|D|N|B)\d+",
         "docstrings": r"\s*(E|W|F|D)\d+",
         "docstrings-strict": r".+:\s*\w+ missing \w+",
         "init-modules": r".*\.py.*missing|.*ERROR.*",
@@ -276,7 +290,7 @@ def _pip_audit_exceptions(tool: dict[str, object]) -> list[str]:
     Returns:
         List of human-readable exception strings.
     """
-    sec = tool.get("scribpy", {}).get("security_audit", {})  # type: ignore[union-attr]
+    sec = tool.get(_NAMESPACE, {}).get("security_audit", {})  # type: ignore[union-attr]
     return [
         f"Ignored vulnerability: `{v}`" for v in sec.get("ignore_vulns", [])
     ]
@@ -348,7 +362,7 @@ def _config_section(name: str, config: dict[str, object]) -> Section | None:
         ]
 
     elif name == "metrics":
-        metrics = tool.get("scribpy", {}).get("code_metrics", {})  # type: ignore[union-attr]
+        metrics = tool.get(_NAMESPACE, {}).get("code_metrics", {})  # type: ignore[union-attr]
         rows = [
             [k, str(v)]
             for k, v in metrics.items()
@@ -358,6 +372,14 @@ def _config_section(name: str, config: dict[str, object]) -> Section | None:
     elif name == "security-code":
         bandit = tool.get("bandit", {})  # type: ignore[union-attr]
         rows = [[k, str(v)] for k, v in bandit.items()]
+
+    elif name == "flake8":
+        rows = [
+            ["max-line-length", "79"],
+            ["docstring-convention", "google"],
+            ["plugins", "flake8-bugbear, flake8-docstrings, pep8-naming"],
+            ["config", "setup.cfg [flake8]"],
+        ]
 
     elif name == "security-deps":
         rows = [["tool", "pip-audit"], ["format", "freeze"]]
