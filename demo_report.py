@@ -24,6 +24,7 @@ from scribpy.report import (
     HorizontalRule,
     ImageFile,
     LineBreak,
+    Metadata,
     NumberedList,
     Paragraph,
     Report,
@@ -87,7 +88,16 @@ def main() -> None:
 def _build_basic_report() -> Report:
     """Build a report that exercises every node type."""
     return (
-        Report(title="Scribpy Report Generator — Feature Overview")
+        Report(
+            title="Scribpy Report Generator — Feature Overview",
+            metadata=Metadata(
+                author="Antoine Barré",
+                date="2026-05-20",
+                version="1.0",
+                description="Demonstration of every node type in scribpy.report.",
+                tags=["scribpy", "demo", "markdown"],
+            ),
+        )
         .add(
             Chapter(title="Introduction")
             .add(
@@ -181,7 +191,17 @@ def _build_basic_report() -> Report:
 def _build_toc_report() -> Report:
     """Build a report with an auto-generated table of contents."""
     return (
-        Report(title="Report With Table of Contents", toc=True)
+        Report(
+            title="Report With Table of Contents",
+            toc=True,
+            metadata=Metadata(
+                author=["Alice Martin", "Bob Dupont"],
+                date="2026-05-20",
+                description="Quarterly results with auto-generated TOC.",
+                tags=["results", "quarterly"],
+                extra={"status": "draft", "lang": "en"},
+            ),
+        )
         .add(
             Chapter(title="Introduction")
             .add(Paragraph("Overview of the document."))
@@ -215,7 +235,19 @@ def _build_toc_report() -> Report:
 def _build_numbered_report() -> Report:
     """Build a numbered report with embedded user-supplied images."""
     return (
-        Report(title="Quarterly Analysis Report", auto_numbering=True, toc=True)
+        Report(
+            title="Quarterly Analysis Report",
+            auto_numbering=True,
+            toc=True,
+            metadata=Metadata(
+                author="Antoine Barré",
+                date="2026-05-20",
+                version="2.1",
+                description="Q1 2026 performance — throughput, latency, errors.",
+                tags=["performance", "Q1-2026", "analysis"],
+                extra={"classification": "internal", "review": "pending"},
+            ),
+        )
         .add(
             Chapter(title="Executive Summary")
             .add(Paragraph([

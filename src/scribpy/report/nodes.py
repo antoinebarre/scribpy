@@ -343,12 +343,40 @@ def _validate_chapter_child(child: object) -> None:
 
 
 @dataclass
+class Metadata:
+    """YAML frontmatter metadata block prepended to the rendered document.
+
+    All fields are optional.  Only fields with a non-``None`` value are
+    written to the frontmatter block.  Additional arbitrary key/value pairs
+    can be supplied via ``extra``.
+
+    Attributes:
+        title: Document title (often mirrors ``Report.title``).
+        author: Author name or list of authors.
+        date: Publication or revision date (free-form string).
+        version: Document version string.
+        description: Short abstract or summary.
+        tags: List of keyword tags.
+        extra: Any additional key/value pairs to include verbatim.
+    """
+
+    title: str | None = None
+    author: str | list[str] | None = None
+    date: str | None = None
+    version: str | None = None
+    description: str | None = None
+    tags: list[str] | None = None
+    extra: dict[str, object] = field(default_factory=dict)
+
+
+@dataclass
 class Report:
     """Root of the report document.
 
     Attributes:
         title: Non-empty report title (rendered as H1).
         children: Ordered Chapter nodes.
+        metadata: Optional YAML frontmatter block written before the title.
         toc: When True, a GFM table of contents is prepended.
         auto_numbering: When True, headings are prefixed with section
             numbers (e.g. ``1.``, ``1.1.``).
@@ -356,6 +384,7 @@ class Report:
 
     title: str
     children: list[Chapter] = field(default_factory=list)
+    metadata: Metadata | None = None
     toc: bool = False
     auto_numbering: bool = False
 

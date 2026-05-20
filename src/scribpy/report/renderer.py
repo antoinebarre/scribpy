@@ -14,6 +14,7 @@ from .nodes import (
     Image,
     ImageFile,
     LineBreak,
+    Metadata,
     NumberedList,
     Paragraph,
     Report,
@@ -72,7 +73,12 @@ def _render_report_inner(report: Report, assets_dir: Path | None) -> str:
     Returns:
         A valid GitHub Flavored Markdown document string.
     """
-    parts: list[str] = [f"# {report.title}"]
+    parts: list[str] = []
+
+    if report.metadata is not None:
+        parts.append(_render_frontmatter(report.metadata))
+
+    parts.append(f"# {report.title}")
 
     if report.toc:
         toc_block = generate_toc(report)
@@ -463,3 +469,72 @@ def _render_block_quote(node: BlockQuote) -> str:
     """
     lines = node.content.splitlines()
     return "\n".join(f"> {line}" for line in lines)
+
+
+def _render_frontmatter(meta: Metadata) -> str:
+    """Render a Metadata node as a YAML frontmatter block.
+
+    Only fields with a non-``None`` value are included. The block is
+    delimited by ``---`` fences as expected by most Markdown processors
+    and the scribpy parser.
+
+    Args:
+        meta: The Metadata node to render.
+
+    Returns:
+        A ``---``-delimited YAML frontmatter string.
+    """
+    lines: list[str] = ["---"]
+    _add_scalar(lines, "title", meta.title)
+    _add_author(lines, meta.author)
+    _add_scalar(lines, "date", meta.date)
+    _add_scalar(lines, "version", meta.version)
+    _add_scalar(lines, "description", meta.description)
+    _add_tags(lines, meta.tags)
+    for key, value in meta.extra.items():
+        _add_scalar(lines, key, str(value))
+    lines.append("---")
+    return "\n".join(lines)
+
+
+def _add_scalar(lines: list[str], key: str, value: str | None) -> None:
+    """Append a ``key: value`` YAML line if value is not None.
+
+    Args:
+        lines: Accumulator list.
+        key: YAML key name.
+        value: Scalar value, or None to skip.
+    """
+    if value is not None:
+        lines.append(f"{key}: {value}")
+
+
+def _add_author(lines: list[str], author: str | list[str] | None) -> None:
+    """Append author field in scalar or YAML list form.
+
+    Args:
+        lines: Accumulator list.
+        author: A single author string, a list of authors, or None.
+    """
+    if author is None:
+        return
+    if isinstance(author, list):
+        lines.append("author:")
+        for name in author:
+            lines.append(f"  - {name}")
+    else:
+        lines.append(f"author: {author}")
+
+
+def _add_tags(lines: list[str], tags: list[str] | None) -> None:
+    """Append a YAML list of tags if tags is not None or empty.
+
+    Args:
+        lines: Accumulator list.
+        tags: List of tag strings, or None.
+    """
+    if not tags:
+        return
+    lines.append("tags:")
+    for tag in tags:
+        lines.append(f"  - {tag}")

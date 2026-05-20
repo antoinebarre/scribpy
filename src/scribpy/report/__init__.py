@@ -12,6 +12,7 @@ from .nodes import (
     Image,
     ImageFile,
     LineBreak,
+    Metadata,
     NumberedList,
     Paragraph,
     Report,
@@ -21,6 +22,8 @@ from .nodes import (
 )
 
 __all__ = [
+    # Metadata
+    "Metadata",
     # Containers
     "Report",
     "Chapter",

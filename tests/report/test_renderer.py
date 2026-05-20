@@ -14,6 +14,7 @@ from scribpy.report import (
     Image,
     ImageFile,
     LineBreak,
+    Metadata,
     NumberedList,
     Paragraph,
     Report,
@@ -26,6 +27,7 @@ from scribpy.report.renderer import (
     _render_bullet_list,
     _render_code_block,
     _render_figure_asset,
+    _render_frontmatter,
     _render_image,
     _render_image_file,
     _render_inline_element,
@@ -367,6 +369,85 @@ class TestUnknownNodeGuard:
 
         with pytest.raises(TypeError, match="Unknown node type"):
             _render_child(object(), depth=1, num_ctx=None, assets_dir=None)
+
+
+# ---------------------------------------------------------------------------
+# Frontmatter renderer
+# ---------------------------------------------------------------------------
+
+class TestFrontmatterRenderer:
+    def test_empty_metadata_renders_empty_block(self):
+        result = _render_frontmatter(Metadata())
+        assert result == "---\n---"
+
+    def test_scalar_fields(self):
+        meta = Metadata(title="My Doc", date="2026-05-20", version="1.0")
+        result = _render_frontmatter(meta)
+        assert "title: My Doc" in result
+        assert "date: 2026-05-20" in result
+        assert "version: 1.0" in result
+
+    def test_description_field(self):
+        meta = Metadata(description="A short summary.")
+        result = _render_frontmatter(meta)
+        assert "description: A short summary." in result
+
+    def test_single_author(self):
+        meta = Metadata(author="Alice")
+        result = _render_frontmatter(meta)
+        assert "author: Alice" in result
+
+    def test_multiple_authors(self):
+        meta = Metadata(author=["Alice", "Bob"])
+        result = _render_frontmatter(meta)
+        assert "author:" in result
+        assert "  - Alice" in result
+        assert "  - Bob" in result
+
+    def test_tags(self):
+        meta = Metadata(tags=["python", "report"])
+        result = _render_frontmatter(meta)
+        assert "tags:" in result
+        assert "  - python" in result
+        assert "  - report" in result
+
+    def test_empty_tags_skipped(self):
+        meta = Metadata(tags=[])
+        result = _render_frontmatter(meta)
+        assert "tags" not in result
+
+    def test_extra_fields(self):
+        meta = Metadata(extra={"lang": "fr", "status": "draft"})
+        result = _render_frontmatter(meta)
+        assert "lang: fr" in result
+        assert "status: draft" in result
+
+    def test_none_fields_omitted(self):
+        meta = Metadata(title="T")
+        result = _render_frontmatter(meta)
+        assert "author" not in result
+        assert "date" not in result
+        assert "version" not in result
+
+    def test_delimited_by_triple_dash(self):
+        result = _render_frontmatter(Metadata(title="X"))
+        assert result.startswith("---\n")
+        assert result.endswith("\n---")
+
+    def test_report_with_metadata_prepends_frontmatter(self):
+        r = Report(
+            title="My Report",
+            metadata=Metadata(author="Alice", date="2026-05-20"),
+        )
+        output = r.render()
+        assert output.startswith("---\n")
+        assert "author: Alice" in output
+        assert "# My Report" in output
+
+    def test_report_without_metadata_no_frontmatter(self):
+        r = Report(title="R")
+        output = r.render()
+        assert not output.startswith("---")
 
 
 # ---------------------------------------------------------------------------
