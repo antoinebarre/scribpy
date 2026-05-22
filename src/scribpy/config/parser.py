@@ -20,6 +20,7 @@ from scribpy.config.parser_shared import (
     nested_section,
     section,
 )
+from scribpy.config.pdf_builder_parser import parse_pdf_builder_config
 from scribpy.config.types import (
     Config,
     IndexConfig,
@@ -52,8 +53,16 @@ def parse_config(raw: Mapping[str, object]) -> Config:
     html = parse_html_builder_config(
         nested_section(builders_raw, "html", "builders")
     )
+    pdf = parse_pdf_builder_config(
+        nested_section(builders_raw, "pdf", "builders")
+    )
     return Config(
-        project=project, paths=paths, index=index, document=document, html=html
+        project=project,
+        paths=paths,
+        index=index,
+        document=document,
+        html=html,
+        pdf=pdf,
     )
 
 

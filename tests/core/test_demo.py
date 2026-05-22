@@ -31,6 +31,7 @@ def test_create_demo_project_writes_tutorial_files(tmp_path: Path) -> None:
     assert (target / "doc/assets/architecture.svg").is_file()
     assert (target / "doc/assets/setup.svg").is_file()
     assert (target / "theme/demo.css").is_file()
+    assert (target / "theme/pdf.css").is_file()
     assert (target / "README.md").is_file()
     assert len(tuple((target / "doc").rglob("*.md"))) == 33
 
@@ -66,6 +67,7 @@ def test_created_demo_project_exposes_transform_configuration(
         '[builders.html]\nmode = "single-page"\ncss_files = ["theme/demo.css"]\n'
         'theme = "readthedocs"' in config
     )
+    assert '[builders.pdf]\ncss = ["theme/pdf.css"]' in config
 
 
 def test_create_invalid_demo_project_passes_index_check(
@@ -200,11 +202,15 @@ def test_created_demo_project_contains_complex_plantuml_examples(
     target = tmp_path / "external-demo"
     create_demo_project(target)
 
-    pipeline = (target / "doc/architecture/pipeline.md").read_text(encoding="utf-8")
+    pipeline = (target / "doc/architecture/pipeline.md").read_text(
+        encoding="utf-8"
+    )
     data_model = (target / "doc/architecture/data-model.md").read_text(
         encoding="utf-8"
     )
-    overview = (target / "doc/architecture/overview.md").read_text(encoding="utf-8")
+    overview = (target / "doc/architecture/overview.md").read_text(
+        encoding="utf-8"
+    )
 
     assert "```plantuml" in pipeline
     assert "alt diagnostics contain errors" in pipeline
@@ -218,9 +224,9 @@ def test_created_demo_project_contains_complex_mermaid_examples(
     target = tmp_path / "external-demo"
     create_demo_project(target)
 
-    functional_chains = (target / "doc/concepts/functional-chains.md").read_text(
-        encoding="utf-8"
-    )
+    functional_chains = (
+        target / "doc/concepts/functional-chains.md"
+    ).read_text(encoding="utf-8")
     extensions = (target / "doc/architecture/extensions.md").read_text(
         encoding="utf-8"
     )

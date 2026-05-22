@@ -22,8 +22,11 @@ from scribpy.core import (
     parse_project_documents,
     run_index_check,
 )
-from scribpy.core.build_options import HtmlBuildOverrides
-from scribpy.core.build_project import build_html_with_overrides
+from scribpy.core.build_options import HtmlBuildOverrides, PdfBuildOverrides
+from scribpy.core.build_project import (
+    build_html_with_overrides,
+    build_pdf_with_overrides,
+)
 from scribpy.logging import logging_context
 from scribpy.utils import format_diagnostics
 
@@ -199,6 +202,35 @@ def run_build_html_command(
     return 0 if result.success else 1
 
 
+def run_build_pdf_command(
+    root: Path | None,
+    output_dir: Path | None,
+    css_files: tuple[Path, ...],
+    stdout: TextIO,
+    stderr: TextIO,
+) -> int:
+    """Run ``build pdf``.
+
+    Args:
+        root: Optional project root override.
+        output_dir: Optional build directory override.
+        css_files: Additional PDF CSS files for this run.
+        stdout: Stream receiving the execution report.
+        stderr: Stream receiving diagnostics.
+
+    Returns:
+        Process exit code.
+    """
+    result = build_pdf_with_overrides(
+        root,
+        PdfBuildOverrides(output_dir=output_dir, extra_css=css_files),
+    )
+    if result.diagnostics:
+        print(format_diagnostics(result.diagnostics), file=stderr)
+    print_build_report(result, "PDF", stdout)
+    return 0 if result.success else 1
+
+
 def run_demo_create_command(
     target: Path,
     force: bool,
@@ -234,4 +266,5 @@ def run_demo_create_command(
         f"  scribpy build html --mode single-page --root {target}", file=stdout
     )
     print(f"  scribpy build html --mode site --root {target}", file=stdout)
+    print(f"  scribpy build pdf --root {target}", file=stdout)
     return 0

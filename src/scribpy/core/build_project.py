@@ -6,7 +6,7 @@ from pathlib import Path
 
 from scribpy.builders import merge_documents, write_markdown_artifact
 from scribpy.config.types import HtmlMode
-from scribpy.core.build_options import HtmlBuildOverrides
+from scribpy.core.build_options import HtmlBuildOverrides, PdfBuildOverrides
 from scribpy.core.project_pipeline import (
     ProjectPipelineState,
     run_project_parse_pipeline,
@@ -16,11 +16,12 @@ from scribpy.extensions import ExtensionRegistry
 from scribpy.lint import LintContext, run_lint_rules
 from scribpy.logging import get_logger
 from scribpy.model import BuildResult, Diagnostic
-from scribpy.model.protocols import FileSystem, MarkdownParser
+from scribpy.model.protocols import FileSystem, MarkdownParser, PdfRenderer
 from scribpy.transforms import TransformOptions, apply_transforms
 from scribpy.utils import has_errors
 
 _HTML_TARGETS = frozenset({"html", "html-single-page", "html-site"})
+_PDF_TARGETS = frozenset({"pdf"})
 logger = get_logger(__name__)
 
 
@@ -40,13 +41,13 @@ def build_project(
     Args:
         root: Project root, child path, config path, or ``None`` for cwd.
         target: Requested build target: ``"markdown"``, ``"html"``,
-            ``"html-single-page"``, or ``"html-site"``.
+            ``"html-single-page"``, ``"html-site"``, or ``"pdf"``.
         html_mode: HTML output mode override — ``"single-page"`` or ``"site"``.
             When set, takes precedence over the project configuration.
         output_dir: Optional build output directory override. Relative paths are
             resolved from the project root; absolute paths are preserved. For
             HTML builds this overrides ``[builders.html].output_dir``.
-        extra_css: Additional CSS files to append to the HTML build.
+        extra_css: Additional CSS files to append to the HTML or PDF build.
         filesystem: Optional filesystem service override.
         parser: Optional Markdown parser override.
         registry: Optional lint rule registry override.
@@ -66,6 +67,16 @@ def build_project(
             filesystem,
             parser,
             registry,
+        )
+
+    if target in _PDF_TARGETS:
+        return _dispatch_pdf_build(
+            root,
+            PdfBuildOverrides(output_dir=output_dir, extra_css=extra_css),
+            filesystem,
+            parser,
+            registry,
+            None,
         )
 
     if target != "markdown":
@@ -193,6 +204,75 @@ def build_html_with_overrides(
     )
 
 
+def _dispatch_pdf_build(
+    root: Path | None,
+    overrides: PdfBuildOverrides,
+    filesystem: FileSystem | None,
+    parser: MarkdownParser | None,
+    registry: ExtensionRegistry | None,
+    pdf_renderer: PdfRenderer | None,
+) -> BuildResult:
+    """Dispatch PDF build."""
+    from scribpy.config.types import PdfBuilderConfig
+    from scribpy.core.build_pdf import build_pdf_project
+
+    state, diagnostics = _prepare_build_state(root, filesystem, parser)
+    if state is None:
+        return _blocked_build(diagnostics)
+
+    resolved = state.require_resolved()
+    base_pdf_config = resolved.config.pdf
+    pdf_config = PdfBuilderConfig(
+        css_files=(*base_pdf_config.css_files, *overrides.extra_css),
+        output_dir=overrides.output_dir
+        if overrides.output_dir is not None
+        else base_pdf_config.output_dir,
+        paper_size=base_pdf_config.paper_size,
+        toc_level=base_pdf_config.toc_level,
+    )
+    return build_pdf_project(
+        root,
+        pdf_config=pdf_config,
+        filesystem=filesystem,
+        parser=parser,
+        registry=registry,
+        pdf_renderer=pdf_renderer,
+    )
+
+
+def build_pdf_with_overrides(
+    root: Path | None,
+    overrides: PdfBuildOverrides,
+    *,
+    pdf_renderer: PdfRenderer | None = None,
+    filesystem: FileSystem | None = None,
+    parser: MarkdownParser | None = None,
+    registry: ExtensionRegistry | None = None,
+) -> BuildResult:
+    """Build PDF output using grouped per-run overrides.
+
+    Args:
+        root: Project root or path inside the project.
+        overrides: Grouped PDF overrides for one build.
+        pdf_renderer: Optional injected renderer. When omitted, Scribpy uses
+            the optional ``MarkdownPdfRenderer`` adapter.
+        filesystem: Optional filesystem override.
+        parser: Optional parser override.
+        registry: Optional extension registry override.
+
+    Returns:
+        PDF build result.
+    """
+    return _dispatch_pdf_build(
+        root,
+        overrides,
+        filesystem,
+        parser,
+        registry,
+        pdf_renderer,
+    )
+
+
 def _prepare_build_state(
     root: Path | None,
     filesystem: FileSystem | None,
@@ -305,9 +385,7 @@ def _unsupported_target_diagnostic(target: str) -> Diagnostic:
         severity="error",
         code="BLD001",
         message=f"Unsupported build target: {target}",
-        hint=(
-            "Use target='markdown' until additional builders are implemented."
-        ),
+        hint="Use target='markdown', 'html', or 'pdf'.",
     )
 
 
@@ -332,7 +410,11 @@ def _blocked_build_diagnostic() -> Diagnostic:
     )
 
 
-__all__ = ["build_html_with_overrides", "build_project"]
+__all__ = [
+    "build_html_with_overrides",
+    "build_pdf_with_overrides",
+    "build_project",
+]
 
 
 def _html_mode_diagnostic(mode: str | None) -> Diagnostic | None:

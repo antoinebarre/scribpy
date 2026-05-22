@@ -41,6 +41,9 @@ Documentation = "https://github.com/antoinebarre/scribpy/blob/main/README.md"
 [project.scripts]
 scribpy = "scribpy.__main__:main"
 
+[project.optional-dependencies]
+pdf = ["markdown-pdf>=1.13"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/scribpy"]
 include = ["src/scribpy/vendor/*.jar"]

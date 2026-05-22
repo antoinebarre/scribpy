@@ -13,9 +13,13 @@ from scribpy.core import (
     parse_project_documents,
     run_index_check,
 )
-from scribpy.core.build_options import HtmlBuildOverrides
-from scribpy.core.build_project import build_html_with_overrides
+from scribpy.core.build_options import HtmlBuildOverrides, PdfBuildOverrides
+from scribpy.core.build_project import (
+    build_html_with_overrides,
+    build_pdf_with_overrides,
+)
 from scribpy.model import BuildResult, LintResult, ParseResult
+from scribpy.model.protocols import PdfRenderer
 
 type PathLike = str | Path
 
@@ -160,6 +164,38 @@ def build_html(
     )
 
 
+def build_pdf(
+    root: PathLike | None = None,
+    *,
+    output_dir: PathLike | None = None,
+    extra_css: list[PathLike] | None = None,
+    pdf_renderer: PdfRenderer | None = None,
+) -> BuildResult:
+    """Build PDF output using an injectable renderer.
+
+    Args:
+        root: Project root, child path, config path, or ``None`` for cwd.
+        output_dir: Optional PDF output directory override. Relative paths are
+            resolved from the project root; absolute paths are kept.
+        extra_css: Additional PDF CSS file paths appended after configured CSS.
+        pdf_renderer: Optional renderer implementing ``PdfRenderer``. When
+            omitted, Scribpy uses the optional ``MarkdownPdfRenderer`` adapter.
+
+    Returns:
+        Build result for the PDF target.
+
+    Examples:
+        >>> build_pdf(".")
+        >>> build_pdf(".", extra_css=["theme/pdf.css"])
+    """
+    extra = tuple(Path(p) for p in extra_css) if extra_css else ()
+    return build_pdf_with_overrides(
+        _path(root),
+        PdfBuildOverrides(output_dir=_path(output_dir), extra_css=extra),
+        pdf_renderer=pdf_renderer,
+    )
+
+
 def _path(value: PathLike | None) -> Path | None:
     """Convert an optional public path value into ``Path``."""
     return None if value is None else Path(value)
@@ -169,6 +205,7 @@ __all__ = [
     "PathLike",
     "build_html",
     "build_markdown",
+    "build_pdf",
     "check_index",
     "check_parse",
     "create_demo",

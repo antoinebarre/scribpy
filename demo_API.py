@@ -30,6 +30,7 @@ def main() -> None:
 
         # Write the extra blue theme after create_demo so it survives the wipe.
         _write_blue_theme(demo_dir / "theme" / "blue.css")
+        _write_pdf_theme(demo_dir / "theme" / "api-pdf.css")
 
         # These calls mirror the CLI checks:
         # `scribpy index check`, `scribpy parse check`, and `scribpy lint`.
@@ -62,18 +63,28 @@ def main() -> None:
             plantuml_renderer="web",
             plantuml_server_url=PLANTUML_SERVER_URL,
         )
+        pdf_result = scribpy.build_pdf(
+            demo_dir,
+            extra_css=["theme/api-pdf.css"],
+        )
 
     _step("Build Markdown", markdown_result.success)
-    _step("Build HTML single-page with default web PlantUML", web_html_result.success)
-    #_step("Build HTML single-page with forced Java PlantUML", java_html_result.success)
+    _step(
+        "Build HTML single-page with default web PlantUML",
+        web_html_result.success,
+    )
+    # _step("Build HTML single-page with forced Java PlantUML", java_html_result.success)
     _step("Build HTML site with forced web PlantUML", web_site_result.success)
+    _step("Build PDF with markdown-pdf and CSS", pdf_result.success)
     _artifact_summary("Markdown", markdown_result)
     _artifact_summary("HTML single-page (web)", web_html_result)
-    #_artifact_summary("HTML single-page (java)", java_html_result)
+    # _artifact_summary("HTML single-page (java)", java_html_result)
     _artifact_summary("HTML site (web)", web_site_result)
+    _artifact_summary("PDF (markdown-pdf)", pdf_result)
     _print_failure_details("HTML single-page (web)", web_html_result)
-    #_print_failure_details("HTML single-page (java)", java_html_result)
+    # _print_failure_details("HTML single-page (java)", java_html_result)
     _print_failure_details("HTML site (web)", web_site_result)
+    _print_failure_details("PDF (markdown-pdf)", pdf_result)
 
     # A second demo shows what callers receive when linting fails.
     if invalid_dir.exists():
@@ -141,6 +152,36 @@ a:hover { color: #1346b8; text-decoration-thickness: 0.12em; }
 .toc-list a[aria-current="location"] { border-color: #93c5fd;
                                        color: #1d4ed8; }
 .toc-toggle { background: #0d1b3e !important; }
+""",
+        encoding="utf-8",
+    )
+
+
+def _write_pdf_theme(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        """\
+/* API demo PDF override: applied after Scribpy's built-in print CSS. */
+body {
+  font-family: "Avenir Next", Arial, sans-serif;
+  font-size: 10pt;
+}
+
+h1 {
+  border-bottom: 1.5pt solid #1a56db;
+  color: #1e3a8a;
+  padding-bottom: 6pt;
+}
+
+h2 {
+  color: #0369a1;
+}
+
+blockquote {
+  border-left: 3pt solid #1a56db;
+  margin-left: 0;
+  padding-left: 10pt;
+}
 """,
         encoding="utf-8",
     )
