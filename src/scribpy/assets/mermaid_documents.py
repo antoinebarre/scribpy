@@ -20,6 +20,7 @@ def render_mermaid_documents(
     diagrams_dir: Path,
     flattened: bool,
     target: str,
+    image_format: str = "svg",
 ) -> tuple[
     tuple[TransformedDocument, ...],
     tuple[BuildArtifact, ...],
@@ -30,9 +31,10 @@ def render_mermaid_documents(
     Args:
         documents: Target-ready Markdown documents.
         renderer: Mermaid web renderer adapter.
-        diagrams_dir: Absolute destination directory for generated SVGs.
+        diagrams_dir: Absolute destination directory for generated images.
         flattened: Whether all documents will be merged into one output page.
         target: Artifact target label.
+        image_format: Requested output image format.
 
     Returns:
         Rewritten documents, unique diagram artifacts, and diagnostics.
@@ -48,6 +50,7 @@ def render_mermaid_documents(
             href_prefix=_href_prefix(document, flattened),
             target=target,
             source_label=str(document.relative_path),
+            image_format=image_format,
         )
         if result.diagnostics:
             logger.error(

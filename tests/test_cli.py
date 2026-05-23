@@ -167,6 +167,7 @@ def test_demo_create_force_overwrites_demo_files(
     assert "scribpy build markdown --root" in captured.out
     assert "scribpy build html --mode single-page --root" in captured.out
     assert "scribpy build html --mode site --root" in captured.out
+    assert "scribpy build pdf --root" in captured.out
     assert "scribpy index check" in captured.out
     assert "scribpy parse check" in captured.out
     assert "scribpy lint" in captured.out
@@ -212,14 +213,17 @@ def test_build_html_cli_accepts_plantuml_overrides(
     tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _write_config(tmp_path, '[paths]\nsource = "doc"\n')
-    _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
+    _write_source(
+        tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n"
+    )
 
     class FakeRenderer:
         def render(self, source: str, output_format: str) -> bytes:
             return b"<svg/>"
 
     monkeypatch.setattr(
-        "scribpy.plugins.plantuml.WebPlantUmlRenderer", lambda _: FakeRenderer()
+        "scribpy.plugins.plantuml.WebPlantUmlRenderer",
+        lambda _: FakeRenderer(),
     )
 
     exit_code = main(
@@ -238,6 +242,25 @@ def test_build_html_cli_accepts_plantuml_overrides(
     captured = capsys.readouterr()
     assert exit_code == 0
     assert "HTML (single-page)" in captured.out
+
+
+def test_build_pdf_cli_reports_broken_pdf_installation(
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n")
+
+    def missing_module(name: str) -> object:
+        raise ImportError(name)
+
+    monkeypatch.setattr("scribpy.builders.pdf.import_module", missing_module)
+
+    exit_code = main(["build", "pdf", "--root", str(tmp_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "PDF" in captured.out
+    assert "error PDF001" in captured.err
 
 
 def test_missing_subcommand_returns_two(capsys) -> None:
@@ -476,7 +499,9 @@ def test_build_html_site_returns_zero_and_prints_site_artifact(
         site_dir.mkdir(parents=True, exist_ok=True)
         return BuildArtifact(site_dir, "html-site", "site"), ()
 
-    monkeypatch.setattr("scribpy.core.build_html_site.run_mkdocs_build", fake_run)
+    monkeypatch.setattr(
+        "scribpy.core.build_html_site.run_mkdocs_build", fake_run
+    )
     _write_config(tmp_path, '[paths]\nsource = "doc"\n')
     _write_source(tmp_path, "doc/index.md", "# Home\n")
 
@@ -516,7 +541,7 @@ def test_build_html_defaults_to_single_page_mode(
 
     exit_code = main(["build", "html", "--root", str(tmp_path)])
 
-    captured = capsys.readouterr()
+    capsys.readouterr()
     assert exit_code == 0
     assert (tmp_path / "build/html/index.html").exists()
 

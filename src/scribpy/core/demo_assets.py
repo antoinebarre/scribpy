@@ -157,4 +157,34 @@ a { color: var(--accent); }
 }
 """
 
-__all__ = ["DEMO_CSS"]
+DEMO_PDF_CSS = """\
+body {
+  font-family: "Avenir Next", Arial, sans-serif;
+  font-size: 10pt;
+}
+
+h1 {
+  border-bottom: 1.2pt solid #2563eb;
+  padding-bottom: 6pt;
+}
+
+h2 {
+  color: #0f766e;
+}
+
+blockquote {
+  border-left: 3pt solid #0f766e;
+  margin-left: 0;
+  padding-left: 10pt;
+}
+
+code {
+  color: #9f1239;
+}
+
+table th {
+  background: #e0f2fe;
+}
+"""
+
+__all__ = ["DEMO_CSS", "DEMO_PDF_CSS"]

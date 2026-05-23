@@ -18,12 +18,15 @@ from scribpy.cli.build_help import (
     BUILD_HTML_EPILOG,
     BUILD_MARKDOWN_DESCRIPTION,
     BUILD_MARKDOWN_EPILOG,
+    BUILD_PDF_DESCRIPTION,
+    BUILD_PDF_EPILOG,
 )
 from scribpy.cli.execution import (
     LogLevel,
     Runtime,
     run_build_html_command,
     run_build_markdown_command,
+    run_build_pdf_command,
     run_demo_create_command,
     run_index_check_command,
     run_lint_command,
@@ -288,6 +291,44 @@ def build_html(
             output_dir,
             None if plantuml_renderer is None else plantuml_renderer.value,
             plantuml_server_url,
+            runtime.stdout,
+            runtime.stderr,
+        ),
+    )
+
+
+@build_app.command(
+    "pdf",
+    help=_verbatim(BUILD_PDF_DESCRIPTION),
+    epilog=_verbatim(BUILD_PDF_EPILOG),
+)
+def build_pdf(
+    ctx: typer.Context,
+    root: Annotated[
+        Path | None, typer.Option("--root", help=_ROOT_HELP)
+    ] = None,
+    output_dir: Annotated[
+        Path | None, typer.Option("--output-dir", help=_OUTPUT_DIR_HELP)
+    ] = None,
+    css_files: Annotated[
+        list[Path] | None,
+        typer.Option("--css", help="Additional PDF CSS file."),
+    ] = None,
+) -> None:
+    """Build PDF output.
+
+    Args:
+        ctx: Current command context.
+        root: Optional project root override.
+        output_dir: Optional build directory override.
+        css_files: Additional PDF CSS files for this run.
+    """
+    _finish(
+        ctx,
+        lambda runtime: run_build_pdf_command(
+            root,
+            output_dir,
+            tuple(css_files or ()),
             runtime.stdout,
             runtime.stderr,
         ),

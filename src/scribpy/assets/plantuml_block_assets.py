@@ -1,4 +1,4 @@
-"""Materialize one PlantUML source block as an SVG asset."""
+"""Materialize one PlantUML source block as an image asset."""
 
 from __future__ import annotations
 
@@ -38,24 +38,26 @@ def render_block_asset(
     renderer: DiagramRenderer,
     output_dir: Path,
     target: str,
+    image_format: str = "svg",
 ) -> RenderedPlantUmlBlock:
-    """Render one PlantUML source block and write its SVG asset.
+    """Render one PlantUML source block and write its image asset.
 
     Args:
         source: Raw PlantUML source inside one fenced block.
         renderer: Diagram renderer backend.
-        output_dir: Destination directory for generated SVG files.
+        output_dir: Destination directory for generated image files.
         target: Artifact target label.
+        image_format: Requested output image format.
 
     Returns:
         Rendered block result with filename, artifacts, and diagnostics.
     """
     digest = hashlib.sha256(source.encode("utf-8")).hexdigest()[:16]
-    filename = f"plantuml-{digest}.svg"
+    filename = f"plantuml-{digest}.{image_format}"
     artifact_path = output_dir / filename
     logger.info("Rendering PlantUML block %s to %s", digest, artifact_path)
     try:
-        svg = renderer.render(source, "svg").decode("utf-8")
+        image = renderer.render(source, image_format)
     except PlantUmlRenderError as exc:
         logger.error("PlantUML block %s failed to render: %s", digest, exc)
         return RenderedPlantUmlBlock(
@@ -68,7 +70,7 @@ def render_block_asset(
         )
     try:
         artifact_path.parent.mkdir(parents=True, exist_ok=True)
-        artifact_path.write_text(svg, encoding="utf-8")
+        artifact_path.write_bytes(image)
     except Exception as exc:
         logger.error("PlantUML block %s failed to write: %s", digest, exc)
         return RenderedPlantUmlBlock(
@@ -82,11 +84,11 @@ def render_block_asset(
 
 
 def _write_failure_diagnostic(exc: Exception, path: Path) -> Diagnostic:
-    """Return a diagnostic for a failed SVG asset write."""
+    """Return a diagnostic for a failed image asset write."""
     return Diagnostic(
         severity="error",
         code="UML003",
-        message=f"Cannot write PlantUML SVG asset: {exc}",
+        message=f"Cannot write PlantUML image asset: {exc}",
         path=path,
         hint="Check that the build directory is writable.",
     )

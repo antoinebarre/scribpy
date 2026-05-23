@@ -2,6 +2,7 @@
 
 from scribpy.builders import merge_documents
 from scribpy.core.build_html import build_html_project
+from scribpy.core.build_pdf import build_pdf_project
 from scribpy.core.build_project import build_project
 from scribpy.core.demo import DemoVariant, create_demo_project
 from scribpy.core.index_check import (
@@ -16,6 +17,7 @@ from scribpy.core.parse_check import parse_project_documents
 __all__ = [
     "DemoVariant",
     "build_html_project",
+    "build_pdf_project",
     "build_project",
     "check_index",
     "create_demo_project",

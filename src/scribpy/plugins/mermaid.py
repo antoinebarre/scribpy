@@ -57,6 +57,7 @@ class MermaidPlugin:
         output_dir: Path,
         flattened: bool,
         target: str,
+        image_format: str = "svg",
     ) -> tuple[
         tuple[TransformedDocument, ...],
         tuple[BuildArtifact, ...],
@@ -69,6 +70,7 @@ class MermaidPlugin:
             output_dir: Root directory for generated plugin assets.
             flattened: Whether output documents will be merged into one page.
             target: Artifact target label.
+            image_format: Requested image format for generated diagrams.
 
         Returns:
             Rewritten documents, generated artifacts, and diagnostics.
@@ -79,6 +81,7 @@ class MermaidPlugin:
             diagrams_dir=output_dir / "diagrams",
             flattened=flattened,
             target=target,
+            image_format=image_format,
         )
 
 

@@ -38,12 +38,14 @@ Quick start
     scribpy.check_index(".")
     scribpy.lint(".")
     scribpy.build_html(".", mode="site")
+    scribpy.build_pdf(".")
 """
 
 from scribpy._version import __version__
 from scribpy.api import (
     build_html,
     build_markdown,
+    build_pdf,
     check_index,
     check_parse,
     create_demo,
@@ -61,6 +63,7 @@ __all__ = [
     "__version__",
     "build_html",
     "build_markdown",
+    "build_pdf",
     "check_index",
     "check_parse",
     "create_demo",

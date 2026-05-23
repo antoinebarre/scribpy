@@ -48,6 +48,21 @@ def validate_config(config: Config) -> tuple[Diagnostic, ...]:
                 )
             )
 
+    for css_path in config.pdf.css_files:
+        if not _is_safe_relative_path(css_path):
+            diagnostics.append(
+                Diagnostic(
+                    severity="error",
+                    code="CFG004",
+                    message=(
+                        "Configured PDF CSS paths must be relative and stay "
+                        "inside the project."
+                    ),
+                    path=css_path,
+                    hint="Remove absolute paths and '..' segments from builders.pdf.css.",
+                )
+            )
+
     return tuple(diagnostics)
 
 

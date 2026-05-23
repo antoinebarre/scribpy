@@ -9,5 +9,7 @@ warning pour utilisation web
 avoir des test cyber securité
 séparer validation et vérification
 mettre a jour le SDD avec des vrais requirements comme l'INCOSE
+attention au TOC entre markdown, pdf et html
+separeter en scibpy et mkforge
 
 
