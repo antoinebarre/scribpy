@@ -45,6 +45,7 @@ def render_code_blocks(
     *,
     flattened: bool,
     target: str,
+    image_format: str = "svg",
 ) -> tuple[
     tuple[TransformedDocument, ...],
     tuple[BuildArtifact, ...],
@@ -59,6 +60,7 @@ def render_code_blocks(
         output_dir: Destination root for plugin-generated assets.
         flattened: Whether output documents will be merged into one page.
         target: Artifact target label.
+        image_format: Requested image format for generated diagrams.
 
     Returns:
         Rewritten documents, generated artifacts, and accumulated diagnostics.
@@ -72,6 +74,7 @@ def render_code_blocks(
                 output_dir=output_dir,
                 flattened=flattened,
                 target=target,
+                image_format=image_format,
             )
         )
         artifacts.extend(plugin_artifacts)

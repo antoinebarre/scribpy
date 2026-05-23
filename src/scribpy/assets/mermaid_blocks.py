@@ -29,16 +29,18 @@ def render_mermaid_blocks(
     href_prefix: PurePosixPath = _DIAGRAMS_DIR,
     target: str = "html",
     source_label: str | None = None,
+    image_format: str = "svg",
 ) -> MermaidRenderResult:
-    """Render fenced Mermaid blocks to local SVG image references.
+    """Render fenced Mermaid blocks to local image references.
 
     Args:
         content: Markdown content that may contain fenced ``mermaid`` blocks.
         renderer: Mermaid web renderer adapter.
-        output_dir: Absolute destination directory for generated SVG files.
+        output_dir: Absolute destination directory for generated image files.
         href_prefix: Relative output path used in generated Markdown links.
         target: Artifact target label.
         source_label: Optional source document label used in logs.
+        image_format: Requested output image format.
 
     Returns:
         Rewritten content plus generated artifacts and diagnostics.
@@ -69,6 +71,7 @@ def render_mermaid_blocks(
             output_dir=output_dir,
             target=target,
             source_label=source_label,
+            image_format=image_format,
         )
         if result.diagnostics:
             return MermaidRenderResult(

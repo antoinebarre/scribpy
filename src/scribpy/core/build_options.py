@@ -25,4 +25,17 @@ class HtmlBuildOverrides:
     plantuml_server_url: str | None = None
 
 
-__all__ = ["HtmlBuildOverrides"]
+@dataclass(frozen=True)
+class PdfBuildOverrides:
+    """Per-run PDF build overrides.
+
+    Attributes:
+        output_dir: Optional output directory override.
+        extra_css: Additional CSS files appended for one build.
+    """
+
+    output_dir: Path | None = None
+    extra_css: tuple[Path, ...] = ()
+
+
+__all__ = ["HtmlBuildOverrides", "PdfBuildOverrides"]

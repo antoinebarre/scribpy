@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
-from scribpy.core.demo_assets import DEMO_CSS
+from scribpy.core.demo_assets import DEMO_CSS, DEMO_PDF_CSS
 from scribpy.core.demo_mermaid import (
     ci_timeline_mermaid,
     delivery_flow_mermaid,
@@ -88,6 +88,11 @@ style = "decimal"
 mode = "single-page"
 css_files = ["theme/demo.css"]
 theme = "readthedocs"
+
+[builders.pdf]
+css = ["theme/pdf.css"]
+paper_size = "A4"
+toc_level = 3
 
 [index]
 mode = "explicit"
@@ -278,6 +283,7 @@ _VALID_DEMO_FILES: dict[Path, str] = {
 </svg>
 """,
     Path("theme/demo.css"): DEMO_CSS,
+    Path("theme/pdf.css"): DEMO_PDF_CSS,
     Path("README.md"): _valid_demo_readme(),
 }
 

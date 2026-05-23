@@ -165,6 +165,35 @@ class HtmlBuilderConfig:
 
 
 @dataclass(frozen=True)
+class PdfBuilderConfig:
+    """PDF builder configuration.
+
+    Attributes:
+        css_files: Stylesheet paths relative to the project root, applied after
+            the built-in printable defaults.
+        output_dir: Output directory relative to the project root. Defaults to
+            ``build/pdf``.
+        paper_size: Page size forwarded to injected PDF renderers when they
+            support it, for example ``"A4"`` or ``"A4-L"``.
+        toc_level: Deepest heading level included in renderer-native PDF
+            bookmarks when the injected renderer supports them.
+    """
+
+    css_files: tuple[Path, ...] = ()
+    output_dir: Path | None = None
+    paper_size: str = "A4"
+    toc_level: int = 3
+
+    def resolve_output_dir(self) -> Path:
+        """Return the effective PDF output directory.
+
+        Returns:
+            Resolved output directory path.
+        """
+        return self.output_dir or Path("build/pdf")
+
+
+@dataclass(frozen=True)
 class Config:
     """Minimal project configuration required by the project context chain.
 
@@ -174,6 +203,7 @@ class Config:
         index: Document index settings.
         document: Document output settings.
         html: HTML builder settings.
+        pdf: PDF builder settings.
     """
 
     project: ProjectConfig = field(default_factory=ProjectConfig)
@@ -181,6 +211,7 @@ class Config:
     index: IndexConfig = field(default_factory=IndexConfig)
     document: DocumentConfig = field(default_factory=DocumentConfig)
     html: HtmlBuilderConfig = field(default_factory=HtmlBuilderConfig)
+    pdf: PdfBuilderConfig = field(default_factory=PdfBuilderConfig)
 
 
 __all__ = [
@@ -193,6 +224,7 @@ __all__ = [
     "NumberingConfig",
     "NumberingStyle",
     "PathConfig",
+    "PdfBuilderConfig",
     "PlantUmlConfig",
     "PlantUmlRendererMode",
     "ProjectConfig",

@@ -20,6 +20,7 @@ from scribpy.config.types import (
     IndexConfig,
     NumberingConfig,
     PathConfig,
+    PdfBuilderConfig,
     ProjectConfig,
     TocConfig,
 )
@@ -33,6 +34,7 @@ def test_config_objects_are_frozen_dataclasses() -> None:
         TocConfig,
         NumberingConfig,
         DocumentConfig,
+        PdfBuilderConfig,
         Config,
     )
 
@@ -51,6 +53,7 @@ def test_default_config_matches_phase_2_conventions() -> None:
     assert config.document.title is None
     assert config.document.toc == TocConfig()
     assert config.document.numbering == NumberingConfig()
+    assert config.pdf == PdfBuilderConfig()
 
     with pytest.raises(FrozenInstanceError):
         config.paths.source = Path("docs")
@@ -74,6 +77,14 @@ def test_parse_config_reads_minimal_toml_shape() -> None:
                     "style": "roman",
                 },
             },
+            "builders": {
+                "pdf": {
+                    "css": ["theme/pdf.css"],
+                    "output_dir": "build/manual",
+                    "paper_size": "A4-L",
+                    "toc_level": 2,
+                }
+            },
         }
     )
 
@@ -85,6 +96,12 @@ def test_parse_config_reads_minimal_toml_shape() -> None:
         title="Manual",
         toc=TocConfig(enabled=False, max_level=3, style="numbered"),
         numbering=NumberingConfig(enabled=True, max_level=4, style="roman"),
+    )
+    assert config.pdf == PdfBuilderConfig(
+        css_files=(Path("theme/pdf.css"),),
+        output_dir=Path("build/manual"),
+        paper_size="A4-L",
+        toc_level=2,
     )
 
 
@@ -172,6 +189,32 @@ def test_load_config_returns_cfg003_for_invalid_value_type(
     assert len(diagnostics) == 1
     assert diagnostics[0].code == "CFG003"
     assert diagnostics[0].path == config_path
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        {"builders": {"pdf": {"css": "theme/pdf.css"}}},
+        {"builders": {"pdf": {"css": [42]}}},
+        {"builders": {"pdf": {"paper_size": 42}}},
+        {"builders": {"pdf": {"toc_level": "2"}}},
+        {"builders": {"pdf": {"toc_level": 9}}},
+    ],
+)
+def test_parse_config_rejects_invalid_pdf_builder_values(
+    raw: dict[str, object],
+) -> None:
+    with pytest.raises(ConfigParseError):
+        parse_config(raw)
+
+
+def test_validate_config_rejects_unsafe_pdf_css_path() -> None:
+    diagnostics = validate_config(
+        Config(pdf=PdfBuilderConfig(css_files=(Path("../pdf.css"),)))
+    )
+
+    assert len(diagnostics) == 1
+    assert diagnostics[0].code == "CFG004"
 
 
 def test_load_config_returns_cfg001_when_file_read_fails(

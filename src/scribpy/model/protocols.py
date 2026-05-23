@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 from scribpy.model.markdown import MarkdownAst
 
 if TYPE_CHECKING:
+    from scribpy.builders.pdf import PdfDocument, PdfRenderResult
     from scribpy.model.diagnostic import Diagnostic
     from scribpy.model.results import BuildArtifact
     from scribpy.model.transformed import TransformedDocument
@@ -94,14 +95,16 @@ class PdfRenderer(Protocol):
     """PDF renderer adapter."""
 
     def render(
-        self, html: str, css_files: Sequence[Path], output_path: Path
-    ) -> None:
-        """Render HTML and CSS files to an output path.
+        self, document: PdfDocument, output_path: Path
+    ) -> PdfRenderResult:
+        """Render a prepared PDF document to an output path.
 
         Args:
-            html: HTML text to render.
-            css_files: Stylesheets applied during rendering.
+            document: Markdown, CSS, metadata, and options prepared by Scribpy.
             output_path: Destination PDF path.
+
+        Returns:
+            PDF render result containing an artifact or diagnostics.
         """
 
 
@@ -155,6 +158,7 @@ class CodeBlockPlugin(Protocol):
         output_dir: Path,
         flattened: bool,
         target: str,
+        image_format: str,
     ) -> tuple[
         tuple[TransformedDocument, ...],
         tuple[BuildArtifact, ...],
@@ -167,6 +171,7 @@ class CodeBlockPlugin(Protocol):
             output_dir: Root directory for generated plugin assets.
             flattened: Whether output documents will be merged into one page.
             target: Artifact target label.
+            image_format: Requested output image format.
 
         Returns:
             Rewritten documents, generated artifacts, and diagnostics.

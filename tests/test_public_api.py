@@ -41,7 +41,9 @@ def test_top_level_api_build_html_supports_site_mode(
         site_dir.mkdir(parents=True, exist_ok=True)
         return scribpy.BuildArtifact(site_dir, "html-site", "site"), ()
 
-    monkeypatch.setattr("scribpy.core.build_html_site.run_mkdocs_build", fake_run)
+    monkeypatch.setattr(
+        "scribpy.core.build_html_site.run_mkdocs_build", fake_run
+    )
 
     result = scribpy.build_html(tmp_path, mode="site")
 
@@ -68,18 +70,47 @@ def test_top_level_api_builds_support_output_directory_overrides(
     assert (tmp_path / "ci/html/index.html").is_file()
 
 
+def test_top_level_api_build_pdf_accepts_injected_renderer(
+    tmp_path: Path,
+) -> None:
+    from scribpy.builders.pdf import PdfDocument, PdfRenderResult
+
+    _write_config(tmp_path)
+    _write_source(tmp_path, "doc/index.md")
+
+    class FakePdfRenderer:
+        def render(
+            self, document: PdfDocument, output_path: Path
+        ) -> PdfRenderResult:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_bytes(b"%PDF-FAKE")
+            return PdfRenderResult(
+                artifact=scribpy.BuildArtifact(output_path, "pdf", "document")
+            )
+
+    result = scribpy.build_pdf(
+        tmp_path, output_dir="ci/pdf", pdf_renderer=FakePdfRenderer()
+    )
+
+    assert result.success is True
+    assert (tmp_path / "ci/pdf/document.pdf").is_file()
+
+
 def test_top_level_api_build_html_supports_plantuml_override(
     tmp_path: Path, monkeypatch
 ) -> None:
     _write_config(tmp_path)
-    _write_source(tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n")
+    _write_source(
+        tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n"
+    )
 
     class FakeRenderer:
         def render(self, source: str, output_format: str) -> bytes:
             return b"<svg/>"
 
     monkeypatch.setattr(
-        "scribpy.plugins.plantuml.WebPlantUmlRenderer", lambda _: FakeRenderer()
+        "scribpy.plugins.plantuml.WebPlantUmlRenderer",
+        lambda _: FakeRenderer(),
     )
 
     result = scribpy.build_html(

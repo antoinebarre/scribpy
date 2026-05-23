@@ -5,10 +5,10 @@ from __future__ import annotations
 import shutil
 import subprocess
 import sys
-from shutil import which
 from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
+from shutil import which
 
 # Allow `python cli_demo.py` from the repository root without installing the package.
 sys.path.insert(0, str(Path(__file__).parent / "src"))
@@ -59,7 +59,14 @@ def main() -> int:
         ),
         _run(
             "Build single-page HTML with default web PlantUML",
-            ["build", "html", "--mode", "single-page", "--root", str(valid_dir)],
+            [
+                "build",
+                "html",
+                "--mode",
+                "single-page",
+                "--root",
+                str(valid_dir),
+            ],
             expected=0,
         ),
         _run(
@@ -89,6 +96,19 @@ def main() -> int:
                 PLANTUML_SERVER_URL,
                 "--root",
                 str(valid_dir),
+            ],
+            expected=0,
+        ),
+        _write_cli_pdf_theme(valid_dir / "theme" / "cli-pdf.css"),
+        _run(
+            "Build PDF with CSS override",
+            [
+                "build",
+                "pdf",
+                "--root",
+                str(valid_dir),
+                "--css",
+                "theme/cli-pdf.css",
             ],
             expected=0,
         ),
@@ -141,6 +161,38 @@ def _expected_java_plantuml_exit_code() -> int:
     except OSError:
         return 1
     return 0 if completed.returncode == 0 else 1
+
+
+def _write_cli_pdf_theme(path: Path) -> CommandResult:
+    """Write an extra PDF CSS file used by the CLI demo."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        """\
+/* CLI demo PDF override. */
+body {
+  font-family: Georgia, serif;
+  font-size: 10.5pt;
+}
+
+h1 {
+  color: #1e3a8a;
+}
+
+h2 {
+  color: #0f766e;
+}
+
+table th {
+  background: #dbeafe;
+}
+""",
+        encoding="utf-8",
+    )
+    return CommandResult(
+        label="Write PDF CSS override",
+        expected=0,
+        actual=0,
+    )
 
 
 def _run(label: str, argv: list[str], *, expected: int) -> CommandResult:
