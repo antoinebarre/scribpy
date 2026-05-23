@@ -158,6 +158,7 @@ class CodeBlockPlugin(Protocol):
         output_dir: Path,
         flattened: bool,
         target: str,
+        image_format: str,
     ) -> tuple[
         tuple[TransformedDocument, ...],
         tuple[BuildArtifact, ...],
@@ -170,6 +171,7 @@ class CodeBlockPlugin(Protocol):
             output_dir: Root directory for generated plugin assets.
             flattened: Whether output documents will be merged into one page.
             target: Artifact target label.
+            image_format: Requested output image format.
 
         Returns:
             Rewritten documents, generated artifacts, and diagnostics.

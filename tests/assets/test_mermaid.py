@@ -73,7 +73,9 @@ def test_render_mermaid_blocks_reports_unclosed_fence(tmp_path: Path) -> None:
     assert result.diagnostics[0].code == "MRM001"
 
 
-def test_render_mermaid_blocks_reports_renderer_failure(tmp_path: Path) -> None:
+def test_render_mermaid_blocks_reports_renderer_failure(
+    tmp_path: Path,
+) -> None:
     result = render_mermaid_blocks(
         "```mermaid\nflowchart LR\nA-->B\n```\n",
         renderer=FailingMermaidRenderer(),  # type: ignore[arg-type]
@@ -84,18 +86,29 @@ def test_render_mermaid_blocks_reports_renderer_failure(tmp_path: Path) -> None:
     assert result.diagnostics[0].code == "MRM002"
 
 
-def test_render_mermaid_blocks_reports_decode_failure(tmp_path: Path) -> None:
-    class BinaryRenderer:
+def test_render_mermaid_blocks_writes_png_and_uses_img_renderer_path(
+    tmp_path: Path,
+) -> None:
+    class PngRenderer:
+        seen_format = ""
+
         def render(self, source: str, output_format: str) -> bytes:
-            return b"\xff"
+            self.seen_format = output_format
+            return b"png"
+
+    renderer = PngRenderer()
 
     result = render_mermaid_blocks(
         "```mermaid\nflowchart LR\nA-->B\n```\n",
-        renderer=BinaryRenderer(),  # type: ignore[arg-type]
+        renderer=renderer,  # type: ignore[arg-type]
         output_dir=tmp_path,
+        image_format="png",
     )
 
-    assert result.diagnostics[0].code == "MRM002"
+    assert result.diagnostics == ()
+    assert renderer.seen_format == "img"
+    assert ".png)" in result.content
+    assert result.artifacts[0].path.read_bytes() == b"png"
 
 
 def test_render_mermaid_blocks_reports_write_failure(tmp_path: Path) -> None:
@@ -111,9 +124,15 @@ def test_render_mermaid_blocks_reports_write_failure(tmp_path: Path) -> None:
     assert result.diagnostics[0].code == "MRM003"
 
 
-def test_render_mermaid_documents_uses_nested_href_prefix(tmp_path: Path) -> None:
+def test_render_mermaid_documents_uses_nested_href_prefix(
+    tmp_path: Path,
+) -> None:
     documents, artifacts, diagnostics = render_mermaid_documents(
-        (_document("guide/page.md", "```mermaid\nflowchart LR\nA-->B\n```\n"),),
+        (
+            _document(
+                "guide/page.md", "```mermaid\nflowchart LR\nA-->B\n```\n"
+            ),
+        ),
         renderer=FakeMermaidRenderer(),  # type: ignore[arg-type]
         diagrams_dir=tmp_path / "assets/diagrams",
         flattened=False,
@@ -160,7 +179,9 @@ def test_web_mermaid_renderer_fetches_svg(monkeypatch) -> None:
         assert timeout == 30
         return FakeResponse()
 
-    monkeypatch.setattr("scribpy.assets.mermaid_renderer.urlopen", fake_urlopen)
+    monkeypatch.setattr(
+        "scribpy.assets.mermaid_renderer.urlopen", fake_urlopen
+    )
 
     rendered = WebMermaidRenderer("https://example.test", "forest").render(
         "flowchart LR\nA-->B", "svg"
@@ -181,7 +202,9 @@ def test_web_mermaid_renderer_reports_http_failure(monkeypatch) -> None:
             fp=BytesIO(b"bad diagram"),
         )
 
-    monkeypatch.setattr("scribpy.assets.mermaid_renderer.urlopen", fail_urlopen)
+    monkeypatch.setattr(
+        "scribpy.assets.mermaid_renderer.urlopen", fail_urlopen
+    )
 
     try:
         WebMermaidRenderer("https://example.test").render("broken", "svg")

@@ -71,6 +71,7 @@ def prepare_pdf_document(
         abs_output / "assets",
         flattened=True,
         target="pdf",
+        image_format="png",
     )
     if has_errors(diagnostics):
         return None, diagram_artifacts, diagnostics

@@ -29,6 +29,21 @@ pre, blockquote, table, img {
   break-inside: avoid;
 }
 
+img {
+  display: block;
+  height: auto;
+  margin: 12pt auto;
+  max-height: 650pt;
+  max-width: 100%;
+  object-fit: contain;
+  page-break-inside: avoid;
+}
+
+p:has(> img:only-child) {
+  margin: 12pt 0;
+  text-align: center;
+}
+
 table {
   border-collapse: collapse;
   width: 100%;

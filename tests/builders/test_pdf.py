@@ -42,6 +42,12 @@ def test_read_pdf_css_combines_default_and_user_css(tmp_path: Path) -> None:
     assert "color: teal" in css
 
 
+def test_default_pdf_css_scales_images_like_html() -> None:
+    assert "max-width: 100%" in DEFAULT_PDF_CSS
+    assert "height: auto" in DEFAULT_PDF_CSS
+    assert "object-fit: contain" in DEFAULT_PDF_CSS
+
+
 def test_read_pdf_css_reports_unreadable_css(tmp_path: Path) -> None:
     css, diagnostics = read_pdf_css(
         _document(tmp_path, (tmp_path / "none.css",))

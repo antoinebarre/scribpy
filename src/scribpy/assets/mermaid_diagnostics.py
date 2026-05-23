@@ -28,7 +28,7 @@ def render_failure_diagnostic(detail: str) -> Diagnostic:
 
 
 def write_failure_diagnostic(exc: Exception, path: Path) -> Diagnostic:
-    """Return a diagnostic for a failed SVG asset write.
+    """Return a diagnostic for a failed image asset write.
 
     Args:
         exc: Raised write exception.
@@ -40,7 +40,7 @@ def write_failure_diagnostic(exc: Exception, path: Path) -> Diagnostic:
     return Diagnostic(
         severity="error",
         code="MRM003",
-        message=f"Cannot write Mermaid SVG asset: {exc}",
+        message=f"Cannot write Mermaid image asset: {exc}",
         path=path,
         hint="Check that the build directory is writable.",
     )

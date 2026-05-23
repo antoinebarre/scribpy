@@ -218,7 +218,8 @@ def test_build_project_pdf_renders_diagrams_and_rasterizes_svg(
 
     class FakePlantUmlRenderer:
         def render(self, source: str, output_format: str) -> bytes:
-            return b"<svg xmlns='http://www.w3.org/2000/svg'/>"
+            assert output_format == "png"
+            return b"png"
 
     class FakePixmap:
         def save(self, path: Path) -> None:
@@ -268,7 +269,6 @@ def test_build_project_pdf_renders_diagrams_and_rasterizes_svg(
     assert "```plantuml" not in seen[0].markdown
     assert "assets/diagrams/plantuml-" in seen[0].markdown
     assert ".png)" in seen[0].markdown
-    assert any(artifact.path.suffix == ".svg" for artifact in result.artifacts)
     assert any(artifact.path.suffix == ".png" for artifact in result.artifacts)
 
 
@@ -454,6 +454,7 @@ def test_build_pdf_project_stops_when_code_block_preflight_fails(
             output_dir: Path,
             flattened: bool,
             target: str,
+            image_format: str,
         ):
             return documents, (), ()
 
@@ -500,6 +501,7 @@ def test_build_pdf_project_stops_when_code_block_render_fails(
             output_dir: Path,
             flattened: bool,
             target: str,
+            image_format: str,
         ):
             return (
                 documents,

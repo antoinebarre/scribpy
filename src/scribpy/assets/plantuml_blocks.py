@@ -27,15 +27,17 @@ def render_plantuml_blocks(
     output_dir: Path,
     href_prefix: PurePosixPath = _DIAGRAMS_DIR,
     target: str = "html",
+    image_format: str = "svg",
 ) -> PlantUmlRenderResult:
-    """Render fenced PlantUML blocks to local SVG image references.
+    """Render fenced PlantUML blocks to local image references.
 
     Args:
         content: Markdown content that may contain fenced ``plantuml`` blocks.
         renderer: Local diagram renderer adapter.
-        output_dir: Absolute destination directory for generated SVG files.
+        output_dir: Absolute destination directory for generated image files.
         href_prefix: Relative output path used in generated Markdown links.
         target: Artifact target label.
+        image_format: Requested output image format.
 
     Returns:
         Rewritten content plus generated artifacts and diagnostics.
@@ -61,7 +63,9 @@ def render_plantuml_blocks(
             )
 
         source = "".join(source_lines)
-        result = render_block_asset(source, renderer, output_dir, target)
+        result = render_block_asset(
+            source, renderer, output_dir, target, image_format
+        )
         if result.diagnostics:
             return PlantUmlRenderResult(
                 content=content, diagnostics=result.diagnostics

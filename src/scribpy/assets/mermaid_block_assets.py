@@ -1,4 +1,4 @@
-"""Materialize one Mermaid source block as an SVG asset."""
+"""Materialize one Mermaid source block as an image asset."""
 
 from __future__ import annotations
 
@@ -40,21 +40,23 @@ def render_block_asset(
     output_dir: Path,
     target: str,
     source_label: str | None,
+    image_format: str = "svg",
 ) -> RenderedMermaidBlock:
-    """Render one Mermaid source block and write its SVG asset.
+    """Render one Mermaid source block and write its image asset.
 
     Args:
         source: Raw Mermaid source inside one fenced block.
         renderer: Renderer object exposing ``render(source, format)``.
-        output_dir: Destination directory for generated SVG files.
+        output_dir: Destination directory for generated image files.
         target: Artifact target label.
         source_label: Optional source document label used in logs.
+        image_format: Requested output image format.
 
     Returns:
         Rendered block result with filename, artifacts, and diagnostics.
     """
     digest = hashlib.sha256(source.encode("utf-8")).hexdigest()[:16]
-    filename = f"mermaid-{digest}.svg"
+    filename = f"mermaid-{digest}.{image_format}"
     artifact_path = output_dir / filename
     label = source_label or "<unknown document>"
     logger.info(
@@ -64,8 +66,8 @@ def render_block_asset(
         artifact_path,
     )
     try:
-        svg = renderer.render(source, "svg").decode("utf-8")
-    except (MermaidRenderError, UnicodeDecodeError) as exc:
+        image = renderer.render(source, _renderer_format(image_format))
+    except MermaidRenderError as exc:
         logger.error(
             "Mermaid block %s from %s failed to render: %s",
             digest,
@@ -77,7 +79,7 @@ def render_block_asset(
         )
     try:
         artifact_path.parent.mkdir(parents=True, exist_ok=True)
-        artifact_path.write_text(svg, encoding="utf-8")
+        artifact_path.write_bytes(image)
     except Exception as exc:
         logger.error(
             "Mermaid block %s from %s failed to write: %s",
@@ -93,6 +95,13 @@ def render_block_asset(
     return RenderedMermaidBlock(
         filename, artifacts=(BuildArtifact(artifact_path, target, "diagram"),)
     )
+
+
+def _renderer_format(image_format: str) -> str:
+    """Return the Mermaid service path for an artifact extension."""
+    if image_format == "png":
+        return "img"
+    return image_format
 
 
 __all__ = ["RenderedMermaidBlock", "render_block_asset"]
