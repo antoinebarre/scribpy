@@ -2,32 +2,38 @@
 
 from __future__ import annotations
 
-import re
-from dataclasses import replace
 from pathlib import Path
 
 from scribpy.assets import (
     collect_asset_paths,
     copy_assets,
-    rewrite_asset_links_single_page,
 )
-from scribpy.assets.targets import is_external
-from scribpy.builders.markdown import merge_documents
 from scribpy.builders.pdf import (
-    DEFAULT_PDF_CSS,
     PDF_OUTPUT_FILE,
     MarkdownPdfRenderer,
     PdfDocument,
-    PdfOptions,
 )
+from scribpy.builders.pdf_assets import rasterize_svg_artifacts_for_pdf
 from scribpy.config.types import PdfBuilderConfig
+from scribpy.core.build_html_shared import (
+    code_block_plugins,
+    preflight_code_block_plugins,
+)
+from scribpy.core.pdf_document import prepare_pdf_document
 from scribpy.core.project_pipeline_state import ResolvedPipelineState
 from scribpy.extensions import ExtensionRegistry
 from scribpy.lint import LintContext, run_lint_rules
 from scribpy.logging import get_logger
-from scribpy.model import BuildResult, Diagnostic, TransformedDocument
-from scribpy.model.protocols import FileSystem, MarkdownParser, PdfRenderer
-from scribpy.transforms import TransformOptions, apply_transforms
+from scribpy.model import (
+    BuildArtifact,
+    BuildResult,
+    Diagnostic,
+)
+from scribpy.model.protocols import (
+    FileSystem,
+    MarkdownParser,
+    PdfRenderer,
+)
 from scribpy.utils import has_errors
 
 logger = get_logger(__name__)
@@ -65,21 +71,67 @@ def build_pdf_project(
         registry if registry is not None else ExtensionRegistry.native()
     )
     resolved = state.require_resolved()
-    diagnostics = _lint(resolved, diagnostics, active_registry)
+    return _build_pdf_from_resolved_state(
+        resolved,
+        diagnostics,
+        pdf_config,
+        active_registry,
+        pdf_renderer,
+    )
+
+
+def _build_pdf_from_resolved_state(
+    resolved: ResolvedPipelineState,
+    diagnostics: tuple[Diagnostic, ...],
+    pdf_config: PdfBuilderConfig,
+    registry: ExtensionRegistry,
+    pdf_renderer: PdfRenderer | None,
+) -> BuildResult:
+    """Build PDF from an already resolved project state."""
+    diagnostics = _lint(resolved, diagnostics, registry)
     if has_errors(diagnostics):
         return _blocked(diagnostics)
-
-    pdf_document, diagnostics = _prepare_pdf_document(
-        resolved, diagnostics, pdf_config, active_registry
-    )
-    if pdf_document is None or has_errors(diagnostics):
-        return BuildResult(
-            success=False, artifacts=(), diagnostics=diagnostics
-        )
 
     abs_output = _absolute_output_dir(
         resolved.project_root, pdf_config.resolve_output_dir()
     )
+    plugins = code_block_plugins(registry, resolved.config.html, None)
+    diagnostics = (
+        *diagnostics,
+        *preflight_code_block_plugins(resolved, plugins),
+    )
+    if has_errors(diagnostics):
+        return BuildResult(
+            success=False, artifacts=(), diagnostics=diagnostics
+        )
+
+    pdf_document, diagram_artifacts, diagnostics = prepare_pdf_document(
+        resolved, diagnostics, pdf_config, registry, plugins, abs_output
+    )
+    if pdf_document is None or has_errors(diagnostics):
+        return BuildResult(
+            success=False, artifacts=diagram_artifacts, diagnostics=diagnostics
+        )
+
+    return _copy_rasterize_and_render_pdf(
+        resolved,
+        abs_output,
+        pdf_document,
+        diagram_artifacts,
+        diagnostics,
+        pdf_renderer,
+    )
+
+
+def _copy_rasterize_and_render_pdf(
+    resolved: ResolvedPipelineState,
+    abs_output: Path,
+    pdf_document: PdfDocument,
+    diagram_artifacts: tuple[BuildArtifact, ...],
+    diagnostics: tuple[Diagnostic, ...],
+    pdf_renderer: PdfRenderer | None,
+) -> BuildResult:
+    """Copy assets, rasterize SVGs, and invoke the final PDF renderer."""
     source_root = (
         resolved.project_root / resolved.config.paths.source
     ).resolve()
@@ -95,136 +147,38 @@ def build_pdf_project(
             success=False, artifacts=assets, diagnostics=diagnostics
         )
 
+    pdf_document, raster_artifacts, raster_diagnostics = (
+        rasterize_svg_artifacts_for_pdf(
+            pdf_document, (*assets, *diagram_artifacts)
+        )
+    )
+    diagnostics = (*diagnostics, *raster_diagnostics)
+    if has_errors(diagnostics):
+        return BuildResult(
+            success=False,
+            artifacts=(*assets, *diagram_artifacts, *raster_artifacts),
+            diagnostics=diagnostics,
+        )
+
     renderer = pdf_renderer or MarkdownPdfRenderer()
     logger.info("Starting PDF build")
     render_result = renderer.render(pdf_document, abs_output / PDF_OUTPUT_FILE)
     diagnostics = (*diagnostics, *render_result.diagnostics)
     if not render_result.success or render_result.artifact is None:
         return BuildResult(
-            success=False, artifacts=assets, diagnostics=diagnostics
+            success=False,
+            artifacts=(*assets, *diagram_artifacts, *raster_artifacts),
+            diagnostics=diagnostics,
         )
     return BuildResult(
         success=True,
-        artifacts=(render_result.artifact, *assets),
-        diagnostics=diagnostics,
-    )
-
-
-def _prepare_pdf_document(
-    state: ResolvedPipelineState,
-    diagnostics: tuple[Diagnostic, ...],
-    pdf_config: PdfBuilderConfig,
-    registry: ExtensionRegistry,
-) -> tuple[PdfDocument | None, tuple[Diagnostic, ...]]:
-    """Transform documents and prepare the renderer-neutral PDF payload."""
-    source_root = (state.project_root / state.config.paths.source).resolve()
-    transform_result = apply_transforms(
-        state.documents,
-        target="markdown",
-        transforms=registry.markdown_transforms,
-        options=_pdf_transform_options(state),
-    )
-    diagnostics = (*diagnostics, *transform_result.diagnostics)
-    if has_errors(diagnostics):
-        return None, diagnostics
-
-    css_files, css_diagnostics = _resolve_css_files(
-        state.project_root, pdf_config.css_files
-    )
-    diagnostics = (*diagnostics, *css_diagnostics)
-    if has_errors(diagnostics):
-        return None, diagnostics
-
-    rewritten = rewrite_asset_links_single_page(
-        transform_result.documents, source_root
-    )
-    assembled = merge_documents(_drop_internal_pdf_links(rewritten))
-    return (
-        PdfDocument(
-            markdown=assembled.content,
-            root=_absolute_output_dir(
-                state.project_root, pdf_config.resolve_output_dir()
-            ).resolve(),
-            css_files=css_files,
-            default_css=DEFAULT_PDF_CSS,
-            options=PdfOptions(
-                paper_size=pdf_config.paper_size,
-                toc_level=pdf_config.toc_level,
-            ),
+        artifacts=(
+            render_result.artifact,
+            *assets,
+            *diagram_artifacts,
+            *raster_artifacts,
         ),
-        diagnostics,
-    )
-
-
-def _resolve_css_files(
-    project_root: Path, css_files: tuple[Path, ...]
-) -> tuple[tuple[Path, ...], tuple[Diagnostic, ...]]:
-    """Resolve and validate configured PDF CSS paths."""
-    resolved: list[Path] = []
-    diagnostics: list[Diagnostic] = []
-    for css_file in css_files:
-        abs_path = (
-            css_file if css_file.is_absolute() else project_root / css_file
-        )
-        if not abs_path.is_file():
-            diagnostics.append(
-                Diagnostic(
-                    severity="error",
-                    code="PDF003",
-                    message="PDF CSS file does not exist.",
-                    path=abs_path,
-                    hint="Update builders.pdf.css or pass an existing --css path.",
-                )
-            )
-            continue
-        resolved.append(abs_path)
-    return tuple(resolved), tuple(diagnostics)
-
-
-_MARKDOWN_LINK_RE = re.compile(r"(?<!!)\[([^\]]+)\]\(([^)]+)\)")
-
-
-def _drop_internal_pdf_links(
-    documents: tuple[TransformedDocument, ...],
-) -> tuple[TransformedDocument, ...]:
-    """Convert internal Markdown links to text for robust PDF rendering."""
-    return tuple(
-        replace(
-            document,
-            content=_MARKDOWN_LINK_RE.sub(
-                lambda match: _pdf_link_replacement(match), document.content
-            ),
-        )
-        for document in documents
-    )
-
-
-def _pdf_link_replacement(match: re.Match[str]) -> str:
-    """Return a PDF-safe replacement for one Markdown link match."""
-    label = match.group(1)
-    target = match.group(2).strip()
-    if is_external(target):
-        return match.group(0)
-    return label
-
-
-def _pdf_transform_options(state: ResolvedPipelineState) -> TransformOptions:
-    """Return Markdown transform options adapted for PDF rendering.
-
-    ``markdown-pdf`` already exposes native PDF bookmarks through ``toc_level``.
-    Keeping Scribpy's generated Markdown TOC would add anchor links that
-    PyMuPDF cannot always resolve as PDF destinations.
-    """
-    return TransformOptions(
-        document_title=state.config.document.title
-        or state.config.project.name
-        or "Document",
-        toc_enabled=False,
-        toc_max_level=state.config.document.toc.max_level,
-        toc_style=state.config.document.toc.style,
-        numbering_enabled=state.config.document.numbering.enabled,
-        numbering_max_level=state.config.document.numbering.max_level,
-        numbering_style=state.config.document.numbering.style,
+        diagnostics=diagnostics,
     )
 
 

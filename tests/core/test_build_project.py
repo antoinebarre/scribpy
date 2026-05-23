@@ -198,7 +198,78 @@ def test_build_project_pdf_uses_injected_renderer_and_css(
         tmp_path / "theme/pdf.css",
         tmp_path / "theme/pdf.css",
     )
-    assert "![Logo](assets/assets/logo.svg)" in seen[0].markdown
+    assert "![Logo](assets/assets/logo.png)" in seen[0].markdown
+
+
+def test_build_project_pdf_renders_diagrams_and_rasterizes_svg(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    from scribpy.builders.pdf import PdfDocument, PdfRenderResult
+    from scribpy.core.build_options import PdfBuildOverrides
+    from scribpy.core.build_project import build_pdf_with_overrides
+    from scribpy.model import BuildArtifact
+
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(
+        tmp_path, "doc/index.md", "# Home\n\n```plantuml\nA -> B\n```\n"
+    )
+    seen: list[PdfDocument] = []
+
+    class FakePlantUmlRenderer:
+        def render(self, source: str, output_format: str) -> bytes:
+            return b"<svg xmlns='http://www.w3.org/2000/svg'/>"
+
+    class FakePixmap:
+        def save(self, path: Path) -> None:
+            Path(path).write_bytes(b"png")
+
+    class FakePage:
+        def get_pixmap(self, **kwargs):
+            return FakePixmap()
+
+    class FakeSvg:
+        def __getitem__(self, index: int):
+            return FakePage()
+
+    class FakeFitz:
+        @staticmethod
+        def open(kind: str, data: bytes):
+            return FakeSvg()
+
+        @staticmethod
+        def Matrix(x_scale: int, y_scale: int):
+            return (x_scale, y_scale)
+
+    class FakePdfRenderer:
+        def render(
+            self, document: PdfDocument, output_path: Path
+        ) -> PdfRenderResult:
+            seen.append(document)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_bytes(b"%PDF-FAKE")
+            return PdfRenderResult(
+                BuildArtifact(output_path, "pdf", "document")
+            )
+
+    monkeypatch.setattr(
+        "scribpy.plugins.plantuml.WebPlantUmlRenderer",
+        lambda _: FakePlantUmlRenderer(),
+    )
+    monkeypatch.setitem(__import__("sys").modules, "fitz", FakeFitz)
+
+    result = build_pdf_with_overrides(
+        tmp_path,
+        PdfBuildOverrides(),
+        pdf_renderer=FakePdfRenderer(),
+    )
+
+    assert result.success is True
+    assert "```plantuml" not in seen[0].markdown
+    assert "assets/diagrams/plantuml-" in seen[0].markdown
+    assert ".png)" in seen[0].markdown
+    assert any(artifact.path.suffix == ".svg" for artifact in result.artifacts)
+    assert any(artifact.path.suffix == ".png" for artifact in result.artifacts)
 
 
 def test_build_project_pdf_reports_missing_css(tmp_path: Path) -> None:
@@ -215,7 +286,10 @@ def test_build_project_pdf_reports_missing_css(tmp_path: Path) -> None:
 
 
 def test_pdf_link_replacement_preserves_external_links() -> None:
-    from scribpy.core.build_pdf import _MARKDOWN_LINK_RE, _pdf_link_replacement
+    from scribpy.builders.pdf_markdown import (
+        _MARKDOWN_LINK_RE,
+        _pdf_link_replacement,
+    )
 
     external = _MARKDOWN_LINK_RE.search("[Site](https://example.test)")
     internal = _MARKDOWN_LINK_RE.search("[Guide](guide/page.md)")
@@ -345,3 +419,162 @@ def test_build_pdf_project_reports_asset_copy_error(tmp_path: Path) -> None:
 
     assert result.success is False
     assert [diagnostic.code for diagnostic in result.diagnostics] == ["ASS002"]
+
+
+def test_build_pdf_project_stops_when_code_block_preflight_fails(
+    tmp_path: Path,
+) -> None:
+    from scribpy.config.types import PdfBuilderConfig
+    from scribpy.core.build_pdf import build_pdf_project
+    from scribpy.extensions import ExtensionRegistry
+    from scribpy.model import Diagnostic, TransformedDocument
+
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n```fake\nx\n```\n")
+
+    class PreflightFailingPlugin:
+        language = "fake"
+
+        def has_blocks(self, content: str) -> bool:
+            return "```fake" in content
+
+        def preflight(self) -> tuple[Diagnostic, ...]:
+            return (
+                Diagnostic(
+                    severity="error",
+                    code="FAKE001",
+                    message="Fake plugin is not available.",
+                ),
+            )
+
+        def render_documents(
+            self,
+            documents: tuple[TransformedDocument, ...],
+            *,
+            output_dir: Path,
+            flattened: bool,
+            target: str,
+        ):
+            return documents, (), ()
+
+    result = build_pdf_project(
+        tmp_path,
+        pdf_config=PdfBuilderConfig(),
+        filesystem=None,
+        parser=None,
+        registry=ExtensionRegistry.native().with_code_block_plugin(
+            PreflightFailingPlugin()
+        ),
+    )
+
+    assert result.success is False
+    assert [diagnostic.code for diagnostic in result.diagnostics] == [
+        "FAKE001"
+    ]
+
+
+def test_build_pdf_project_stops_when_code_block_render_fails(
+    tmp_path: Path,
+) -> None:
+    from scribpy.config.types import PdfBuilderConfig
+    from scribpy.core.build_pdf import build_pdf_project
+    from scribpy.extensions import ExtensionRegistry
+    from scribpy.model import BuildArtifact, Diagnostic, TransformedDocument
+
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(tmp_path, "doc/index.md", "# Home\n\n```fake\nx\n```\n")
+
+    class RenderFailingPlugin:
+        language = "fake"
+
+        def has_blocks(self, content: str) -> bool:
+            return "```fake" in content
+
+        def preflight(self) -> tuple[Diagnostic, ...]:
+            return ()
+
+        def render_documents(
+            self,
+            documents: tuple[TransformedDocument, ...],
+            *,
+            output_dir: Path,
+            flattened: bool,
+            target: str,
+        ):
+            return (
+                documents,
+                (
+                    BuildArtifact(
+                        path=output_dir / "fake.svg",
+                        target=target,
+                        artifact_type="diagram",
+                    ),
+                ),
+                (
+                    Diagnostic(
+                        severity="error",
+                        code="FAKE002",
+                        message="Fake render failed.",
+                    ),
+                ),
+            )
+
+    result = build_pdf_project(
+        tmp_path,
+        pdf_config=PdfBuilderConfig(),
+        filesystem=None,
+        parser=None,
+        registry=ExtensionRegistry.native().with_code_block_plugin(
+            RenderFailingPlugin()
+        ),
+    )
+
+    assert result.success is False
+    assert [diagnostic.code for diagnostic in result.diagnostics] == [
+        "FAKE002"
+    ]
+    assert [artifact.path.name for artifact in result.artifacts] == [
+        "fake.svg"
+    ]
+
+
+def test_build_pdf_project_reports_rasterization_error(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from scribpy.builders.pdf import PdfDocument, PdfRenderResult
+    from scribpy.config.types import PdfBuilderConfig
+    from scribpy.core.build_pdf import build_pdf_project
+
+    _write_config(tmp_path, '[paths]\nsource = "doc"\n')
+    _write_source(
+        tmp_path, "doc/index.md", "# Home\n\n![Logo](assets/logo.svg)\n"
+    )
+    _write_source(tmp_path, "doc/assets/logo.svg", "<svg/>\n")
+
+    class FailingFitz:
+        @staticmethod
+        def open(kind: str, data: bytes):
+            raise ValueError("bad svg")
+
+    class UnusedPdfRenderer:
+        def render(
+            self, document: PdfDocument, output_path: Path
+        ) -> PdfRenderResult:
+            raise AssertionError("renderer should not be called")
+
+    monkeypatch.setitem(__import__("sys").modules, "fitz", FailingFitz)
+
+    result = build_pdf_project(
+        tmp_path,
+        pdf_config=PdfBuilderConfig(),
+        filesystem=None,
+        parser=None,
+        registry=None,
+        pdf_renderer=UnusedPdfRenderer(),
+    )
+
+    assert result.success is False
+    assert [diagnostic.code for diagnostic in result.diagnostics] == ["PDF004"]
+    assert [artifact.path.name for artifact in result.artifacts] == [
+        "logo.svg"
+    ]
