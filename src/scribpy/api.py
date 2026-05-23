@@ -179,7 +179,7 @@ def build_pdf(
             resolved from the project root; absolute paths are kept.
         extra_css: Additional PDF CSS file paths appended after configured CSS.
         pdf_renderer: Optional renderer implementing ``PdfRenderer``. When
-            omitted, Scribpy uses the optional ``MarkdownPdfRenderer`` adapter.
+            omitted, Scribpy uses the built-in ``MarkdownPdfRenderer`` adapter.
 
     Returns:
         Build result for the PDF target.

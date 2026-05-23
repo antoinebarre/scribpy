@@ -113,7 +113,7 @@ class PdfRenderResult:
 
 
 class MarkdownPdfRenderer:
-    """Optional ``markdown-pdf`` adapter used by the default PDF build."""
+    """Default ``markdown-pdf`` adapter used by PDF builds."""
 
     def render(
         self, document: PdfDocument, output_path: Path
@@ -136,7 +136,10 @@ class MarkdownPdfRenderer:
                         severity="error",
                         code="PDF001",
                         message="PDF renderer dependency markdown-pdf is not installed.",
-                        hint="Install optional PDF support with: pip install scribpy[pdf]",
+                        hint=(
+                            "Reinstall Scribpy so its required dependencies "
+                            "are present."
+                        ),
                     ),
                 ),
             )

@@ -1096,16 +1096,12 @@ name = "scribpy"
 source = { editable = "." }
 dependencies = [
     { name = "markdown-it-py" },
+    { name = "markdown-pdf" },
     { name = "mkdocs" },
     { name = "pyyaml" },
     { name = "rich" },
     { name = "tomlkit" },
     { name = "typer" },
-]
-
-[package.optional-dependencies]
-pdf = [
-    { name = "markdown-pdf" },
 ]
 
 [package.dev-dependencies]
@@ -1127,14 +1123,13 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "markdown-it-py", specifier = ">=3" },
-    { name = "markdown-pdf", marker = "extra == 'pdf'", specifier = ">=1.13" },
+    { name = "markdown-pdf", specifier = ">=1.13" },
     { name = "mkdocs", specifier = ">=1.6" },
     { name = "pyyaml", specifier = ">=6" },
     { name = "rich", specifier = ">=13" },
     { name = "tomlkit", specifier = ">=0.13" },
     { name = "typer", specifier = ">=0.16" },
 ]
-provides-extras = ["pdf"]
 
 [package.metadata.requires-dev]
 dev = [

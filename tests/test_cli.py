@@ -244,7 +244,7 @@ def test_build_html_cli_accepts_plantuml_overrides(
     assert "HTML (single-page)" in captured.out
 
 
-def test_build_pdf_cli_reports_missing_optional_renderer(
+def test_build_pdf_cli_reports_broken_pdf_installation(
     tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _write_config(tmp_path, '[paths]\nsource = "doc"\n')

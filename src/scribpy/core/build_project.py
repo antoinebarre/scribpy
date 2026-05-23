@@ -255,7 +255,7 @@ def build_pdf_with_overrides(
         root: Project root or path inside the project.
         overrides: Grouped PDF overrides for one build.
         pdf_renderer: Optional injected renderer. When omitted, Scribpy uses
-            the optional ``MarkdownPdfRenderer`` adapter.
+            the built-in ``MarkdownPdfRenderer`` adapter.
         filesystem: Optional filesystem override.
         parser: Optional parser override.
         registry: Optional extension registry override.

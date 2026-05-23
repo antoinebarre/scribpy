@@ -478,11 +478,11 @@ Outputs:
 Minimum viable implementation:
 
 - PDF renderer protocol;
-- one adapter, probably WeasyPrint first;
-- graceful error if optional dependency is missing.
+- default renderer installed with Scribpy;
+- graceful error if the runtime installation is incomplete.
 
 Development value: important final deliverable, but it should follow Markdown
-and HTML because it has heavier external dependencies.
+and HTML because it has heavier renderer dependencies.
 
 ---
 

@@ -110,7 +110,7 @@ def main() -> int:
                 "--css",
                 "theme/cli-pdf.css",
             ],
-            expected=_expected_pdf_exit_code(),
+            expected=0,
         ),
         _run(
             "Create invalid demo",
@@ -161,20 +161,6 @@ def _expected_java_plantuml_exit_code() -> int:
     except OSError:
         return 1
     return 0 if completed.returncode == 0 else 1
-
-
-def _expected_pdf_exit_code() -> int:
-    """Return the expected PDF outcome for this environment.
-
-    Returns:
-        ``0`` when ``markdown-pdf`` is installed, otherwise ``1`` for the
-        expected ``PDF001`` optional dependency diagnostic.
-    """
-    try:
-        __import__("markdown_pdf")
-    except ImportError:
-        return 1
-    return 0
 
 
 def _write_cli_pdf_theme(path: Path) -> CommandResult:

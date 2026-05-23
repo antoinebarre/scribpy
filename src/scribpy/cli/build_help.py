@@ -63,7 +63,7 @@ Build a PDF document from indexed Markdown source files.
 
 The command parses, lints, applies Markdown transforms, copies local assets,
 then delegates the final rendering to the injectable PDF renderer. The default
-renderer uses the optional markdown-pdf package when installed.
+renderer uses markdown-pdf, installed with Scribpy.
 
 CSS files declared in [builders.pdf] css, or passed with --css, are applied
 after Scribpy's built-in printable defaults.

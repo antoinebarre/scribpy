@@ -151,6 +151,7 @@ def test_build_project_uses_document_transform_configuration(
 
 def test_build_project_pdf_uses_injected_renderer_and_css(
     tmp_path: Path,
+    monkeypatch,
 ) -> None:
     from scribpy.builders.pdf import PdfDocument, PdfRenderResult
     from scribpy.model import BuildArtifact
@@ -181,8 +182,31 @@ def test_build_project_pdf_uses_injected_renderer_and_css(
                 )
             )
 
+    class FakePixmap:
+        def save(self, path: Path) -> None:
+            Path(path).write_bytes(b"png")
+
+    class FakePage:
+        def get_pixmap(self, **kwargs):
+            return FakePixmap()
+
+    class FakeSvg:
+        def __getitem__(self, index: int):
+            return FakePage()
+
+    class FakeFitz:
+        @staticmethod
+        def open(kind: str, data: bytes):
+            return FakeSvg()
+
+        @staticmethod
+        def Matrix(x_scale: int, y_scale: int):
+            return (x_scale, y_scale)
+
     from scribpy.core.build_options import PdfBuildOverrides
     from scribpy.core.build_project import build_pdf_with_overrides
+
+    monkeypatch.setitem(__import__("sys").modules, "fitz", FakeFitz)
 
     result = build_pdf_with_overrides(
         tmp_path,

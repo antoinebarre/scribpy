@@ -120,7 +120,7 @@ def test_failed_build_result_can_report_diagnostics_without_artifacts() -> (
         severity="error",
         code="BUILD002",
         message="PDF renderer is unavailable",
-        hint="Install the optional PDF dependencies.",
+        hint="Reinstall the package with its required PDF dependencies.",
     )
 
     result = BuildResult(

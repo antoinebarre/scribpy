@@ -30,6 +30,7 @@ dependencies = [
     "mkdocs>=1.6",
     "rich>=13",
     "typer>=0.16",
+    "markdown-pdf>=1.13",
 ]
 
 [project.urls]
@@ -40,9 +41,6 @@ Documentation = "https://github.com/antoinebarre/scribpy/blob/main/README.md"
 
 [project.scripts]
 scribpy = "scribpy.__main__:main"
-
-[project.optional-dependencies]
-pdf = ["markdown-pdf>=1.13"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/scribpy"]
