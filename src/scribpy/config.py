@@ -3,6 +3,10 @@
 Every tuneable value lives here as a typed, immutable field.  No magic
 constants elsewhere in the code — callers build a :class:`ScribpyConfig`
 and thread it through the pipeline.
+
+Hard-coded defaults are defined once as module-level constants
+(``DEFAULT_*``) and referenced by the dataclass field defaults and
+the config loader.
 """
 
 from __future__ import annotations
@@ -10,6 +14,16 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
+
+# -- Hard-coded defaults (single source of truth) -------------------------
+
+DEFAULT_SOURCE = Path()
+DEFAULT_OUTPUT_DIR = Path("work/build")
+DEFAULT_OUTPUT_FORMAT = "html"
+DEFAULT_RENDER_MODE = "offline"
+DEFAULT_TOC_ENABLED = False
+DEFAULT_CSS_PATH: Path | None = None
+DEFAULT_PLANTUML_JAR: Path | None = None
 
 
 class RenderMode(Enum):
@@ -38,7 +52,7 @@ class CssConfig:
             ``None`` means use the default built-in style.
     """
 
-    path: Path | None = None
+    path: Path | None = DEFAULT_CSS_PATH
 
 
 @dataclass(frozen=True)
@@ -50,7 +64,7 @@ class TocConfig:
             (REQ-003).
     """
 
-    enabled: bool = False
+    enabled: bool = DEFAULT_TOC_ENABLED
 
 
 @dataclass(frozen=True)
@@ -65,8 +79,10 @@ class DiagramConfig:
             locations.
     """
 
-    render_mode: RenderMode = RenderMode.OFFLINE
-    plantuml_jar: Path | None = None
+    render_mode: RenderMode = field(
+        default_factory=lambda: RenderMode(DEFAULT_RENDER_MODE),
+    )
+    plantuml_jar: Path | None = DEFAULT_PLANTUML_JAR
 
 
 @dataclass(frozen=True)
@@ -82,9 +98,15 @@ class ScribpyConfig:
         diagrams: Diagram rendering settings.
     """
 
-    source: Path = field(default_factory=Path)
-    output_dir: Path = field(default_factory=lambda: Path("work/build"))
-    output_format: OutputFormat = OutputFormat.HTML
+    source: Path = field(
+        default_factory=lambda: Path(DEFAULT_SOURCE),
+    )
+    output_dir: Path = field(
+        default_factory=lambda: Path(DEFAULT_OUTPUT_DIR),
+    )
+    output_format: OutputFormat = field(
+        default_factory=lambda: OutputFormat(DEFAULT_OUTPUT_FORMAT),
+    )
     css: CssConfig = field(default_factory=CssConfig)
     toc: TocConfig = field(default_factory=TocConfig)
     diagrams: DiagramConfig = field(default_factory=DiagramConfig)

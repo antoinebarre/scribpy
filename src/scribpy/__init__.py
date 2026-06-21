@@ -10,6 +10,7 @@ from scribpy.config import (
     ScribpyConfig,
     TocConfig,
 )
+from scribpy.config_loader import load_config
 from scribpy.errors import (
     DiagramRenderError,
     ImageNotFoundError,
@@ -29,5 +30,6 @@ __all__ = [
     "ScribpyConfig",
     "ScribpyError",
     "TocConfig",
+    "load_config",
     "logging_context",
 ]
