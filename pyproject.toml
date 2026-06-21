@@ -5,15 +5,15 @@ build-backend = "hatchling.build"
 [project]
 name = "scribpy"
 dynamic = ["version"]
-description = "Manipulate, edit, and generate documents from Markdown files."
+description = "Publish Markdown files to HTML or PDF."
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Antoine Barré" }]
-keywords = ["docs-as-code", "documentation", "markdown", "static-site", "compiler"]
+keywords = ["docs-as-code", "documentation", "markdown", "publishing"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
@@ -37,14 +37,9 @@ dependencies = [
 Homepage = "https://github.com/antoinebarre/scribpy"
 Repository = "https://github.com/antoinebarre/scribpy"
 Issues = "https://github.com/antoinebarre/scribpy/issues"
-Documentation = "https://github.com/antoinebarre/scribpy/blob/main/README.md"
-
-[project.scripts]
-scribpy = "scribpy.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/scribpy"]
-include = ["src/scribpy/vendor/*.jar"]
 
 [tool.hatch.version]
 source = "vcs"
@@ -84,13 +79,9 @@ cache_dir = "work/.mypy_cache"
 [tool.ruff]
 cache-dir = "work/.ruff_cache"
 line-length = 79
-exclude = ["tests/"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915"]
-# E501 is managed by the formatter (line-length = 79) for code;
-# docstrings and comments are not reformatted and may legitimately exceed
-# the limit slightly — exclude E501 to avoid false positives there.
 ignore = ["E501"]
 
 [tool.ruff.lint.pydocstyle]
@@ -105,38 +96,9 @@ max-branches = 12
 max-returns = 6
 max-statements = 50
 
-[tool.quality-gate]
-project_name = "scribpy"
-source_root = "src/scribpy"
-source_base = "src"
-config_namespace = "scribpy"
-
-[tool.scribpy.code_metrics]
-paths = ["src/scribpy"]
-exclude = []
-max_cyclomatic_complexity = 10
-max_average_complexity = 4.0
-min_maintainability_index = 50
-max_module_logical_lines = 300
-max_module_source_lines = 520
-report_path = "work/code-metrics-report.md"
-
-[tool.bandit]
-exclude_dirs = ["tests", "work", "dist", "site"]
-skips = [
-    "B101",   # assert used in tests
-    "B105",   # hardcoded_password_string: false positive on status icon strings
-    "B404",   # import subprocess: used in report scripts for pip list introspection
-    "B603",   # subprocess_without_shell: call uses fixed args, no user input
-]
-
-[tool.scribpy.security_audit]
-# PYSEC-2026-89 affects Python-Markdown versions before 3.8.1; the lockfile
-# currently resolves markdown to 3.10.2, so pip-audit's match is a false positive.
-ignore_vulns = ["PYSEC-2026-89"]
-
 [dependency-groups]
 dev = [
+    "yggtools>=1.1.3",
     "bandit>=1.8",
     "flake8>=7",
     "flake8-bugbear>=24",

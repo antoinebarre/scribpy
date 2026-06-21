@@ -21,14 +21,12 @@ jobs:
         run: uv sync --group dev
 
       - name: Run CI checks
-        run: bash scripts/ci.sh
+        run: uv run yggtools pipeline
 
       - name: Upload CI reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ci-reports-${{ github.run_number }}
-          path: |
-            work/quality_artefacts.zip
-            work/quality_report.md
+          path: work/reports/
           if-no-files-found: ignore
