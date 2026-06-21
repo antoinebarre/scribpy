@@ -1,0 +1,21 @@
+{
+  "artifacts": [],
+  "check": "format",
+  "command": [
+    "uv",
+    "run",
+    "ruff",
+    "format",
+    "--check",
+    "src",
+    "tests"
+  ],
+  "detail": "0 file(s) to reformat",
+  "duration_seconds": 0.022563542006537318,
+  "metadata": {},
+  "passed": true,
+  "schema": "yggtools.ci.check.v1",
+  "status": "pass",
+  "stderr": "",
+  "stdout": "10 files already formatted\n"
+}

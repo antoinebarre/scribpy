@@ -1,0 +1,20 @@
+{
+  "artifacts": [],
+  "check": "ruff",
+  "command": [
+    "uv",
+    "run",
+    "ruff",
+    "check",
+    "src",
+    "tests"
+  ],
+  "detail": "0 error(s)",
+  "duration_seconds": 0.020017000031657517,
+  "metadata": {},
+  "passed": true,
+  "schema": "yggtools.ci.check.v1",
+  "status": "pass",
+  "stderr": "",
+  "stdout": "All checks passed!\n"
+}

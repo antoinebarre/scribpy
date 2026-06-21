@@ -1,0 +1,19 @@
+{
+  "artifacts": [],
+  "check": "flake8",
+  "command": [
+    "uv",
+    "run",
+    "flake8",
+    "src",
+    "tests"
+  ],
+  "detail": "0 violation(s)",
+  "duration_seconds": 0.3595021250657737,
+  "metadata": {},
+  "passed": true,
+  "schema": "yggtools.ci.check.v1",
+  "status": "pass",
+  "stderr": "",
+  "stdout": "0\n"
+}

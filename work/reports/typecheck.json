@@ -1,0 +1,19 @@
+{
+  "artifacts": [],
+  "check": "typecheck",
+  "command": [
+    "uv",
+    "run",
+    "mypy",
+    "src",
+    "tests"
+  ],
+  "detail": "Success: no issues found in 10 source files",
+  "duration_seconds": 0.14730800001416355,
+  "metadata": {},
+  "passed": true,
+  "schema": "yggtools.ci.check.v1",
+  "status": "pass",
+  "stderr": "",
+  "stdout": "Success: no issues found in 10 source files\n"
+}

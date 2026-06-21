@@ -1,0 +1,18 @@
+{
+  "artifacts": [],
+  "check": "security-deps",
+  "command": [
+    "uv",
+    "run",
+    "pip-audit",
+    "--progress-spinner=off"
+  ],
+  "detail": "No vulnerabilities found",
+  "duration_seconds": 0.435268749948591,
+  "metadata": {},
+  "passed": true,
+  "schema": "yggtools.ci.check.v1",
+  "status": "pass",
+  "stderr": "No known vulnerabilities found\n",
+  "stdout": ""
+}

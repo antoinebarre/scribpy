@@ -1,0 +1,52 @@
+[
+  {
+    "path": "src/scribpy/__init__.py",
+    "sha256": "dffd9aec67de753f605681346258218c87f5a8aa38680b0fcd084a45ef00d48d",
+    "size_bytes": 629
+  },
+  {
+    "path": "src/scribpy/config.py",
+    "sha256": "3505233d4aade96eeff9c21479650a6abcd522d7a5a0829ddd1ac9baade50ca5",
+    "size_bytes": 2337
+  },
+  {
+    "path": "src/scribpy/errors.py",
+    "sha256": "b7dbf6f98f00960b17067ca898eb5b60305914261de251914bfc5355dd2c82f8",
+    "size_bytes": 2185
+  },
+  {
+    "path": "src/scribpy/log.py",
+    "sha256": "e5e515f35982935dec8601d7b5aa38038be7768f86b29df516a8eb0ab829ee74",
+    "size_bytes": 4348
+  },
+  {
+    "path": "tests/__init__.py",
+    "sha256": "4e24ba0b5233c005e635af2edfa636c732f50934d99b63f0cc0b66660a2a7a91",
+    "size_bytes": 18
+  },
+  {
+    "path": "tests/conftest.py",
+    "sha256": "cedf0e368514b70309335bce8b096eac9f0c82a6ac2279bf104c44078dc342b8",
+    "size_bytes": 28
+  },
+  {
+    "path": "tests/test_config.py",
+    "sha256": "36ffad68ef881ad6cff5fa46fb9b612e179bc27fa51f5d8cb90f1062a7fa9a29",
+    "size_bytes": 5166
+  },
+  {
+    "path": "tests/test_errors.py",
+    "sha256": "dd3b9475299b07c991205eec128a57432bca3329754184b44361e7214407d81c",
+    "size_bytes": 2973
+  },
+  {
+    "path": "tests/test_log.py",
+    "sha256": "693144ce771a102bfb17b1a85079f604c9eb7e143cc5a2988587c60c38498484",
+    "size_bytes": 5461
+  },
+  {
+    "path": "tests/test_package.py",
+    "sha256": "37bfedbcffa5334bf1345288e38cc6d170e26a458d6acd03dafb506273844b53",
+    "size_bytes": 574
+  }
+]
