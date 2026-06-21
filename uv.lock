@@ -956,6 +956,9 @@ wheels = [
 name = "scribpy"
 version = "0.1.0"
 source = { virtual = "." }
+dependencies = [
+    { name = "rich" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -974,6 +977,7 @@ dev = [
 ]
 
 [package.metadata]
+requires-dist = [{ name = "rich", specifier = ">=13" }]
 
 [package.metadata.requires-dev]
 dev = [
