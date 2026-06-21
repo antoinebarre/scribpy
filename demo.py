@@ -18,6 +18,7 @@ from rich.table import Table
 from rich.text import Text
 
 import scribpy
+from scribpy.core.markdown_parser import parse
 
 WORK_DIR = Path("work/demo")
 
@@ -277,6 +278,97 @@ def demo_logging_levels() -> None:
     console.print("[green]No output above — as expected.[/]")
 
 
+def demo_markdown_parser() -> None:
+    """Demonstrate the Markdown parser (Lot 1)."""
+    _section("Markdown Parser (core)")
+
+    sample_md = """\
+# Project Overview
+
+Welcome to **Scribpy**.
+
+## Architecture
+
+![Diagram](img/architecture.png "Architecture diagram")
+
+Here is a PlantUML diagram:
+
+```plantuml
+@startuml
+Alice -> Bob: Hello
+Bob --> Alice: Hi!
+@enduml
+```
+
+And a Mermaid diagram:
+
+```mermaid
+graph TD
+    A[Start] --> B[End]
+```
+
+### Implementation details
+
+Some regular code that is not a diagram:
+
+```python
+print("hello world")
+```
+"""
+
+    console.print("[dim]Parsing sample Markdown...[/]")
+    console.print()
+
+    doc = parse(sample_md)
+
+    # Headings
+    table = Table(title="Extracted headings", show_lines=True)
+    table.add_column("Level", style="bold")
+    table.add_column("Text")
+    table.add_column("Anchor", style="dim")
+    for h in doc.headings:
+        table.add_row(str(h.level), h.text, h.anchor)
+    console.print(table)
+    console.print()
+
+    # Images
+    table = Table(title="Extracted image references", show_lines=True)
+    table.add_column("Src", style="bold")
+    table.add_column("Alt")
+    table.add_column("Title", style="dim")
+    for img in doc.images:
+        table.add_row(img.src, img.alt, img.title)
+    console.print(table)
+    console.print()
+
+    # Diagrams
+    table = Table(title="Extracted diagram blocks", show_lines=True)
+    table.add_column("Index", style="bold")
+    table.add_column("Engine")
+    table.add_column("Source (first line)", style="dim")
+    for d in doc.diagrams:
+        first_line = d.source.strip().splitlines()[0]
+        table.add_row(str(d.index), d.engine, first_line)
+    console.print(table)
+    console.print()
+
+    # HTML snippet
+    html_preview = doc.html[:200] + "..." if len(doc.html) > 200 else doc.html
+    console.print(
+        Panel(
+            html_preview,
+            title="Rendered HTML (preview)",
+            expand=False,
+        ),
+    )
+
+    console.print()
+    console.print(
+        f"[green]Parser extracted {len(doc.headings)} headings, "
+        f"{len(doc.images)} images, {len(doc.diagrams)} diagrams.[/]",
+    )
+
+
 def main() -> None:
     """Run all feature demos."""
     console.print(
@@ -297,6 +389,7 @@ def main() -> None:
     demo_errors()
     demo_logging()
     demo_logging_levels()
+    demo_markdown_parser()
 
     _section("Summary")
     console.print(
