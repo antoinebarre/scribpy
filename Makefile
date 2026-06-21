@@ -1,61 +1,23 @@
-.PHONY: clean clean-work format lint flake8 docstrings docstrings-strict init-modules format-check typecheck metrics security-code security-deps security test check ci clean-dist build check-dist publish-test publish
+.PHONY: clean format check ci test build clean-dist check-dist publish-test publish
 
-clean-work:
+clean:
 	@mkdir -p work
 	@find work -mindepth 1 -maxdepth 1 ! -name .gitignore -exec rm -rf {} + || \
 		( sleep 0.2 && find work -mindepth 1 -maxdepth 1 ! -name .gitignore -exec rm -rf {} + )
 
-clean: clean-work
-
-format lint flake8 docstrings docstrings-strict init-modules format-check typecheck metrics security-code security-deps security test check ci clean-dist build check-dist publish-test publish: clean-work
-
 format:
-	uv run ruff format src/ scripts/
+	uv run ruff format src/ tests/
 
-format-check:
-	uv run ruff format --check src/ scripts/
+check: clean
+	uv run yggtools run --all
 
-lint:
-	uv run ruff check src/ scripts/
-
-flake8:
-	uv run flake8 src/scribpy/
-
-docstrings:
-	uv run ruff check src/ --select D --ignore D100,D104
-
-docstrings-strict:
-	uv run python scripts/check_google_docstrings.py
-
-init-modules:
-	uv run python scripts/check_init_modules.py
-
-typecheck:
-	uv run mypy src/
-
-metrics:
-	uv run python scripts/code_metrics.py
-
-security-code:
-	uv run bandit -c pyproject.toml -r src scripts
-
-security-deps:
-	@bash scripts/security_audit_deps.sh
-
-security: security-code security-deps
+ci: clean
+	uv run yggtools pipeline
 
 test:
 	@mkdir -p work
 	uv run pytest; \
 	code=$$?; [ $$code -eq 5 ] && exit 0 || exit $$code
-
-# Local dev: mutating format + consolidated readable summary
-check:
-	@bash scripts/check.sh
-
-# CI: all checks via the consolidated script (no early exit, full summary)
-ci:
-	@bash scripts/ci.sh
 
 clean-dist:
 	rm -rf dist
