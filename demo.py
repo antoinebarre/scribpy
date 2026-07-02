@@ -10,7 +10,10 @@ Outputs go to ``work/demo/``.
 from __future__ import annotations
 
 import logging
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
 from rich.console import Console
 from rich.panel import Panel
@@ -18,9 +21,19 @@ from rich.table import Table
 from rich.text import Text
 
 import scribpy
+from scribpy.config import CssConfig, RenderMode, TocConfig
+from scribpy.core.diagram_renderer import (
+    register_renderer,
+    render_all_diagrams,
+)
+from scribpy.core.image_resolver import resolve_images
 from scribpy.core.markdown_parser import parse
+from scribpy.diagrams.mermaid_web import MermaidWebRenderer
+from scribpy.diagrams.plantuml_web import PlantUmlWebRenderer
+from scribpy.render.html_renderer import render_html
 
 WORK_DIR = Path("work/demo")
+DEMO_ASSETS = Path("demo_assets")
 
 console = Console()
 
@@ -369,6 +382,98 @@ print("hello world")
     )
 
 
+def demo_html_export() -> None:
+    """Demonstrate the full HTML export pipeline (Lot 3)."""
+    _section("HTML Export Pipeline (full)")
+
+    md_file = DEMO_ASSETS / "document.md"
+    css_file = DEMO_ASSETS / "style.css"
+    output_dir = WORK_DIR / "html-export"
+
+    console.print(f"[dim]Source:  {md_file}[/]")
+    console.print(f"[dim]CSS:    {css_file}[/]")
+    console.print(f"[dim]Output: {output_dir}/[/]")
+    console.print()
+
+    # Step 1: Parse Markdown
+    console.print("[bold]Step 1:[/] Parsing Markdown...")
+    md_text = md_file.read_text(encoding="utf-8")
+    doc = parse(md_text)
+    console.print(
+        f"  [green]✓[/] {len(doc.headings)} headings, "
+        f"{len(doc.images)} images, "
+        f"{len(doc.diagrams)} diagram blocks",
+    )
+
+    # Step 2: Resolve images
+    console.print("[bold]Step 2:[/] Resolving images...")
+    resolved = resolve_images(doc, DEMO_ASSETS)
+    console.print(
+        f"  [green]✓[/] {len(resolved.valid)} valid, "
+        f"{len(resolved.warnings)} warnings",
+    )
+    for w in resolved.warnings:
+        console.print(f"  [yellow]⚠[/] {w.message}")
+
+    # Step 3: Render diagrams (web mode)
+    console.print("[bold]Step 3:[/] Rendering diagrams (web mode)...")
+    register_renderer("plantuml", RenderMode.WEB, PlantUmlWebRenderer())
+    register_renderer("mermaid", RenderMode.WEB, MermaidWebRenderer())
+
+    diagrams_svg = render_all_diagrams(doc.diagrams, RenderMode.WEB)
+    console.print(
+        f"  [green]✓[/] {len(diagrams_svg)}/{len(doc.diagrams)} "
+        f"diagrams rendered successfully",
+    )
+    for idx, svg in diagrams_svg.items():
+        engine = doc.diagrams[idx].engine
+        size = len(svg)
+        console.print(
+            f"  [dim]  diagram-{idx} ({engine}): "
+            f"{size:,} bytes SVG[/]",
+        )
+
+    # Step 4: Render HTML
+    console.print("[bold]Step 4:[/] Generating HTML output...")
+    result_path = render_html(
+        doc,
+        output_dir,
+        source_dir=DEMO_ASSETS,
+        css=CssConfig(path=css_file),
+        toc=TocConfig(enabled=True),
+        diagrams_svg=diagrams_svg,
+    )
+    console.print(f"  [green]✓[/] Written: {result_path}")
+
+    # Show output structure
+    console.print()
+    console.print("[bold]Output directory structure:[/]")
+    for p in sorted(output_dir.rglob("*")):
+        if p.is_file():
+            rel = p.relative_to(output_dir)
+            size = p.stat().st_size
+            console.print(f"  {rel} ({size:,} bytes)")
+
+    # Show HTML preview
+    console.print()
+    html_content = result_path.read_text(encoding="utf-8")
+    console.print(
+        Panel(
+            html_content[:500] + "\n...",
+            title=str(result_path),
+            subtitle=f"{len(html_content):,} bytes total",
+            expand=False,
+        ),
+    )
+
+    console.print()
+    console.print(
+        "[bold green]HTML export complete![/] "
+        f"Open [link=file://{result_path.resolve()}]"
+        f"{result_path}[/link] in a browser.",
+    )
+
+
 def main() -> None:
     """Run all feature demos."""
     console.print(
@@ -390,13 +495,15 @@ def main() -> None:
     demo_logging()
     demo_logging_levels()
     demo_markdown_parser()
+    demo_html_export()
 
     _section("Summary")
     console.print(
         Panel(
             "[bold green]All features demonstrated successfully.[/]\n\n"
             f"[dim]Artifacts in {WORK_DIR}/:\n"
-            f"  - {WORK_DIR / 'scribpy.log'}[/]",
+            f"  - {WORK_DIR / 'scribpy.log'}\n"
+            f"  - {WORK_DIR / 'html-export/'} (full HTML site)[/]",
             title="Done",
             expand=False,
         ),

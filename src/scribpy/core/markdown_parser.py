@@ -129,6 +129,8 @@ def parse(markdown_text: str) -> ParsedDocument:
         extracted metadata.
     """
     md = MarkdownIt("commonmark", {"html": True})
+    md.enable("table")
+    md.enable("strikethrough")
     tokens = md.parse(markdown_text)
 
     headings: list[Heading] = []

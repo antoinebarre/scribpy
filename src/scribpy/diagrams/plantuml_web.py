@@ -112,6 +112,7 @@ class PlantUmlWebRenderer:
         encoded = _plantuml_encode(source)
         url = self.server_url + encoded
         request = Request(url)  # noqa: S310
+        request.add_header("User-Agent", "scribpy/0.1")
 
         try:
             with urlopen(  # nosec B310  # noqa: S310

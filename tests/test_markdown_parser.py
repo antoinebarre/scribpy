@@ -149,3 +149,18 @@ class TestParseHtml:
         assert doc.headings == ()
         assert doc.images == ()
         assert doc.diagrams == ()
+
+    def test_renders_table(self) -> None:
+        """Requirement: GFM tables are rendered to HTML."""
+        md = "| Col A | Col B |\n|-------|-------|\n| 1 | 2 |\n"
+        doc = parse(md)
+
+        assert "<table>" in doc.html
+        assert "<th>Col A</th>" in doc.html
+        assert "<td>1</td>" in doc.html
+
+    def test_renders_strikethrough(self) -> None:
+        """Requirement: GFM strikethrough is rendered."""
+        doc = parse("~~deleted~~\n")
+
+        assert "<s>deleted</s>" in doc.html
