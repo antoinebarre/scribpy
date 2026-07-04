@@ -14,6 +14,8 @@ generiques ne sont pas reecrites dans Scribpy : elles sont deleguees a
 - `MarkdownDocument` represente du contenu Markdown en memoire, sans chemin.
 - `MarkdownImageReference` represente une image ecrite dans le Markdown, pas
   encore un fichier resolu sur disque.
+- `MarkdownCollection` represente une liste ordonnee de fichiers Markdown
+  chargee depuis une arborescence.
 - Les modifications retournent une nouvelle instance pour faciliter les tests
   et eviter les effets de bord.
 - `mkforge` est l'adaptateur de verification et validation Markdown.
@@ -63,6 +65,13 @@ package "scribpy.core" {
     +line: int | None
     +column: int | None
   }
+
+  class MarkdownCollection {
+    +root: Path
+    +files: tuple[MarkdownFile, ...]
+    +from_tree(root, encoding): MarkdownCollection
+    +concatenate(): MarkdownDocument
+  }
 }
 
 package "mkforge" {
@@ -77,8 +86,33 @@ MarkdownFile ..> MarkdownRule : accepts
 MarkdownFile ..> mkforge : delegates validation
 MarkdownFile ..> MarkdownDocument : creates
 MarkdownDocument "1" o-- "*" MarkdownImageReference
+MarkdownCollection "1" o-- "*" MarkdownFile
+MarkdownCollection ..> MarkdownDocument : concatenates
 @enduml
 ```
+
+## Ordre des fichiers
+
+La v1 de `MarkdownCollection.from_tree()` parcourt recursivement les dossiers et
+sous-dossiers, garde les fichiers `.md` et `.markdown`, puis les trie par chemin
+relatif a la racine. Cet ordre est deterministe et permet deja de piloter un
+document avec des prefixes comme `01-`, `02-`, `03-`.
+
+Le manifeste futur s'appellera `scribpy.yml`, pas `nav.yml`. L'intention est de
+permettre un manifeste local par dossier :
+
+```text
+docs/
+  scribpy.yml
+  intro.md
+  architecture/
+    scribpy.yml
+    contexte.md
+    decisions.md
+```
+
+Chaque dossier sera alors responsable de l'ordre de ses enfants directs. Ce
+choix evite un gros fichier racine et garde les sous-documents autonomes.
 
 ## Flux d'extraction des images
 
@@ -116,21 +150,36 @@ File --> User : report
 @enduml
 ```
 
+## Flux de concatenation v1
+
+```plantuml
+@startuml
+actor User
+participant "MarkdownCollection" as Collection
+participant "MarkdownFile" as File
+participant "MarkdownDocument" as Document
+
+User -> Collection : from_tree(root)
+Collection -> File : from_path(path) for each markdown file
+File --> Collection : files
+User -> Collection : concatenate()
+Collection -> Document : MarkdownDocument(joined content)
+Document --> Collection
+Collection --> User : document
+@enduml
+```
+
 ## Extension prevue
+
+Les futurs rendus utiliseront le pattern Strategy afin d'ajouter HTML, MkDocs
+ou d'autres sorties sans modifier les objets Markdown de base.
 
 ```plantuml
 @startuml
 skinparam classAttributeIconSize 0
 
-class MarkdownFile
 class MarkdownDocument
-class MarkdownImageReference
-
-class MarkdownCollection {
-  +items: tuple[MarkdownFile, ...]
-  +concatenate(): MarkdownDocument
-  +verify_all(): CollectionReport
-}
+class MarkdownCollection
 
 interface MarkdownRenderer {
   +render(document): RenderResult
@@ -139,8 +188,6 @@ interface MarkdownRenderer {
 class HtmlRenderer
 class MkDocsSiteRenderer
 
-MarkdownCollection "1" o-- "*" MarkdownFile
-MarkdownDocument "1" o-- "*" MarkdownImageReference
 MarkdownRenderer <|.. HtmlRenderer
 MarkdownRenderer <|.. MkDocsSiteRenderer
 HtmlRenderer ..> MarkdownDocument
@@ -154,5 +201,5 @@ Le premier design pattern applique est l'adaptateur : `MarkdownFile` expose une
 API metier stable pour Scribpy et delegue les controles Markdown a `mkforge`.
 `MarkdownDocument` applique une approche de prototype immuable : chaque
 modification retourne un nouveau document avec ses references derivees
-recalculees. Les futurs rendus utiliseront le pattern Strategy afin d'ajouter
-HTML, MkDocs ou d'autres sorties sans modifier les objets Markdown de base.
+recalculees. `MarkdownCollection` applique une strategie d'ordre simple en v1
+et pourra recevoir ensuite une strategie d'ordre basee sur `scribpy.yml`.
