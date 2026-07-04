@@ -8,7 +8,7 @@ from pathlib import Path
 import mkforge
 import pytest
 
-from scribpy.core import MarkdownFile
+from scribpy.core import MarkdownDocument, MarkdownFile, MarkdownImageReference
 
 
 class TestMarkdownFileCreation:
@@ -70,6 +70,23 @@ class TestMarkdownFileModification:
 
         assert original.content == "# Old\nOld body\n"
         assert updated.content == "# New\nNew body\n"
+
+    def test_to_document_returns_markdown_document(self) -> None:
+        """Requirement: MarkdownFile creates an in-memory document."""
+        markdown = MarkdownFile(Path("index.md"), "![Logo](logo.png)\n")
+
+        document = markdown.to_document()
+
+        assert document == MarkdownDocument("![Logo](logo.png)\n")
+        assert document.image_references == (
+            MarkdownImageReference(
+                alt_text="Logo",
+                target="logo.png",
+                title=None,
+                line=1,
+                column=1,
+            ),
+        )
 
     def test_write_uses_current_path_when_destination_is_omitted(
         self,

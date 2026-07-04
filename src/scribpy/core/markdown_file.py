@@ -8,6 +8,8 @@ from pathlib import Path
 
 import mkforge
 
+from scribpy.core.markdown_document import MarkdownDocument
+
 
 @dataclass(frozen=True, slots=True)
 class MarkdownFile:
@@ -94,6 +96,15 @@ class MarkdownFile:
             Markdown file object with updated content.
         """
         return self.with_content(self.content.replace(old, new))
+
+    def to_document(self) -> MarkdownDocument:
+        """Return the in-memory document represented by this file.
+
+        Returns:
+            Markdown document with references extracted from this file's
+            content.
+        """
+        return MarkdownDocument(self.content)
 
     def write(self, path: str | Path | None = None) -> Path:
         """Write the Markdown source to disk.

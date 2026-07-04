@@ -1,5 +1,7 @@
 """Core domain objects for Scribpy."""
 
+from scribpy.core.markdown_document import MarkdownDocument
 from scribpy.core.markdown_file import MarkdownFile
+from scribpy.core.markdown_image import MarkdownImageReference
 
-__all__ = ["MarkdownFile"]
+__all__ = ["MarkdownDocument", "MarkdownFile", "MarkdownImageReference"]
