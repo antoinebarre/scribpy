@@ -171,28 +171,26 @@ def _scope_svg(svg: str, index: int) -> str:
     )
 
 
-def _copy_images(
-    doc: ParsedDocument,
-    source_dir: Path,
-    output_dir: Path,
-) -> None:
-    """Copy referenced images to the output directory.
+def _copy_source_assets(source_dir: Path, output_dir: Path) -> None:
+    """Copy all files from source_dir into output_dir/source/.
 
-    Only copies files that exist.  Missing files are silently
-    skipped (they should have been reported by the image resolver).
+    Places every input file under a ``source/`` sub-directory so the
+    original assets are clearly separated from the generated ``index.html``
+    and its supporting files.
 
     Args:
-        doc: The parsed document with image references.
-        source_dir: Base directory for resolving relative image paths.
-        output_dir: Destination directory for copied images.
+        source_dir: Root directory containing the source assets.
+        output_dir: Destination root; files land under ``output_dir/source/``.
     """
-    for img in doc.images:
-        src_path = source_dir / img.src
-        if src_path.is_file():
-            dest_path = output_dir / img.src
-            dest_path.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(src_path, dest_path)
-            _log.debug("Copied image: %s -> %s", src_path, dest_path)
+    dest_root = output_dir / "source"
+    for src_path in source_dir.rglob("*"):
+        if not src_path.is_file():
+            continue
+        rel = src_path.relative_to(source_dir)
+        dest_path = dest_root / rel
+        dest_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src_path, dest_path)
+        _log.debug("Copied source asset: %s -> %s", src_path, dest_path)
 
 
 @dataclass(frozen=True)
@@ -265,6 +263,6 @@ def render_html(  # noqa: PLR0913
     output_file.write_text(html_content, encoding="utf-8")
     _log.info("Written: %s", output_file)
 
-    _copy_images(doc, source_dir, output_dir)
+    _copy_source_assets(source_dir, output_dir)
 
     return output_file

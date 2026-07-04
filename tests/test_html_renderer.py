@@ -112,7 +112,7 @@ class TestRenderHtml:
         assert "scribpy-toc-toggle" not in content
 
     def test_images_copied(self, tmp_path: Path) -> None:
-        """Requirement: Referenced images are copied (REQ-007)."""
+        """Requirement: Referenced images are copied into source/ (REQ-007)."""
         src_dir = tmp_path / "src"
         src_dir.mkdir()
         (src_dir / "photo.png").write_bytes(b"\x89PNG")
@@ -121,10 +121,10 @@ class TestRenderHtml:
         output_dir = tmp_path / "out"
         render_html(doc, output_dir, source_dir=src_dir)
 
-        assert (output_dir / "photo.png").is_file()
+        assert (output_dir / "source" / "photo.png").is_file()
 
     def test_images_in_subdirectory(self, tmp_path: Path) -> None:
-        """Requirement: Subdirectory images preserve structure."""
+        """Requirement: Subdirectory images land under source/ sub-dir."""
         src_dir = tmp_path / "src"
         (src_dir / "img").mkdir(parents=True)
         (src_dir / "img" / "logo.svg").write_text("<svg/>")
@@ -133,7 +133,7 @@ class TestRenderHtml:
         output_dir = tmp_path / "out"
         render_html(doc, output_dir, source_dir=src_dir)
 
-        assert (output_dir / "img" / "logo.svg").is_file()
+        assert (output_dir / "source" / "img" / "logo.svg").is_file()
 
     def test_diagram_svgs_injected(self, tmp_path: Path) -> None:
         """Requirement: Diagram SVGs replace code blocks."""
