@@ -3,9 +3,15 @@
 from __future__ import annotations
 
 import warnings
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from scribpy.core.collection_diagnostics import (
+    CollectionDiagnosticReport,
+    CollectionDiagnosticRule,
+    diagnose_collection,
+)
 from scribpy.core.heading_normalizer import normalize_markdown_headings
 from scribpy.core.manifest import (
     FolderManifest,
@@ -15,7 +21,11 @@ from scribpy.core.manifest import (
 )
 from scribpy.core.markdown_document import MarkdownDocument
 from scribpy.core.markdown_file import MarkdownFile
-from scribpy.errors import InvalidScribpyManifestError, ScribpyManifestWarning
+from scribpy.errors import (
+    InvalidMarkdownError,
+    InvalidScribpyManifestError,
+    ScribpyManifestWarning,
+)
 
 _MARKDOWN_SUFFIXES = frozenset({".md", ".markdown"})
 _ROOT_FILE_HEADING_LEVEL = 2
@@ -79,9 +89,16 @@ class MarkdownCollection:
         Returns:
             Markdown document containing one H1, folder headings, and each file
             body in collection order.
+
+        Raises:
+            InvalidMarkdownError: If collection diagnostics contain blocking
+                errors.
         """
         if not self.files:
             return MarkdownDocument("")
+        report = self.diagnose()
+        if report.has_errors:
+            raise InvalidMarkdownError(report.summary())
         chunks = [f"# {_document_title(self.root, self.manifest)}"]
         previous_folder_parts: tuple[str, ...] = ()
         for markdown_file in self.files:
@@ -105,6 +122,23 @@ class MarkdownCollection:
                     ),
                 )
         return MarkdownDocument("\n\n".join(chunks) + "\n")
+
+    def diagnose(
+        self,
+        rules: Iterable[CollectionDiagnosticRule] | None = None,
+    ) -> CollectionDiagnosticReport:
+        """Run diagnostics on the Markdown collection.
+
+        Args:
+            rules: Optional diagnostic rules. When omitted, Scribpy default
+                collection rules are used.
+
+        Returns:
+            Collection diagnostic report.
+        """
+        if rules is None:
+            return diagnose_collection(self.root, self.files)
+        return diagnose_collection(self.root, self.files, rules)
 
 
 def _document_title(root: Path, manifest: RootManifest) -> str:

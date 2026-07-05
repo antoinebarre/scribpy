@@ -71,12 +71,34 @@ package "scribpy.core" {
     +files: tuple[MarkdownFile, ...]
     +manifest: RootManifest
     +from_tree(root, encoding): MarkdownCollection
+    +diagnose(rules): CollectionDiagnosticReport
     +concatenate(): MarkdownDocument
   }
 
   class HeadingNormalizer {
     +normalize_markdown_headings(content, base_level): str
   }
+
+  class CollectionDiagnosticReport {
+    +diagnostics: tuple[CollectionDiagnostic, ...]
+    +has_errors: bool
+    +by_severity(severity): tuple[CollectionDiagnostic, ...]
+    +summary(): str
+  }
+
+  class CollectionDiagnostic {
+    +code: str
+    +severity: DiagnosticSeverity
+    +message: str
+    +path: Path | None
+    +line: int | None
+  }
+
+  interface CollectionDiagnosticRule {
+    +diagnose(context): Iterable[CollectionDiagnostic]
+  }
+
+  class HeadingLevelOverflowRule
 
   class RootManifest {
     +project: dict[str, object]
@@ -107,6 +129,10 @@ MarkdownCollection "1" o-- "1" RootManifest
 MarkdownCollection ..> MarkdownDocument : concatenates
 MarkdownCollection ..> FolderManifest : reads local order
 MarkdownCollection ..> HeadingNormalizer : shifts headings
+MarkdownCollection ..> CollectionDiagnosticReport : returns
+CollectionDiagnosticReport "1" o-- "*" CollectionDiagnostic
+CollectionDiagnosticRule <|.. HeadingLevelOverflowRule
+HeadingLevelOverflowRule ..> HeadingNormalizer : reads headings
 @enduml
 ```
 
@@ -200,6 +226,8 @@ File --> User : report
 @startuml
 actor User
 participant "MarkdownCollection" as Collection
+participant "Diagnostic rules" as Rules
+participant "CollectionDiagnosticReport" as Report
 participant "MarkdownFile" as File
 participant "FolderManifest" as Folder
 participant "HeadingNormalizer" as Headings
@@ -211,6 +239,12 @@ Collection -> Collection : read folder scribpy.yml files
 Collection -> File : from_path(path) in manifest/alphabetical order
 File --> Collection : files
 User -> Collection : concatenate()
+Collection -> Rules : diagnose(root, files)
+Rules -> Report : create diagnostics
+Report --> Collection
+alt report has errors
+  Collection --> User : InvalidMarkdownError(report.summary())
+else report has no errors
 Collection -> Collection : create one H1 from project.title or root name
 loop for each folder entered
   Collection -> Folder : read title or folder name
@@ -224,6 +258,7 @@ end
 Collection -> Document : MarkdownDocument(normalized content)
 Document --> Collection
 Collection --> User : document
+end
 @enduml
 ```
 
@@ -238,6 +273,36 @@ La concatenation produit un document Markdown structure pour publication :
   un sous-dossier devient `###`, et ainsi de suite ;
 - les titres situes dans les blocs de code fenced ne sont pas modifies, grace au
   scanner de lignes fourni par `mkforge`.
+
+## Flux de diagnostic collection
+
+```plantuml
+@startuml
+actor User
+participant "MarkdownCollection" as Collection
+participant "Diagnostic registry" as Registry
+participant "CollectionDiagnosticRule" as Rule
+participant "CollectionDiagnosticReport" as Report
+
+User -> Collection : diagnose()
+Collection -> Registry : default rules
+Registry --> Collection : HeadingLevelOverflowRule
+loop for each rule
+  Collection -> Rule : diagnose(context)
+  Rule --> Collection : diagnostics
+end
+Collection -> Report : CollectionDiagnosticReport(diagnostics)
+Report --> Collection
+Collection --> User : report
+@enduml
+```
+
+Les diagnostics de collection appliquent le pattern Strategy : chaque controle
+est une regle independante qui implemente `CollectionDiagnosticRule`. Le registre
+par defaut contient aujourd'hui `HeadingLevelOverflowRule`, qui detecte les
+titres qui depasseraient le niveau 6 apres insertion du H1 racine et des titres
+de dossiers. De nouveaux controles, comme les images absentes ou les liens
+casses, peuvent etre ajoutes par nouvelle regle sans modifier le moteur.
 
 ## Extension prevue
 
@@ -273,4 +338,6 @@ API metier stable pour Scribpy et delegue les controles Markdown a `mkforge`.
 modification retourne un nouveau document avec ses references derivees
 recalculees. `MarkdownCollection` applique une strategie d'ordre simple en v1
 basee sur `scribpy.yml`, avec repli alphabetique lorsqu'un dossier n'a pas de
-manifeste.
+manifeste. Les diagnostics de collection appliquent Strategy et Registry :
+`MarkdownCollection` depend d'une interface de regle, et le registre par defaut
+permet d'ajouter des controles sans etendre une grande condition centrale.

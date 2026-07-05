@@ -1,5 +1,11 @@
 """Core domain objects for Scribpy."""
 
+from scribpy.core.collection_diagnostics import (
+    CollectionDiagnostic,
+    CollectionDiagnosticReport,
+    CollectionDiagnosticRule,
+    DiagnosticSeverity,
+)
 from scribpy.core.manifest import FolderManifest, RootManifest
 from scribpy.core.markdown_collection import MarkdownCollection
 from scribpy.core.markdown_document import MarkdownDocument
@@ -7,6 +13,10 @@ from scribpy.core.markdown_file import MarkdownFile
 from scribpy.core.markdown_image import MarkdownImageReference
 
 __all__ = [
+    "CollectionDiagnostic",
+    "CollectionDiagnosticReport",
+    "CollectionDiagnosticRule",
+    "DiagnosticSeverity",
     "FolderManifest",
     "MarkdownCollection",
     "MarkdownDocument",

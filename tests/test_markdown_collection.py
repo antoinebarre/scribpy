@@ -7,7 +7,11 @@ from pathlib import Path
 import pytest
 
 from scribpy.core import MarkdownCollection, MarkdownDocument, MarkdownFile
-from scribpy.errors import InvalidScribpyManifestError, ScribpyManifestWarning
+from scribpy.errors import (
+    InvalidMarkdownError,
+    InvalidScribpyManifestError,
+    ScribpyManifestWarning,
+)
 
 
 class TestMarkdownCollectionFromTree:
@@ -273,6 +277,19 @@ class TestMarkdownCollectionConcatenation:
         document = collection.concatenate()
 
         assert document.content == "# Demo\n"
+
+    def test_concatenate_raises_for_heading_level_overflow(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: invalid assembled heading levels block output."""
+        _write(tmp_path / "index.md", "###### Too deep\n")
+        collection = MarkdownCollection.from_tree(tmp_path)
+
+        with pytest.raises(InvalidMarkdownError) as exc_info:
+            collection.concatenate()
+
+        assert "HEADING_LEVEL_OVERFLOW" in str(exc_info.value)
 
     def test_concatenate_empty_collection_returns_empty_document(
         self,
