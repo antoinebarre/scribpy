@@ -54,11 +54,16 @@ def _create_demo_inputs() -> None:
     """Write Markdown input examples and future scribpy.yml manifests."""
     _write_input(
         "scribpy.yml",
-        "- 01-intro.md\n"
-        "- 02-images.md\n"
-        "- guide/\n"
-        "\n"
-        "# Future manifest example. The v1 collection still sorts by path.\n",
+        "project:\n"
+        "  title: Scribpy core demo\n"
+        "build:\n"
+        "  toc: true\n"
+        "  renumber_headings: false\n"
+        "order:\n"
+        "  - 01-intro.md\n"
+        "  - 02-images.md\n"
+        "  - guide/\n"
+        "  - assets/\n",
     )
     _write_input(
         "01-intro.md",
@@ -74,10 +79,7 @@ def _create_demo_inputs() -> None:
     )
     _write_input(
         "guide/scribpy.yml",
-        "- 01-install.md\n"
-        "- 02-run.markdown\n"
-        "\n"
-        "# Future local order manifest for this folder.\n",
+        "title: Guide\norder:\n  - 01-install.md\n  - 02-run.markdown\n",
     )
     _write_input(
         "guide/01-install.md",
@@ -129,6 +131,8 @@ def _summary(
             "",
             "## Concatenated document",
             "",
+            f"- Project title: `{collection.manifest.project.get('title')}`",
+            f"- TOC setting: `{collection.manifest.build.get('toc')}`",
             f"- Character count: `{len(document.content)}`",
             f"- Image references: `{len(document.image_references)}`",
             "",
@@ -149,9 +153,9 @@ def _summary(
             "",
             "## Notes",
             "",
-            "- `scribpy.yml` files are example manifests for the next "
-            "feature.",
-            "- The current v1 collection orders files by relative path.",
+            "- The root `scribpy.yml` contains project metadata, build "
+            "settings, and first-level order.",
+            "- Folder `scribpy.yml` files contain local title and order only.",
         ],
     )
     return "\n".join(lines) + "\n"

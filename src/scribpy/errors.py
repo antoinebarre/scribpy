@@ -5,6 +5,30 @@ class ScribpyError(Exception):
     """Base exception for all scribpy domain failures."""
 
 
+class ScribpyManifestWarning(UserWarning):
+    """Warning emitted for ignored scribpy.yml manifest settings."""
+
+
+class InvalidScribpyManifestError(ScribpyError):
+    """The scribpy.yml manifest is invalid.
+
+    Attributes:
+        path: Manifest file path.
+        detail: Description of the manifest problem.
+    """
+
+    def __init__(self, path: str, detail: str) -> None:
+        """Initialise with manifest path and problem detail.
+
+        Args:
+            path: Manifest file path.
+            detail: What makes the manifest invalid.
+        """
+        self.path = path
+        self.detail = detail
+        super().__init__(path, detail)
+
+
 class InvalidMarkdownError(ScribpyError):
     """The Markdown source is structurally invalid.
 

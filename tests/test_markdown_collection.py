@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from scribpy.core import MarkdownCollection, MarkdownDocument
+from scribpy.errors import InvalidScribpyManifestError, ScribpyManifestWarning
 
 
 class TestMarkdownCollectionFromTree:
@@ -75,6 +76,73 @@ class TestMarkdownCollectionFromTree:
 
         assert collection.root == tmp_path
         assert collection.files == ()
+
+    def test_from_tree_uses_root_and_folder_manifest_order(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: scribpy.yml files control direct child order."""
+        _write(
+            tmp_path / "scribpy.yml",
+            "project:\n"
+            "  title: Demo\n"
+            "build:\n"
+            "  toc: true\n"
+            "order:\n"
+            "  - guide/\n"
+            "  - intro.md\n",
+        )
+        _write(tmp_path / "intro.md", "# Intro\n")
+        _write(
+            tmp_path / "guide" / "scribpy.yml",
+            "title: Guide\norder:\n  - run.md\n  - install.md\n",
+        )
+        _write(tmp_path / "guide" / "install.md", "# Install\n")
+        _write(tmp_path / "guide" / "run.md", "# Run\n")
+
+        collection = MarkdownCollection.from_tree(tmp_path)
+
+        assert collection.manifest.project == {"title": "Demo"}
+        assert collection.manifest.build == {"toc": True}
+        assert tuple(
+            file.path.relative_to(tmp_path) for file in collection.files
+        ) == (
+            Path("guide/run.md"),
+            Path("guide/install.md"),
+            Path("intro.md"),
+        )
+
+    def test_from_tree_warns_and_ignores_unlisted_children(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: unlisted children are ignored with a warning."""
+        _write(
+            tmp_path / "scribpy.yml",
+            "order:\n  - intro.md\n",
+        )
+        _write(tmp_path / "intro.md", "# Intro\n")
+        _write(tmp_path / "ignored.md", "# Ignored\n")
+
+        with pytest.warns(ScribpyManifestWarning):
+            collection = MarkdownCollection.from_tree(tmp_path)
+
+        assert tuple(file.path.name for file in collection.files) == (
+            "intro.md",
+        )
+
+    def test_from_tree_raises_for_missing_manifest_entry(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: ordered children must exist."""
+        _write(
+            tmp_path / "scribpy.yml",
+            "order:\n  - missing.md\n",
+        )
+
+        with pytest.raises(InvalidScribpyManifestError):
+            MarkdownCollection.from_tree(tmp_path)
 
 
 class TestMarkdownCollectionConcatenation:

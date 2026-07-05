@@ -13,6 +13,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "mkforge>=0.1.0",
+    "PyYAML>=6",
 ]
 
 [dependency-groups]
@@ -28,6 +29,7 @@ dev = [
     "pytest>=8",
     "pytest-cov>=6",
     "ruff>=0.4",
+    "types-PyYAML>=6",
     "yggtools>=1.2.0",
 ]
 

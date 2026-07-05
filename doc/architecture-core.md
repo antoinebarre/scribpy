@@ -69,8 +69,20 @@ package "scribpy.core" {
   class MarkdownCollection {
     +root: Path
     +files: tuple[MarkdownFile, ...]
+    +manifest: RootManifest
     +from_tree(root, encoding): MarkdownCollection
     +concatenate(): MarkdownDocument
+  }
+
+  class RootManifest {
+    +project: dict[str, object]
+    +build: dict[str, object]
+    +order: tuple[str, ...]
+  }
+
+  class FolderManifest {
+    +title: str | None
+    +order: tuple[str, ...]
   }
 }
 
@@ -87,19 +99,43 @@ MarkdownFile ..> mkforge : delegates validation
 MarkdownFile ..> MarkdownDocument : creates
 MarkdownDocument "1" o-- "*" MarkdownImageReference
 MarkdownCollection "1" o-- "*" MarkdownFile
+MarkdownCollection "1" o-- "1" RootManifest
 MarkdownCollection ..> MarkdownDocument : concatenates
+MarkdownCollection ..> FolderManifest : reads local order
 @enduml
 ```
 
 ## Ordre des fichiers
 
-La v1 de `MarkdownCollection.from_tree()` parcourt recursivement les dossiers et
-sous-dossiers, garde les fichiers `.md` et `.markdown`, puis les trie par chemin
-relatif a la racine. Cet ordre est deterministe et permet deja de piloter un
-document avec des prefixes comme `01-`, `02-`, `03-`.
+`MarkdownCollection.from_tree()` parcourt recursivement les dossiers et
+sous-dossiers, garde les fichiers `.md` et `.markdown`, puis applique les
+manifests `scribpy.yml` quand ils existent.
 
-Le manifeste futur s'appellera `scribpy.yml`, pas `nav.yml`. L'intention est de
-permettre un manifeste local par dossier :
+Le `scribpy.yml` racine est le seul manifeste riche. Il peut contenir les
+metadonnees du projet, les reglages globaux et l'ordre des enfants directs de la
+racine :
+
+```yaml
+project:
+  title: Guide utilisateur
+build:
+  toc: true
+  renumber_headings: false
+order:
+  - intro.md
+  - architecture/
+```
+
+Les `scribpy.yml` de dossier sont locaux et limites a `title` et `order` :
+
+```yaml
+title: Architecture
+order:
+  - contexte.md
+  - decisions.md
+```
+
+Chaque manifeste controle uniquement les enfants directs de son dossier :
 
 ```text
 docs/
@@ -111,8 +147,11 @@ docs/
     decisions.md
 ```
 
-Chaque dossier sera alors responsable de l'ordre de ses enfants directs. Ce
-choix evite un gros fichier racine et garde les sous-documents autonomes.
+Si un dossier n'a pas de `scribpy.yml`, ses enfants directs sont parcourus par
+ordre alphabetique. Si un dossier definit des reglages globaux comme `build`,
+ils produisent un `ScribpyManifestWarning` et sont ignores. Si un manifeste
+liste un enfant inexistant ou un chemin profond comme `guide/install.md`, une
+erreur `InvalidScribpyManifestError` est levee.
 
 ## Flux d'extraction des images
 
@@ -160,7 +199,9 @@ participant "MarkdownFile" as File
 participant "MarkdownDocument" as Document
 
 User -> Collection : from_tree(root)
-Collection -> File : from_path(path) for each markdown file
+Collection -> Collection : read root scribpy.yml
+Collection -> Collection : read folder scribpy.yml files
+Collection -> File : from_path(path) in manifest/alphabetical order
 File --> Collection : files
 User -> Collection : concatenate()
 Collection -> Document : MarkdownDocument(joined content)
@@ -202,4 +243,5 @@ API metier stable pour Scribpy et delegue les controles Markdown a `mkforge`.
 `MarkdownDocument` applique une approche de prototype immuable : chaque
 modification retourne un nouveau document avec ses references derivees
 recalculees. `MarkdownCollection` applique une strategie d'ordre simple en v1
-et pourra recevoir ensuite une strategie d'ordre basee sur `scribpy.yml`.
+basee sur `scribpy.yml`, avec repli alphabetique lorsqu'un dossier n'a pas de
+manifeste.
