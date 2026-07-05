@@ -46,6 +46,23 @@ class PlantUmlRenderError(ScribpyError):
         super().__init__(f"PlantUML render error: {detail}")
 
 
+class MermaidRenderError(ScribpyError):
+    """A Mermaid diagram could not be rendered.
+
+    Attributes:
+        detail: Description of the rendering failure.
+    """
+
+    def __init__(self, detail: str) -> None:
+        """Initialise with a description of the rendering failure.
+
+        Args:
+            detail: What caused the rendering to fail.
+        """
+        self.detail = detail
+        super().__init__(f"Mermaid render error: {detail}")
+
+
 class InvalidMarkdownError(ScribpyError):
     """The Markdown source is structurally invalid.
 

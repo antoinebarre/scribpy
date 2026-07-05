@@ -212,6 +212,20 @@ stop
 
 Les erreurs transitoires declenchent un retry automatique
 avec backoff exponentiel (max 3 tentatives).
+
+## Etats du traitement
+
+```mermaid
+stateDiagram-v2
+    [*] --> Reception
+    Reception --> Validation
+    Validation --> Transformation : valide
+    Validation --> Erreur422 : invalide
+    Transformation --> Persistance
+    Persistance --> Reponse200
+    Reponse200 --> [*]
+    Erreur422 --> [*]
+```
 """
 
 _API_MANIFEST = """\
@@ -348,6 +362,19 @@ _OPS_MONITORING = """\
 - **P1** : taux d'erreur > 5 % sur 5 minutes
 - **P2** : latence p99 > 2 s sur 10 minutes
 - **P3** : aucune requete depuis 15 minutes (service down)
+
+## Flux de garde
+
+```mermaid
+sequenceDiagram
+    participant Prometheus
+    participant Alertmanager
+    participant OncallEngineer
+    Prometheus->>Alertmanager: fire alert(P1)
+    Alertmanager->>OncallEngineer: PagerDuty notification
+    OncallEngineer->>Alertmanager: acknowledge
+    OncallEngineer->>Prometheus: resolve incident
+```
 
 ![Dashboard Grafana](../assets/dashboard.png)
 """
