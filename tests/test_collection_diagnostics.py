@@ -12,9 +12,18 @@ from scribpy.core import (
     MarkdownCollection,
     MarkdownFile,
 )
-from scribpy.core.collection_diagnostics import (
+from scribpy.core.diagnostics import (
+    EXTERNAL_IMAGE_REFERENCE,
     HEADING_LEVEL_OVERFLOW,
+    IMAGE_OUTSIDE_ROOT,
+    INTERNAL_MARKDOWN_LINK_MISSING,
+    INTERNAL_MARKDOWN_LINK_OUTSIDE_ROOT,
+    LOCAL_ANCHOR_LINK,
+    LOCAL_IMAGE_MISSING,
+    SOURCE_FIRST_HEADING_NOT_H1,
+    SOURCE_H1_COUNT_INVALID,
     CollectionDiagnosticContext,
+    HeadingLevelOverflowRule,
     diagnose_collection,
 )
 
@@ -87,7 +96,10 @@ class TestDiagnoseCollection:
         tmp_path: Path,
     ) -> None:
         """Requirement: default diagnostics find heading level overflow."""
-        markdown_file = MarkdownFile(tmp_path / "index.md", "###### Deep\n")
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n###### Deep\n",
+        )
 
         report = diagnose_collection(tmp_path, (markdown_file,))
 
@@ -101,7 +113,7 @@ class TestDiagnoseCollection:
                     "assembly: 'Deep'."
                 ),
                 path=tmp_path / "index.md",
-                line=1,
+                line=3,
             ),
         )
 
@@ -112,7 +124,7 @@ class TestDiagnoseCollection:
         """Requirement: diagnostics ignore headings inside fenced code."""
         markdown_file = MarkdownFile(
             tmp_path / "index.md",
-            "```markdown\n###### Example\n```\n",
+            "# Title\n\n```markdown\n###### Example\n```\n",
         )
 
         report = diagnose_collection(tmp_path, (markdown_file,))
@@ -126,7 +138,7 @@ class TestDiagnoseCollection:
         """Requirement: diagnostics account for folder heading offsets."""
         markdown_file = MarkdownFile(
             tmp_path / "guide" / "deep" / "page.md",
-            "#### Too deep\n",
+            "# Title\n\n#### Too deep\n",
         )
 
         report = diagnose_collection(tmp_path, (markdown_file,))
@@ -139,7 +151,565 @@ class TestDiagnoseCollection:
         tmp_path: Path,
     ) -> None:
         """Requirement: diagnostics support manually supplied files."""
-        markdown_file = MarkdownFile(Path("external.md"), "##### Accepted\n")
+        markdown_file = MarkdownFile(
+            Path("external.md"),
+            "# Title\n\n##### Accepted\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report == CollectionDiagnosticReport()
+
+    def test_diagnose_collection_reports_missing_h1(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: source files must contain one H1 heading."""
+        markdown_file = MarkdownFile(tmp_path / "index.md", "## Missing\n")
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report.diagnostics == (
+            CollectionDiagnostic(
+                code=SOURCE_FIRST_HEADING_NOT_H1,
+                severity=DiagnosticSeverity.ERROR,
+                message="First Markdown heading must be H1; found H2.",
+                path=tmp_path / "index.md",
+                line=1,
+            ),
+            CollectionDiagnostic(
+                code=SOURCE_H1_COUNT_INVALID,
+                severity=DiagnosticSeverity.ERROR,
+                message=(
+                    "Markdown file must contain exactly one H1 heading; "
+                    "found 0."
+                ),
+                path=tmp_path / "index.md",
+            ),
+        )
+
+    def test_diagnose_collection_allows_files_without_headings_to_h1_rule(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: first-heading diagnostics need an actual heading."""
+        markdown_file = MarkdownFile(tmp_path / "index.md", "Body only.\n")
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report.diagnostics == (
+            CollectionDiagnostic(
+                code=SOURCE_H1_COUNT_INVALID,
+                severity=DiagnosticSeverity.ERROR,
+                message=(
+                    "Markdown file must contain exactly one H1 heading; "
+                    "found 0."
+                ),
+                path=tmp_path / "index.md",
+            ),
+        )
+
+    def test_diagnose_collection_reports_multiple_h1(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: source files must not contain multiple H1 headings."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# First\n\n# Second\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report.diagnostics == (
+            CollectionDiagnostic(
+                code=SOURCE_H1_COUNT_INVALID,
+                severity=DiagnosticSeverity.ERROR,
+                message=(
+                    "Markdown file must contain exactly one H1 heading; "
+                    "found 2."
+                ),
+                path=tmp_path / "index.md",
+                line=3,
+            ),
+        )
+
+    def test_diagnose_collection_ignores_fenced_code_h1(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: H1 count diagnostics ignore fenced code headings."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n```markdown\n# Example\n```\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report == CollectionDiagnosticReport()
+
+    def test_diagnose_collection_reports_first_heading_not_h1(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: source files must start headings with H1."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "Intro text.\n\n## First heading\n\n# Later title\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report.diagnostics == (
+            CollectionDiagnostic(
+                code=SOURCE_FIRST_HEADING_NOT_H1,
+                severity=DiagnosticSeverity.ERROR,
+                message="First Markdown heading must be H1; found H2.",
+                path=tmp_path / "index.md",
+                line=3,
+            ),
+        )
+
+    def test_diagnose_collection_ignores_fenced_code_first_heading(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: first-heading diagnostics ignore fenced code."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "```markdown\n## Example\n```\n\n# Title\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report == CollectionDiagnosticReport()
+
+    def test_diagnose_collection_can_run_one_rule(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: callers can run one diagnostic strategy."""
+        markdown_file = MarkdownFile(tmp_path / "index.md", "###### Deep\n")
+
+        report = diagnose_collection(
+            tmp_path,
+            (markdown_file,),
+            rules=(HeadingLevelOverflowRule(),),
+        )
+
+        assert report.diagnostics[0].code == HEADING_LEVEL_OVERFLOW
+
+    def test_diagnose_collection_accepts_existing_local_image(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: existing local image references are valid."""
+        _write(tmp_path / "assets" / "logo.png", "fake image")
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n![Logo](assets/logo.png)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report == CollectionDiagnosticReport()
+
+    def test_diagnose_collection_reports_missing_local_image(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: missing local image references are errors."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n![Missing](assets/missing.png)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report.diagnostics == (
+            CollectionDiagnostic(
+                code=LOCAL_IMAGE_MISSING,
+                severity=DiagnosticSeverity.ERROR,
+                message=(
+                    "Local image file does not exist: 'assets/missing.png'."
+                ),
+                path=tmp_path / "index.md",
+                line=3,
+            ),
+        )
+
+    def test_diagnose_collection_reports_empty_image_target(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: empty image targets are missing local images."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n![Missing]( )\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report.diagnostics == (
+            CollectionDiagnostic(
+                code=LOCAL_IMAGE_MISSING,
+                severity=DiagnosticSeverity.ERROR,
+                message="Local image file does not exist: ''.",
+                path=tmp_path / "index.md",
+                line=3,
+            ),
+        )
+
+    def test_diagnose_collection_resolves_root_absolute_local_image(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: root-absolute image paths resolve from root."""
+        _write(tmp_path / "assets" / "logo.png", "fake image")
+        markdown_file = MarkdownFile(
+            tmp_path / "guide" / "index.md",
+            "# Title\n\n![Logo](/assets/logo.png)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report == CollectionDiagnosticReport()
+
+    def test_diagnose_collection_reports_external_image(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: external image references are reported as warnings."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n![Remote](https://example.com/logo.png)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report.diagnostics == (
+            CollectionDiagnostic(
+                code=EXTERNAL_IMAGE_REFERENCE,
+                severity=DiagnosticSeverity.WARNING,
+                message=(
+                    "External image reference is not fetched by core "
+                    "diagnostics: 'https://example.com/logo.png'."
+                ),
+                path=tmp_path / "index.md",
+                line=3,
+            ),
+        )
+
+    def test_diagnose_collection_reports_image_outside_root(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: local images outside the collection root are errors."""
+        markdown_file = MarkdownFile(
+            tmp_path / "guide" / "index.md",
+            "# Title\n\n![Logo](../../outside/logo.png)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert any(d.code == IMAGE_OUTSIDE_ROOT for d in report.diagnostics)
+        outside = next(
+            d for d in report.diagnostics if d.code == IMAGE_OUTSIDE_ROOT
+        )
+        assert outside.severity == DiagnosticSeverity.ERROR
+        assert outside.path == tmp_path / "guide" / "index.md"
+        assert outside.line == 3
+
+    def test_diagnose_collection_accepts_image_inside_root(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: local images inside the collection root are valid."""
+        _write(tmp_path / "assets" / "logo.png", "fake image")
+        markdown_file = MarkdownFile(
+            tmp_path / "guide" / "index.md",
+            "# Title\n\n![Logo](../assets/logo.png)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        codes = [d.code for d in report.diagnostics]
+        assert IMAGE_OUTSIDE_ROOT not in codes
+
+    def test_diagnose_collection_ignores_external_image_for_outside_root(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: external images are not checked for outside-root."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n![Remote](https://example.com/logo.png)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        codes = [d.code for d in report.diagnostics]
+        assert IMAGE_OUTSIDE_ROOT not in codes
+
+    def test_diagnose_collection_reports_protocol_relative_image(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: protocol-relative image URLs are external."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n![Remote](//example.com/logo.png)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report.diagnostics[0].code == EXTERNAL_IMAGE_REFERENCE
+
+    def test_diagnose_collection_accepts_existing_markdown_link(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: existing internal Markdown file links are valid."""
+        _write(tmp_path / "guide" / "page.md", "# Page\n")
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            '# Title\n\n[Page](guide/page.md "Guide page")\n',
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report == CollectionDiagnosticReport()
+
+    def test_diagnose_collection_accepts_markdown_suffix_link(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: .markdown links are treated as Markdown links."""
+        _write(tmp_path / "guide" / "page.markdown", "# Page\n")
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n[Page](guide/page.markdown)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report == CollectionDiagnosticReport()
+
+    def test_diagnose_collection_accepts_root_absolute_markdown_link(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: root-absolute Markdown links resolve from root."""
+        _write(tmp_path / "guide" / "page.md", "# Page\n")
+        markdown_file = MarkdownFile(
+            tmp_path / "nested" / "index.md",
+            "# Title\n\n[Page](/guide/page.md)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report == CollectionDiagnosticReport()
+
+    def test_diagnose_collection_reports_missing_markdown_link(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: missing internal Markdown links are errors."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n[Missing](guide/missing.md)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report.diagnostics == (
+            CollectionDiagnostic(
+                code=INTERNAL_MARKDOWN_LINK_MISSING,
+                severity=DiagnosticSeverity.ERROR,
+                message=(
+                    "Internal Markdown link target does not exist: "
+                    "'guide/missing.md'."
+                ),
+                path=tmp_path / "index.md",
+                line=3,
+            ),
+        )
+
+    def test_diagnose_collection_reports_malformed_markdown_link_body(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: malformed Markdown link bodies are still diagnosed."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            '# Title\n\n[Broken]("guide/missing.md)\n',
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report.diagnostics[0].code == INTERNAL_MARKDOWN_LINK_MISSING
+
+    def test_diagnose_collection_reports_outside_root_markdown_link(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: Markdown links cannot escape collection root."""
+        markdown_file = MarkdownFile(
+            tmp_path / "guide" / "index.md",
+            "# Title\n\n[Outside](../../outside.md)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report.diagnostics == (
+            CollectionDiagnostic(
+                code=INTERNAL_MARKDOWN_LINK_OUTSIDE_ROOT,
+                severity=DiagnosticSeverity.ERROR,
+                message=(
+                    "Internal Markdown link target must stay inside "
+                    "collection root: '../../outside.md'."
+                ),
+                path=tmp_path / "guide" / "index.md",
+                line=3,
+            ),
+        )
+
+    def test_diagnose_collection_ignores_external_markdown_link(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: external Markdown links are not internal links."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n[Remote](https://example.com/page.md)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report == CollectionDiagnosticReport()
+
+    def test_diagnose_collection_reports_anchor_only_link(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: anchor-only links are forbidden in collection."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n[Section](#section)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report.diagnostics == (
+            CollectionDiagnostic(
+                code=LOCAL_ANCHOR_LINK,
+                severity=DiagnosticSeverity.ERROR,
+                message=(
+                    "Anchor fragments are forbidden in collection source "
+                    "files; anchors in the assembled document are managed "
+                    "by the assembly pipeline: '#section'."
+                ),
+                path=tmp_path / "index.md",
+                line=3,
+            ),
+        )
+
+    def test_diagnose_collection_reports_multiple_anchor_links(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: every anchor-only link in a file is reported."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n[First](#first)\n\n[Second](#second)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        anchor_codes = [d.code for d in report.diagnostics]
+        assert anchor_codes.count(LOCAL_ANCHOR_LINK) == 2
+
+    def test_diagnose_collection_ignores_anchor_in_fenced_code(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: anchor links inside fenced code are not reported."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n```markdown\n[Section](#section)\n```\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report == CollectionDiagnosticReport()
+
+    def test_diagnose_collection_reports_cross_file_anchor_link(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: cross-file links with anchors are also forbidden."""
+        _write(tmp_path / "guide" / "page.md", "# Page\n")
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n[Page](guide/page.md#section)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert any(d.code == LOCAL_ANCHOR_LINK for d in report.diagnostics)
+
+    def test_diagnose_collection_ignores_non_markdown_link(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: non-Markdown links are ignored by link rule."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n[PDF](assets/file.pdf)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report == CollectionDiagnosticReport()
+
+    def test_diagnose_collection_ignores_empty_link_target(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: empty link targets are ignored by link rule."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n[Empty]()\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report == CollectionDiagnosticReport()
+
+    def test_diagnose_collection_ignores_image_markdown_target_as_link(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: image references are not handled as Markdown links."""
+        _write(tmp_path / "image.md", "fake image")
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n![Image](image.md)\n",
+        )
+
+        report = diagnose_collection(tmp_path, (markdown_file,))
+
+        assert report == CollectionDiagnosticReport()
+
+    def test_diagnose_collection_ignores_fenced_markdown_link(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: Markdown links in fenced code are ignored."""
+        markdown_file = MarkdownFile(
+            tmp_path / "index.md",
+            "# Title\n\n```markdown\n[Missing](missing.md)\n```\n",
+        )
 
         report = diagnose_collection(tmp_path, (markdown_file,))
 

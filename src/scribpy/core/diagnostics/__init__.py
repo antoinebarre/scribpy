@@ -1,0 +1,61 @@
+"""Collection diagnostics public interface."""
+
+from scribpy.core.diagnostics.engine import (
+    DEFAULT_COLLECTION_DIAGNOSTIC_RULES,
+    diagnose_collection,
+)
+from scribpy.core.diagnostics.model import (
+    CollectionDiagnostic,
+    CollectionDiagnosticContext,
+    CollectionDiagnosticReport,
+    CollectionDiagnosticRule,
+    DiagnosticSeverity,
+)
+from scribpy.core.diagnostics.rules import (
+    EXTERNAL_IMAGE_REFERENCE,
+    HEADING_LEVEL_OVERFLOW,
+    IMAGE_OUTSIDE_ROOT,
+    INTERNAL_MARKDOWN_LINK_MISSING,
+    INTERNAL_MARKDOWN_LINK_OUTSIDE_ROOT,
+    INTERNAL_MARKDOWN_LINK_RULE,
+    LOCAL_ANCHOR_LINK,
+    LOCAL_IMAGE_MISSING,
+    SOURCE_FIRST_HEADING_NOT_H1,
+    SOURCE_H1_COUNT_INVALID,
+    ExternalImageReferenceRule,
+    HeadingLevelOverflowRule,
+    ImageOutsideRootRule,
+    InternalMarkdownLinkRule,
+    LocalAnchorLinkRule,
+    LocalImageMissingRule,
+    SourceFirstHeadingH1Rule,
+    SourceH1CountRule,
+)
+
+__all__ = [
+    "DEFAULT_COLLECTION_DIAGNOSTIC_RULES",
+    "EXTERNAL_IMAGE_REFERENCE",
+    "HEADING_LEVEL_OVERFLOW",
+    "IMAGE_OUTSIDE_ROOT",
+    "INTERNAL_MARKDOWN_LINK_MISSING",
+    "INTERNAL_MARKDOWN_LINK_OUTSIDE_ROOT",
+    "INTERNAL_MARKDOWN_LINK_RULE",
+    "LOCAL_ANCHOR_LINK",
+    "LOCAL_IMAGE_MISSING",
+    "SOURCE_FIRST_HEADING_NOT_H1",
+    "SOURCE_H1_COUNT_INVALID",
+    "CollectionDiagnostic",
+    "CollectionDiagnosticContext",
+    "CollectionDiagnosticReport",
+    "CollectionDiagnosticRule",
+    "DiagnosticSeverity",
+    "ExternalImageReferenceRule",
+    "HeadingLevelOverflowRule",
+    "ImageOutsideRootRule",
+    "InternalMarkdownLinkRule",
+    "LocalAnchorLinkRule",
+    "LocalImageMissingRule",
+    "SourceFirstHeadingH1Rule",
+    "SourceH1CountRule",
+    "diagnose_collection",
+]

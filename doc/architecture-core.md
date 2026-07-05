@@ -98,7 +98,14 @@ package "scribpy.core" {
     +diagnose(context): Iterable[CollectionDiagnostic]
   }
 
-  class HeadingLevelOverflowRule
+  package "diagnostics" {
+    class SourceFirstHeadingH1Rule
+    class SourceH1CountRule
+    class HeadingLevelOverflowRule
+    class LocalImageMissingRule
+    class ExternalImageReferenceRule
+    class InternalMarkdownLinkRule
+  }
 
   class RootManifest {
     +project: dict[str, object]
@@ -131,8 +138,18 @@ MarkdownCollection ..> FolderManifest : reads local order
 MarkdownCollection ..> HeadingNormalizer : shifts headings
 MarkdownCollection ..> CollectionDiagnosticReport : returns
 CollectionDiagnosticReport "1" o-- "*" CollectionDiagnostic
+CollectionDiagnosticRule <|.. SourceFirstHeadingH1Rule
+CollectionDiagnosticRule <|.. SourceH1CountRule
 CollectionDiagnosticRule <|.. HeadingLevelOverflowRule
+CollectionDiagnosticRule <|.. LocalImageMissingRule
+CollectionDiagnosticRule <|.. ExternalImageReferenceRule
+CollectionDiagnosticRule <|.. InternalMarkdownLinkRule
+SourceFirstHeadingH1Rule ..> HeadingNormalizer : reads headings
+SourceH1CountRule ..> HeadingNormalizer : reads headings
 HeadingLevelOverflowRule ..> HeadingNormalizer : reads headings
+LocalImageMissingRule ..> MarkdownDocument : reads image references
+ExternalImageReferenceRule ..> MarkdownDocument : reads image references
+InternalMarkdownLinkRule ..> MarkdownFile : reads Markdown links
 @enduml
 ```
 
@@ -286,7 +303,12 @@ participant "CollectionDiagnosticReport" as Report
 
 User -> Collection : diagnose()
 Collection -> Registry : default rules
+Registry --> Collection : SourceFirstHeadingH1Rule
+Registry --> Collection : SourceH1CountRule
 Registry --> Collection : HeadingLevelOverflowRule
+Registry --> Collection : LocalImageMissingRule
+Registry --> Collection : ExternalImageReferenceRule
+Registry --> Collection : InternalMarkdownLinkRule
 loop for each rule
   Collection -> Rule : diagnose(context)
   Rule --> Collection : diagnostics
@@ -299,10 +321,33 @@ Collection --> User : report
 
 Les diagnostics de collection appliquent le pattern Strategy : chaque controle
 est une regle independante qui implemente `CollectionDiagnosticRule`. Le registre
-par defaut contient aujourd'hui `HeadingLevelOverflowRule`, qui detecte les
-titres qui depasseraient le niveau 6 apres insertion du H1 racine et des titres
-de dossiers. De nouveaux controles, comme les images absentes ou les liens
-casses, peuvent etre ajoutes par nouvelle regle sans modifier le moteur.
+par defaut contient aujourd'hui :
+
+- `SourceFirstHeadingH1Rule`, qui verifie que le premier titre Markdown de
+  chaque fichier source est un H1 ;
+- `SourceH1CountRule`, qui verifie que chaque fichier source contient
+  exactement un titre H1 ;
+- `HeadingLevelOverflowRule`, qui detecte les titres qui depasseraient le
+  niveau 6 apres insertion du H1 racine et des titres de dossiers.
+- `LocalImageMissingRule`, qui signale en erreur les images locales dont le
+  fichier n'existe pas, en resolvant les chemins relatifs depuis le fichier
+  Markdown source ;
+- `ExternalImageReferenceRule`, qui signale en warning les images externes sans
+  effectuer de requete reseau dans le noyau deterministe.
+- `InternalMarkdownLinkRule`, qui signale en erreur les liens vers fichiers
+  Markdown inexistants ou les liens Markdown qui sortent de la racine de
+  collection. Les URL externes, les ancres seules et les liens non Markdown sont
+  ignores par cette regle.
+
+De nouveaux controles, comme les images absentes ou les liens casses, peuvent
+etre ajoutes par nouvelle regle sans modifier le moteur. Chaque regle concrete
+vit dans son propre module sous `scribpy.core.diagnostics.rules` afin d'eviter
+un fichier central difficile a maintenir.
+
+`MarkdownCollection.concatenate()` bloque seulement sur les diagnostics de
+severite `ERROR`. Les diagnostics de severite `WARNING`, par exemple les images
+externes, restent consultables avec `collection.diagnose()` mais ne bloquent pas
+l'assemblage.
 
 ## Extension prevue
 

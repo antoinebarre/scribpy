@@ -7,7 +7,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from scribpy.core.collection_diagnostics import (
+from scribpy.core.diagnostics import (
     CollectionDiagnosticReport,
     CollectionDiagnosticRule,
     diagnose_collection,

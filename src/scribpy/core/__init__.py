@@ -1,10 +1,16 @@
 """Core domain objects for Scribpy."""
 
-from scribpy.core.collection_diagnostics import (
+from scribpy.core.diagnostics import (
     CollectionDiagnostic,
     CollectionDiagnosticReport,
     CollectionDiagnosticRule,
     DiagnosticSeverity,
+    ExternalImageReferenceRule,
+    HeadingLevelOverflowRule,
+    InternalMarkdownLinkRule,
+    LocalImageMissingRule,
+    SourceFirstHeadingH1Rule,
+    SourceH1CountRule,
 )
 from scribpy.core.manifest import FolderManifest, RootManifest
 from scribpy.core.markdown_collection import MarkdownCollection
@@ -17,10 +23,16 @@ __all__ = [
     "CollectionDiagnosticReport",
     "CollectionDiagnosticRule",
     "DiagnosticSeverity",
+    "ExternalImageReferenceRule",
     "FolderManifest",
+    "HeadingLevelOverflowRule",
+    "InternalMarkdownLinkRule",
+    "LocalImageMissingRule",
     "MarkdownCollection",
     "MarkdownDocument",
     "MarkdownFile",
     "MarkdownImageReference",
     "RootManifest",
+    "SourceFirstHeadingH1Rule",
+    "SourceH1CountRule",
 ]

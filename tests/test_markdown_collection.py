@@ -173,8 +173,10 @@ class TestMarkdownCollectionConcatenation:
         tmp_path: Path,
     ) -> None:
         """Requirement: concatenation refreshes combined image references."""
-        _write(tmp_path / "01-intro.md", "![Intro](intro.png)\n")
-        _write(tmp_path / "02-usage.md", "![Usage](usage.png)\n")
+        _write(tmp_path / "intro.png", "fake image")
+        _write(tmp_path / "usage.png", "fake image")
+        _write(tmp_path / "01-intro.md", "# Intro\n\n![Intro](intro.png)\n")
+        _write(tmp_path / "02-usage.md", "# Usage\n\n![Usage](usage.png)\n")
         collection = MarkdownCollection.from_tree(tmp_path)
 
         document = collection.concatenate()
@@ -265,18 +267,19 @@ class TestMarkdownCollectionConcatenation:
 
         assert document.content == f"# {tmp_path.name}\n\n## Outside\n"
 
-    def test_concatenate_ignores_empty_file_content(
+    def test_concatenate_raises_for_empty_file_content(
         self,
         tmp_path: Path,
     ) -> None:
-        """Requirement: empty Markdown files do not add body chunks."""
+        """Requirement: empty Markdown files fail source diagnostics."""
         _write(tmp_path / "scribpy.yml", "project:\n  title: Demo\n")
         _write(tmp_path / "empty.md", "\n\n")
         collection = MarkdownCollection.from_tree(tmp_path)
 
-        document = collection.concatenate()
+        with pytest.raises(InvalidMarkdownError) as exc_info:
+            collection.concatenate()
 
-        assert document.content == "# Demo\n"
+        assert "SOURCE_H1_COUNT_INVALID" in str(exc_info.value)
 
     def test_concatenate_raises_for_heading_level_overflow(
         self,
@@ -290,6 +293,73 @@ class TestMarkdownCollectionConcatenation:
             collection.concatenate()
 
         assert "HEADING_LEVEL_OVERFLOW" in str(exc_info.value)
+
+    def test_concatenate_raises_for_multiple_source_h1(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: source files with multiple H1 headings block output."""
+        _write(tmp_path / "index.md", "# First\n\n# Second\n")
+        collection = MarkdownCollection.from_tree(tmp_path)
+
+        with pytest.raises(InvalidMarkdownError) as exc_info:
+            collection.concatenate()
+
+        assert "SOURCE_H1_COUNT_INVALID" in str(exc_info.value)
+
+    def test_concatenate_raises_for_first_heading_not_h1(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: source files whose first heading is not H1 fail."""
+        _write(tmp_path / "index.md", "## First\n\n# Title\n")
+        collection = MarkdownCollection.from_tree(tmp_path)
+
+        with pytest.raises(InvalidMarkdownError) as exc_info:
+            collection.concatenate()
+
+        assert "SOURCE_FIRST_HEADING_NOT_H1" in str(exc_info.value)
+
+    def test_concatenate_raises_for_missing_local_image(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: missing local images block collection output."""
+        _write(tmp_path / "index.md", "# Title\n\n![Missing](missing.png)\n")
+        collection = MarkdownCollection.from_tree(tmp_path)
+
+        with pytest.raises(InvalidMarkdownError) as exc_info:
+            collection.concatenate()
+
+        assert "LOCAL_IMAGE_MISSING" in str(exc_info.value)
+
+    def test_concatenate_allows_external_image_warning(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: external image warnings do not block output."""
+        _write(
+            tmp_path / "index.md",
+            "# Title\n\n![Remote](https://example.com/logo.png)\n",
+        )
+        collection = MarkdownCollection.from_tree(tmp_path)
+
+        document = collection.concatenate()
+
+        assert "https://example.com/logo.png" in document.content
+
+    def test_concatenate_raises_for_missing_internal_markdown_link(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: missing internal Markdown links block output."""
+        _write(tmp_path / "index.md", "# Title\n\n[Missing](missing.md)\n")
+        collection = MarkdownCollection.from_tree(tmp_path)
+
+        with pytest.raises(InvalidMarkdownError) as exc_info:
+            collection.concatenate()
+
+        assert "INTERNAL_MARKDOWN_LINK_MISSING" in str(exc_info.value)
 
     def test_concatenate_empty_collection_returns_empty_document(
         self,
