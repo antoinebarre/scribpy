@@ -6,6 +6,7 @@ import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from scribpy.core.heading_normalizer import normalize_markdown_headings
 from scribpy.core.manifest import (
     FolderManifest,
     RootManifest,
@@ -17,6 +18,7 @@ from scribpy.core.markdown_file import MarkdownFile
 from scribpy.errors import InvalidScribpyManifestError, ScribpyManifestWarning
 
 _MARKDOWN_SUFFIXES = frozenset({".md", ".markdown"})
+_ROOT_FILE_HEADING_LEVEL = 2
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,19 +74,145 @@ class MarkdownCollection:
         )
 
     def concatenate(self) -> MarkdownDocument:
-        """Concatenate files into one in-memory Markdown document.
+        """Concatenate files into one normalized Markdown document.
 
         Returns:
-            Markdown document containing each file body in collection order.
+            Markdown document containing one H1, folder headings, and each file
+            body in collection order.
         """
-        chunks = tuple(
-            content
-            for markdown_file in self.files
-            if (content := markdown_file.content.strip())
-        )
-        if not chunks:
+        if not self.files:
             return MarkdownDocument("")
+        chunks = [f"# {_document_title(self.root, self.manifest)}"]
+        previous_folder_parts: tuple[str, ...] = ()
+        for markdown_file in self.files:
+            folder_parts = _relative_folder_parts(
+                self.root, markdown_file.path
+            )
+            chunks.extend(
+                _folder_heading_chunks(
+                    self.root,
+                    previous_folder_parts,
+                    folder_parts,
+                ),
+            )
+            previous_folder_parts = folder_parts
+            content = markdown_file.content.strip()
+            if content:
+                chunks.append(
+                    normalize_markdown_headings(
+                        content,
+                        _ROOT_FILE_HEADING_LEVEL + len(folder_parts),
+                    ),
+                )
         return MarkdownDocument("\n\n".join(chunks) + "\n")
+
+
+def _document_title(root: Path, manifest: RootManifest) -> str:
+    """Return the title used for the assembled document H1.
+
+    Args:
+        root: Collection root directory.
+        manifest: Root manifest containing optional project metadata.
+
+    Returns:
+        Document title.
+    """
+    title = manifest.project.get("title")
+    if title is None or title == "":
+        return root.name
+    return str(title)
+
+
+def _relative_folder_parts(root: Path, path: Path) -> tuple[str, ...]:
+    """Return relative parent folder names for one Markdown file.
+
+    Args:
+        root: Collection root directory.
+        path: Markdown file path.
+
+    Returns:
+        Relative parent folder names, or an empty tuple for root files.
+    """
+    try:
+        relative_path = path.relative_to(root)
+    except ValueError:
+        return ()
+    return relative_path.parent.parts
+
+
+def _folder_heading_chunks(
+    root: Path,
+    previous_folder_parts: tuple[str, ...],
+    current_folder_parts: tuple[str, ...],
+) -> list[str]:
+    """Return folder headings needed before the current file.
+
+    Args:
+        root: Collection root directory.
+        previous_folder_parts: Folder parts used by the previous file.
+        current_folder_parts: Folder parts used by the current file.
+
+    Returns:
+        Folder heading chunks to insert before the current file.
+    """
+    common_size = _common_prefix_size(
+        previous_folder_parts, current_folder_parts
+    )
+    return [
+        _folder_heading(root, current_folder_parts[: index + 1], index)
+        for index in range(common_size, len(current_folder_parts))
+    ]
+
+
+def _common_prefix_size(
+    left_parts: tuple[str, ...],
+    right_parts: tuple[str, ...],
+) -> int:
+    """Return the shared prefix length between two folder paths.
+
+    Args:
+        left_parts: First folder path parts.
+        right_parts: Second folder path parts.
+
+    Returns:
+        Number of shared leading parts.
+    """
+    size = 0
+    for left, right in zip(left_parts, right_parts, strict=False):
+        if left != right:
+            return size
+        size += 1
+    return size
+
+
+def _folder_heading(
+    root: Path, folder_parts: tuple[str, ...], index: int
+) -> str:
+    """Return one Markdown folder heading.
+
+    Args:
+        root: Collection root directory.
+        folder_parts: Relative folder path parts for this heading.
+        index: Zero-based folder depth.
+
+    Returns:
+        Markdown heading for the folder.
+    """
+    level = min(6, _ROOT_FILE_HEADING_LEVEL + index)
+    folder_path = root.joinpath(*folder_parts)
+    return f"{'#' * level} {_folder_title(folder_path)}"
+
+
+def _folder_title(folder: Path) -> str:
+    """Return a folder display title from manifest or folder name.
+
+    Args:
+        folder: Folder represented in the assembled document.
+
+    Returns:
+        Folder title.
+    """
+    return load_folder_manifest(folder).title or folder.name
 
 
 def _ordered_markdown_paths(

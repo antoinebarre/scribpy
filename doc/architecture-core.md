@@ -74,6 +74,10 @@ package "scribpy.core" {
     +concatenate(): MarkdownDocument
   }
 
+  class HeadingNormalizer {
+    +normalize_markdown_headings(content, base_level): str
+  }
+
   class RootManifest {
     +project: dict[str, object]
     +build: dict[str, object]
@@ -102,6 +106,7 @@ MarkdownCollection "1" o-- "*" MarkdownFile
 MarkdownCollection "1" o-- "1" RootManifest
 MarkdownCollection ..> MarkdownDocument : concatenates
 MarkdownCollection ..> FolderManifest : reads local order
+MarkdownCollection ..> HeadingNormalizer : shifts headings
 @enduml
 ```
 
@@ -196,6 +201,8 @@ File --> User : report
 actor User
 participant "MarkdownCollection" as Collection
 participant "MarkdownFile" as File
+participant "FolderManifest" as Folder
+participant "HeadingNormalizer" as Headings
 participant "MarkdownDocument" as Document
 
 User -> Collection : from_tree(root)
@@ -204,11 +211,33 @@ Collection -> Collection : read folder scribpy.yml files
 Collection -> File : from_path(path) in manifest/alphabetical order
 File --> Collection : files
 User -> Collection : concatenate()
-Collection -> Document : MarkdownDocument(joined content)
+Collection -> Collection : create one H1 from project.title or root name
+loop for each folder entered
+  Collection -> Folder : read title or folder name
+  Folder --> Collection : heading title
+  Collection -> Collection : add folder heading
+end
+loop for each Markdown file
+  Collection -> Headings : normalize_markdown_headings(content, base_level)
+  Headings --> Collection : shifted content
+end
+Collection -> Document : MarkdownDocument(normalized content)
 Document --> Collection
 Collection --> User : document
 @enduml
 ```
+
+La concatenation produit un document Markdown structure pour publication :
+
+- le document final contient un seul titre de niveau 1 ;
+- ce titre vient de `project.title` dans le `scribpy.yml` racine, ou du nom du
+  dossier racine si la metadonnee est absente ;
+- chaque dossier traverse ajoute un titre intermediaire, avec le `title` du
+  `scribpy.yml` local quand il existe, sinon le nom du dossier ;
+- le titre `#` d'un fichier racine devient `##`, le titre `#` d'un fichier dans
+  un sous-dossier devient `###`, et ainsi de suite ;
+- les titres situes dans les blocs de code fenced ne sont pas modifies, grace au
+  scanner de lignes fourni par `mkforge`.
 
 ## Extension prevue
 

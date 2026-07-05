@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scribpy.core import MarkdownCollection, MarkdownDocument
+from scribpy.core import MarkdownCollection, MarkdownDocument, MarkdownFile
 from scribpy.errors import InvalidScribpyManifestError, ScribpyManifestWarning
 
 
@@ -153,6 +153,7 @@ class TestMarkdownCollectionConcatenation:
         tmp_path: Path,
     ) -> None:
         """Requirement: collection concatenation returns a MarkdownDocument."""
+        _write(tmp_path / "scribpy.yml", "project:\n  title: Demo\n")
         _write(tmp_path / "01-intro.md", "# Intro\n\nIntro text.\n")
         _write(tmp_path / "02-usage.md", "# Usage\n\nUsage text.\n")
         collection = MarkdownCollection.from_tree(tmp_path)
@@ -160,7 +161,7 @@ class TestMarkdownCollectionConcatenation:
         document = collection.concatenate()
 
         assert document == MarkdownDocument(
-            "# Intro\n\nIntro text.\n\n# Usage\n\nUsage text.\n",
+            "# Demo\n\n## Intro\n\nIntro text.\n\n## Usage\n\nUsage text.\n",
         )
 
     def test_concatenate_refreshes_document_image_references(
@@ -180,6 +181,98 @@ class TestMarkdownCollectionConcatenation:
             "intro.png",
             "usage.png",
         )
+
+    def test_concatenate_uses_root_folder_name_without_project_title(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: concatenation uses root name when title is absent."""
+        _write(tmp_path / "index.md", "# Intro\n")
+        collection = MarkdownCollection.from_tree(tmp_path)
+
+        document = collection.concatenate()
+
+        assert document.content == f"# {tmp_path.name}\n\n## Intro\n"
+
+    def test_concatenate_adds_manifest_folder_headings(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: folder manifests provide assembled headings."""
+        _write(tmp_path / "scribpy.yml", "project:\n  title: Demo\n")
+        _write(tmp_path / "guide" / "scribpy.yml", "title: User Guide\n")
+        _write(tmp_path / "guide" / "install.md", "# Install\n")
+        collection = MarkdownCollection.from_tree(tmp_path)
+
+        document = collection.concatenate()
+
+        assert document.content == ("# Demo\n\n## User Guide\n\n### Install\n")
+
+    def test_concatenate_uses_folder_name_without_folder_title(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: folders without titles use their directory name."""
+        _write(tmp_path / "scribpy.yml", "project:\n  title: Demo\n")
+        _write(tmp_path / "guide" / "install.md", "# Install\n")
+        collection = MarkdownCollection.from_tree(tmp_path)
+
+        document = collection.concatenate()
+
+        assert document.content == "# Demo\n\n## guide\n\n### Install\n"
+
+    def test_concatenate_adds_nested_folder_headings_once(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: nested folders create stable hierarchy headings."""
+        _write(
+            tmp_path / "scribpy.yml",
+            "project:\n  title: Demo\norder:\n  - guide\n  - api\n",
+        )
+        _write(tmp_path / "guide" / "intro.md", "# Intro\n")
+        _write(tmp_path / "guide" / "deep" / "detail.md", "# Detail\n")
+        _write(tmp_path / "api" / "reference.md", "# Reference\n")
+        collection = MarkdownCollection.from_tree(tmp_path)
+
+        document = collection.concatenate()
+
+        assert document.content == (
+            "# Demo\n\n"
+            "## guide\n\n"
+            "### deep\n\n"
+            "#### Detail\n\n"
+            "### Intro\n\n"
+            "## api\n\n"
+            "### Reference\n"
+        )
+
+    def test_concatenate_keeps_external_file_as_root_content(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: manually supplied external files remain supported."""
+        collection = MarkdownCollection(
+            root=tmp_path,
+            files=(MarkdownFile(Path("outside.md"), "# Outside\n"),),
+        )
+
+        document = collection.concatenate()
+
+        assert document.content == f"# {tmp_path.name}\n\n## Outside\n"
+
+    def test_concatenate_ignores_empty_file_content(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: empty Markdown files do not add body chunks."""
+        _write(tmp_path / "scribpy.yml", "project:\n  title: Demo\n")
+        _write(tmp_path / "empty.md", "\n\n")
+        collection = MarkdownCollection.from_tree(tmp_path)
+
+        document = collection.concatenate()
+
+        assert document.content == "# Demo\n"
 
     def test_concatenate_empty_collection_returns_empty_document(
         self,
