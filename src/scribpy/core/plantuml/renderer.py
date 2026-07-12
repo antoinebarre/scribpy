@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from typing import Protocol
 
+from scribpy.core.plantuml.kroki import KrokiRenderer
 from scribpy.core.plantuml.local import LocalRenderer
-from scribpy.core.plantuml.web_server import WebServerRenderer
 
 _BACKENDS: dict[str, type[PlantUmlRenderer]] = {
-    "web": WebServerRenderer,
+    "web": KrokiRenderer,
     "local": LocalRenderer,
 }
 

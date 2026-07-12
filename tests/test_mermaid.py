@@ -14,7 +14,8 @@ from scribpy.core.assembly.mermaid_transform import (
     _png_filename,
     render_mermaid_blocks,
 )
-from scribpy.core.mermaid.kroki import KrokiRenderer, _encode_diagram
+from scribpy.core.diagram_encoding import encode_diagram as _encode_diagram
+from scribpy.core.mermaid.kroki import KrokiRenderer
 from scribpy.core.mermaid.local import LocalRenderer
 from scribpy.core.mermaid.renderer import make_renderer
 from scribpy.errors import MermaidRenderError
@@ -39,7 +40,7 @@ class TestPngFilename:
 
 
 class TestEncodeDiagram:
-    """Tests for the _encode_diagram helper in kroki.py."""
+    """Tests for the encode_diagram helper in diagram_encoding.py."""
 
     def test_encode_diagram_returns_ascii_string(self) -> None:
         """Requirement: encoded result is an ASCII string."""
@@ -329,7 +330,7 @@ class TestConcatenateWithMermaid:
         collection = MarkdownCollection.from_tree(src)
         with (
             patch(
-                "scribpy.core.plantuml.web_server.urlopen",
+                "scribpy.core.plantuml.kroki.urlopen",
                 return_value=mock_response,
             ),
             patch(

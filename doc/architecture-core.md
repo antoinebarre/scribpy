@@ -1,63 +1,62 @@
-# Scribpy Core Architecture
+# Scribpy Core — Architecture
 
 ## Objectif
 
-Scribpy repart d'un noyau simple : un fichier Markdown est l'objet metier
-central quand on manipule le disque, et un document Markdown est l'objet metier
-central quand on manipule du contenu en memoire. Les fonctions Markdown
-generiques ne sont pas reecrites dans Scribpy : elles sont deleguees a
-`mkforge` quand le package les expose.
+Scribpy assemble des collections de fichiers Markdown en un document unique pret
+a la publication. Le noyau produit un fichier Markdown enrichi : les liens
+internes sont renames en ancres, les blocs de diagrammes sont rendus en PNG et
+les images locales sont copiees dans un repertoire d'assets.
+
+L'objet metier central cote disque est `MarkdownFile`. Cote memoire c'est
+`MarkdownDocument`. Le resultat de l'assemblage est `AssembledDocument`, qui
+porte l'etat en cours de transformation le long du pipeline.
 
 ## Principes
 
 - `MarkdownFile` represente un fichier Markdown physique avec son chemin.
 - `MarkdownDocument` represente du contenu Markdown en memoire, sans chemin.
-- `MarkdownImageReference` represente une image ecrite dans le Markdown, pas
-  encore un fichier resolu sur disque.
+- `MarkdownImageReference` represente une reference d'image ecrite dans le
+  Markdown, pas encore un fichier resolu sur disque.
 - `MarkdownCollection` represente une liste ordonnee de fichiers Markdown
   chargee depuis une arborescence.
+- `AssembledDocument` porte le contenu en cours de transformation et les
+  chemins necessaires a la resolution des assets.
 - Les modifications retournent une nouvelle instance pour faciliter les tests
   et eviter les effets de bord.
-- `mkforge` est l'adaptateur de verification et validation Markdown.
-- Les rendus HTML, site et qualite multi-fichiers resteront des services
-  separes pour eviter que les objets Markdown deviennent des objets qui font
-  tout.
+- `diagram_encoding` est generique : il encode n'importe quelle source de
+  diagramme en chaine URL-safe (zlib + base64url). Les modules `kroki.py`
+  sont les seuls a connaitre l'URL et le protocole du service kroki.io.
+- Chaque backend de rendu est un module independant. La factory `make_renderer`
+  est le seul endroit qui connaît la correspondance nom → classe.
 
-## Limite volontaire
-
-`MarkdownDocument` extrait les references d'images, mais ne controle pas que les
-fichiers existent. Cette verification demande un contexte disque. Elle restera
-donc dans `MarkdownFile` ou dans un futur service de qualite documentaire.
-
-## Vue statique
+## Vue statique des modules principaux
 
 ```plantuml
 @startuml
 skinparam classAttributeIconSize 0
 
-package "scribpy.core" {
-  class MarkdownDocument {
-    +content: str
-    +image_references: tuple[MarkdownImageReference, ...]
-    +with_content(content): MarkdownDocument
-    +replace_text(old, new): MarkdownDocument
-  }
+package "scribpy.errors" {
+  class ScribpyError
+  class InvalidMarkdownError
+  class InvalidScribpyManifestError
+  class PlantUmlRenderError
+  class MermaidRenderError
+}
 
+package "scribpy.core" {
   class MarkdownFile {
     +path: Path
     +content: str
     +encoding: str
     +from_path(path, encoding): MarkdownFile
-    +with_content(content): MarkdownFile
-    +replace_text(old, new): MarkdownFile
     +to_document(): MarkdownDocument
     +write(path): Path
-    +verify(settings, custom_rules): VerificationReport
-    +has_valid_images(timeout): bool
-    +has_expected_headings(expected, strict): bool
-    +has_expected_yaml(expected, strict): bool
   }
-
+  class MarkdownDocument {
+    +content: str
+    +image_references: tuple[MarkdownImageReference, ...]
+    +with_content(content): MarkdownDocument
+  }
   class MarkdownImageReference {
     +alt_text: str
     +target: str
@@ -65,116 +64,70 @@ package "scribpy.core" {
     +line: int | None
     +column: int | None
   }
-
   class MarkdownCollection {
     +root: Path
     +files: tuple[MarkdownFile, ...]
     +manifest: RootManifest
     +from_tree(root, encoding): MarkdownCollection
-    +diagnose(rules): CollectionDiagnosticReport
     +concatenate(): MarkdownDocument
+    +diagnose(rules): CollectionDiagnosticReport
   }
-
-  class HeadingNormalizer {
-    +normalize_markdown_headings(content, base_level): str
-  }
-
-  class CollectionDiagnosticReport {
-    +diagnostics: tuple[CollectionDiagnostic, ...]
-    +has_errors: bool
-    +by_severity(severity): tuple[CollectionDiagnostic, ...]
-    +summary(): str
-  }
-
-  class CollectionDiagnostic {
-    +code: str
-    +severity: DiagnosticSeverity
-    +message: str
-    +path: Path | None
-    +line: int | None
-  }
-
-  interface CollectionDiagnosticRule {
-    +diagnose(context): Iterable[CollectionDiagnostic]
-  }
-
-  package "diagnostics" {
-    class SourceFirstHeadingH1Rule
-    class SourceH1CountRule
-    class HeadingLevelOverflowRule
-    class LocalImageMissingRule
-    class ExternalImageReferenceRule
-    class InternalMarkdownLinkRule
-  }
-
   class RootManifest {
+    +path: Path | None
     +project: dict[str, object]
     +build: dict[str, object]
     +order: tuple[str, ...]
   }
-
   class FolderManifest {
+    +path: Path | None
     +title: str | None
     +order: tuple[str, ...]
   }
 }
 
-package "mkforge" {
-  class VerificationReport
-  class VerificationSettings
-  interface MarkdownRule
+package "scribpy.core.assembly" {
+  class AssembledDocument {
+    +content: str
+    +source_root: Path
+    +output: Path
+    +with_content(content): AssembledDocument
+  }
+  class "concatenate()" as concat
+  class "apply_transforms()" as pipeline
 }
 
-MarkdownFile ..> VerificationReport : returns
-MarkdownFile ..> VerificationSettings : accepts
-MarkdownFile ..> MarkdownRule : accepts
-MarkdownFile ..> mkforge : delegates validation
 MarkdownFile ..> MarkdownDocument : creates
 MarkdownDocument "1" o-- "*" MarkdownImageReference
 MarkdownCollection "1" o-- "*" MarkdownFile
 MarkdownCollection "1" o-- "1" RootManifest
-MarkdownCollection ..> MarkdownDocument : concatenates
 MarkdownCollection ..> FolderManifest : reads local order
-MarkdownCollection ..> HeadingNormalizer : shifts headings
-MarkdownCollection ..> CollectionDiagnosticReport : returns
-CollectionDiagnosticReport "1" o-- "*" CollectionDiagnostic
-CollectionDiagnosticRule <|.. SourceFirstHeadingH1Rule
-CollectionDiagnosticRule <|.. SourceH1CountRule
-CollectionDiagnosticRule <|.. HeadingLevelOverflowRule
-CollectionDiagnosticRule <|.. LocalImageMissingRule
-CollectionDiagnosticRule <|.. ExternalImageReferenceRule
-CollectionDiagnosticRule <|.. InternalMarkdownLinkRule
-SourceFirstHeadingH1Rule ..> HeadingNormalizer : reads headings
-SourceH1CountRule ..> HeadingNormalizer : reads headings
-HeadingLevelOverflowRule ..> HeadingNormalizer : reads headings
-LocalImageMissingRule ..> MarkdownDocument : reads image references
-ExternalImageReferenceRule ..> MarkdownDocument : reads image references
-InternalMarkdownLinkRule ..> MarkdownFile : reads Markdown links
+MarkdownCollection ..> InvalidMarkdownError : raises
+concat ..> MarkdownCollection : reads
+concat ..> AssembledDocument : produces
+pipeline ..> AssembledDocument : threads
 @enduml
 ```
 
-## Ordre des fichiers
-
-`MarkdownCollection.from_tree()` parcourt recursivement les dossiers et
-sous-dossiers, garde les fichiers `.md` et `.markdown`, puis applique les
-manifests `scribpy.yml` quand ils existent.
+## Configuration : scribpy.yml
 
 Le `scribpy.yml` racine est le seul manifeste riche. Il peut contenir les
-metadonnees du projet, les reglages globaux et l'ordre des enfants directs de la
-racine :
+metadonnees du projet, les reglages globaux et l'ordre des enfants directs :
 
 ```yaml
 project:
   title: Guide utilisateur
 build:
-  toc: true
-  renumber_headings: false
+  plantuml_backend: web
+  mermaid_backend: web
 order:
   - intro.md
   - architecture/
 ```
 
-Les `scribpy.yml` de dossier sont locaux et limites a `title` et `order` :
+Les valeurs acceptees pour `plantuml_backend` et `mermaid_backend` sont `web`
+(defaut, via kroki.io) et `local` (non encore implemente).
+
+Les `scribpy.yml` de dossier sont limites a `title` et `order` :
 
 ```yaml
 title: Architecture
@@ -183,176 +136,264 @@ order:
   - decisions.md
 ```
 
-Chaque manifeste controle uniquement les enfants directs de son dossier :
+Chaque manifeste controle uniquement les enfants directs de son dossier. Si un
+enfant liste dans `order` n'existe pas, une `InvalidScribpyManifestError` est
+levee. Les enfants non listes dans un manifeste emettent un
+`ScribpyManifestWarning` et sont ignores. Sans manifeste, les enfants sont
+parcourus par ordre alphabetique.
 
-```text
-docs/
-  scribpy.yml
-  intro.md
-  architecture/
-    scribpy.yml
-    contexte.md
-    decisions.md
-```
+## Flux d'assemblage
 
-Si un dossier n'a pas de `scribpy.yml`, ses enfants directs sont parcourus par
-ordre alphabetique. Si un dossier definit des reglages globaux comme `build`,
-ils produisent un `ScribpyManifestWarning` et sont ignores. Si un manifeste
-liste un enfant inexistant ou un chemin profond comme `guide/install.md`, une
-erreur `InvalidScribpyManifestError` est levee.
+L'assemblage passe par deux etapes : la concatenation, puis le pipeline de
+transforms.
 
-## Flux d'extraction des images
+### Etape 1 — Concatenation
 
-```plantuml
-@startuml
-actor User
-participant "MarkdownDocument" as Document
-participant "mkforge line scanner" as Scanner
-participant "MarkdownImageReference" as Image
+`MarkdownCollection.concatenate()` produit un `MarkdownDocument` normalise :
 
-User -> Document : MarkdownDocument(content)
-Document -> Scanner : lines_outside_fenced_code(content)
-Scanner --> Document : lines
-Document -> Image : create for each image reference
-Image --> Document
-Document --> User : image_references
-@enduml
-```
+- un seul H1 global derive de `project.title` ou du nom du dossier racine ;
+- un titre intermediaire pour chaque dossier traverse ;
+- les titres de chaque fichier source decales via `HeadingNormalizer` ;
+- les blocs code fenced sont ignores par le scanner de lignes.
 
-## Flux de verification fichier
+Si les diagnostics de collection contiennent au moins une erreur, la
+concatenation leve `InvalidMarkdownError` avant de produire du contenu.
 
-```plantuml
-@startuml
-actor User
-participant "MarkdownFile" as File
-participant "mkforge" as Mkforge
-participant "VerificationReport" as Report
+### Etape 2 — Pipeline de transforms
 
-User -> File : verify()
-File -> Mkforge : verify_markdown(content, source_path)
-Mkforge -> Report : create diagnostics
-Report --> Mkforge
-Mkforge --> File : report
-File --> User : report
-@enduml
-```
+`concatenate()` (module `scribpy.core.assembly.concatenate`) orchestre quatre
+transforms appliquees en sequence par `apply_transforms` :
 
-## Flux de concatenation v1
+| Ordre | Transform | Role |
+|-------|-----------|------|
+| 1 | `rewrite_internal_links` | Remplace `[label](file.md)` par `[label](#slug)` |
+| 2 | `render_plantuml_blocks` | Rend les blocs ` ```plantuml ` en PNG |
+| 3 | `render_mermaid_blocks` | Rend les blocs ` ```mermaid ` en PNG |
+| 4 | `collect_images` | Copie les images locales dans `assets/` |
+
+Chaque PNG genere est nomme d'apres le SHA-256 de la source du diagramme. Les
+diagrammes identiques partagent ainsi un seul fichier sans recalcul.
 
 ```plantuml
 @startuml
-actor User
-participant "MarkdownCollection" as Collection
-participant "Diagnostic rules" as Rules
-participant "CollectionDiagnosticReport" as Report
-participant "MarkdownFile" as File
-participant "FolderManifest" as Folder
-participant "HeadingNormalizer" as Headings
-participant "MarkdownDocument" as Document
+skinparam participantPadding 10
 
-User -> Collection : from_tree(root)
-Collection -> Collection : read root scribpy.yml
-Collection -> Collection : read folder scribpy.yml files
-Collection -> File : from_path(path) in manifest/alphabetical order
-File --> Collection : files
-User -> Collection : concatenate()
-Collection -> Rules : diagnose(root, files)
-Rules -> Report : create diagnostics
-Report --> Collection
-alt report has errors
-  Collection --> User : InvalidMarkdownError(report.summary())
-else report has no errors
-Collection -> Collection : create one H1 from project.title or root name
-loop for each folder entered
-  Collection -> Folder : read title or folder name
-  Folder --> Collection : heading title
-  Collection -> Collection : add folder heading
-end
-loop for each Markdown file
-  Collection -> Headings : normalize_markdown_headings(content, base_level)
-  Headings --> Collection : shifted content
-end
-Collection -> Document : MarkdownDocument(normalized content)
-Document --> Collection
-Collection --> User : document
-end
+participant "concatenate()" as concat
+participant "apply_transforms()" as pipeline
+participant "rewrite_internal_links" as links
+participant "render_plantuml_blocks" as puml
+participant "render_mermaid_blocks" as mmid
+participant "collect_images" as images
+participant "output.md" as file
+
+concat -> pipeline : AssembledDocument(content, root, output)
+pipeline -> links : AssembledDocument
+links --> pipeline : AssembledDocument (liens renames)
+pipeline -> puml : AssembledDocument
+puml --> pipeline : AssembledDocument (blocs PlantUML -> PNG)
+pipeline -> mmid : AssembledDocument
+mmid --> pipeline : AssembledDocument (blocs Mermaid -> PNG)
+pipeline -> images : AssembledDocument
+images --> pipeline : AssembledDocument (images copiees)
+pipeline --> concat : AssembledDocument final
+concat -> file : write_text(final.content)
 @enduml
 ```
 
-La concatenation produit un document Markdown structure pour publication :
+## Renderers de diagrammes
 
-- le document final contient un seul titre de niveau 1 ;
-- ce titre vient de `project.title` dans le `scribpy.yml` racine, ou du nom du
-  dossier racine si la metadonnee est absente ;
-- chaque dossier traverse ajoute un titre intermediaire, avec le `title` du
-  `scribpy.yml` local quand il existe, sinon le nom du dossier ;
-- le titre `#` d'un fichier racine devient `##`, le titre `#` d'un fichier dans
-  un sous-dossier devient `###`, et ainsi de suite ;
-- les titres situes dans les blocs de code fenced ne sont pas modifies, grace au
-  scanner de lignes fourni par `mkforge`.
+### Architecture commune
 
-## Flux de diagnostic collection
+PlantUML et Mermaid partagent la meme architecture a trois couches :
+protocole, factory, backends.
 
 ```plantuml
 @startuml
-actor User
-participant "MarkdownCollection" as Collection
-participant "Diagnostic registry" as Registry
-participant "CollectionDiagnosticRule" as Rule
-participant "CollectionDiagnosticReport" as Report
+skinparam classAttributeIconSize 0
 
-User -> Collection : diagnose()
-Collection -> Registry : default rules
-Registry --> Collection : SourceFirstHeadingH1Rule
-Registry --> Collection : SourceH1CountRule
-Registry --> Collection : HeadingLevelOverflowRule
-Registry --> Collection : LocalImageMissingRule
-Registry --> Collection : ExternalImageReferenceRule
-Registry --> Collection : InternalMarkdownLinkRule
-loop for each rule
-  Collection -> Rule : diagnose(context)
-  Rule --> Collection : diagnostics
-end
-Collection -> Report : CollectionDiagnosticReport(diagnostics)
-Report --> Collection
-Collection --> User : report
+package "scribpy.core.plantuml" {
+  interface PlantUmlRenderer {
+    +render(diagram: str): bytes
+  }
+  class "make_renderer(backend)" as puml_factory
+  class KrokiRenderer as puml_kroki
+  class LocalRenderer as puml_local
+}
+
+package "scribpy.core.mermaid" {
+  interface MermaidRenderer {
+    +render(diagram: str): bytes
+  }
+  class "make_renderer(backend)" as mmid_factory
+  class KrokiRenderer as mmid_kroki
+  class LocalRenderer as mmid_local
+}
+
+package "scribpy.core" {
+  class "diagram_encoding.encode_diagram()" as encoder
+}
+
+PlantUmlRenderer <|.. puml_kroki
+PlantUmlRenderer <|.. puml_local
+puml_factory ..> PlantUmlRenderer : instantiates
+puml_kroki ..> encoder : uses
+
+MermaidRenderer <|.. mmid_kroki
+MermaidRenderer <|.. mmid_local
+mmid_factory ..> MermaidRenderer : instantiates
+mmid_kroki ..> encoder : uses
 @enduml
 ```
 
-Les diagnostics de collection appliquent le pattern Strategy : chaque controle
-est une regle independante qui implemente `CollectionDiagnosticRule`. Le registre
-par defaut contient aujourd'hui :
+### Encodage des diagrammes
 
-- `SourceFirstHeadingH1Rule`, qui verifie que le premier titre Markdown de
-  chaque fichier source est un H1 ;
-- `SourceH1CountRule`, qui verifie que chaque fichier source contient
-  exactement un titre H1 ;
-- `HeadingLevelOverflowRule`, qui detecte les titres qui depasseraient le
-  niveau 6 apres insertion du H1 racine et des titres de dossiers.
-- `LocalImageMissingRule`, qui signale en erreur les images locales dont le
-  fichier n'existe pas, en resolvant les chemins relatifs depuis le fichier
-  Markdown source ;
-- `ExternalImageReferenceRule`, qui signale en warning les images externes sans
-  effectuer de requete reseau dans le noyau deterministe.
-- `InternalMarkdownLinkRule`, qui signale en erreur les liens vers fichiers
-  Markdown inexistants ou les liens Markdown qui sortent de la racine de
-  collection. Les URL externes, les ancres seules et les liens non Markdown sont
-  ignores par cette regle.
+`diagram_encoding.encode_diagram(diagram)` est generique et ne depend d'aucun
+service. Il compresse la source UTF-8 avec zlib (niveau 9) puis encode en
+base64url. Cette chaine est ensuite utilisee dans l'URL GET envoyee a kroki.io.
+Tout ce qui est specifique a kroki.io (URL de base, timeout, User-Agent,
+interpretation de la reponse HTTP) reste dans les modules `kroki.py`.
 
-De nouveaux controles, comme les images absentes ou les liens casses, peuvent
-etre ajoutes par nouvelle regle sans modifier le moteur. Chaque regle concrete
-vit dans son propre module sous `scribpy.core.diagnostics.rules` afin d'eviter
-un fichier central difficile a maintenir.
+### Backend web (kroki.io)
 
-`MarkdownCollection.concatenate()` bloque seulement sur les diagnostics de
-severite `ERROR`. Les diagnostics de severite `WARNING`, par exemple les images
-externes, restent consultables avec `collection.diagnose()` mais ne bloquent pas
-l'assemblage.
+Les `KrokiRenderer` envoient une requete GET a `https://kroki.io/<format>/png/<encoded>`.
+En cas d'erreur HTTP ou reseau, ils levent `PlantUmlRenderError` ou
+`MermaidRenderError`. Aucune dependance externe n'est requise au-dela de la
+stdlib Python.
+
+### Backend local (placeholder)
+
+Les `LocalRenderer` existent comme placeholder pour permettre a la factory et
+a la configuration de les referencer sans erreur. Ils levent
+`NotImplementedError` a chaque appel. L'implementation locale est prevue dans
+une version ulterieure.
+
+## Diagnostics de collection
+
+Les diagnostics appliquent le pattern Strategy : chaque controle est une regle
+independante qui implemente le protocole `CollectionDiagnosticRule`. Le moteur
+`diagnose_collection` leur passe un `CollectionDiagnosticContext` et agregge
+les resultats dans un `CollectionDiagnosticReport`.
+
+```plantuml
+@startuml
+skinparam classAttributeIconSize 0
+
+package "scribpy.core.diagnostics" {
+  interface CollectionDiagnosticRule {
+    +code: str
+    +diagnose(context): Iterable[CollectionDiagnostic]
+  }
+  class CollectionDiagnosticContext {
+    +root: Path
+    +files: tuple[MarkdownFile, ...]
+  }
+  class CollectionDiagnosticReport {
+    +diagnostics: tuple[CollectionDiagnostic, ...]
+    +has_errors: bool
+    +by_severity(severity): tuple
+    +summary(): str
+  }
+  class CollectionDiagnostic {
+    +code: str
+    +severity: DiagnosticSeverity
+    +message: str
+    +path: Path | None
+    +line: int | None
+  }
+  class "diagnose_collection()" as engine
+
+  package "rules" {
+    class SourceFirstHeadingH1Rule
+    class SourceH1CountRule
+    class HeadingLevelOverflowRule
+    class LocalImageMissingRule
+    class ImageOutsideRootRule
+    class ExternalImageReferenceRule
+    class InternalMarkdownLinkRule
+    class LocalAnchorLinkRule
+  }
+}
+
+CollectionDiagnosticRule <|.. SourceFirstHeadingH1Rule
+CollectionDiagnosticRule <|.. SourceH1CountRule
+CollectionDiagnosticRule <|.. HeadingLevelOverflowRule
+CollectionDiagnosticRule <|.. LocalImageMissingRule
+CollectionDiagnosticRule <|.. ImageOutsideRootRule
+CollectionDiagnosticRule <|.. ExternalImageReferenceRule
+CollectionDiagnosticRule <|.. InternalMarkdownLinkRule
+CollectionDiagnosticRule <|.. LocalAnchorLinkRule
+engine ..> CollectionDiagnosticContext : creates
+engine ..> CollectionDiagnosticRule : iterates
+engine ..> CollectionDiagnosticReport : returns
+CollectionDiagnosticReport "1" o-- "*" CollectionDiagnostic
+@enduml
+```
+
+### Regles du registre par defaut
+
+| Code | Severite | Role |
+|------|----------|------|
+| `SOURCE_FIRST_HEADING_NOT_H1` | ERROR | Le premier titre de chaque source doit etre H1 |
+| `SOURCE_H1_COUNT_INVALID` | ERROR | Chaque source doit contenir exactement un H1 |
+| `HEADING_LEVEL_OVERFLOW` | ERROR | Detecte les titres qui depasseraient H6 apres decalage |
+| `LOCAL_IMAGE_MISSING` | ERROR | Images locales dont le fichier n'existe pas |
+| `IMAGE_OUTSIDE_ROOT` | ERROR | Images locales qui echappent a la racine de collection |
+| `EXTERNAL_IMAGE_REFERENCE` | WARNING | Images externes (pas de requete reseau) |
+| `INTERNAL_MARKDOWN_LINK_RULE` | ERROR | Liens vers fichiers Markdown inexistants ou hors racine |
+| `LOCAL_ANCHOR_LINK` | ERROR | Liens avec fragment d'ancre (#section) interdits en source |
+
+`concatenate()` bloque uniquement sur les diagnostics de severite `ERROR`. Les
+`WARNING` restent consultables via `MarkdownCollection.diagnose()` mais ne
+bloquent pas l'assemblage.
+
+De nouveaux controles peuvent etre ajoutes comme nouvelles regles sans modifier
+le moteur. Chaque regle concrete vit dans son propre module sous
+`scribpy.core.diagnostics.rules`.
+
+## Flux de diagnostic
+
+```plantuml
+@startuml
+actor Utilisateur
+participant "MarkdownCollection" as col
+participant "diagnose_collection()" as engine
+participant "CollectionDiagnosticRule" as rule
+participant "CollectionDiagnosticReport" as report
+
+Utilisateur -> col : diagnose()
+col -> engine : root, files, rules
+loop pour chaque regle
+  engine -> rule : diagnose(context)
+  rule --> engine : diagnostics
+end
+engine -> report : CollectionDiagnosticReport(diagnostics)
+report --> engine
+engine --> col : report
+col --> Utilisateur : report
+@enduml
+```
+
+## Decisions de conception
+
+- **Adaptateur** : `MarkdownFile` expose une API metier stable et deleguait
+  initialement les controles Markdown a `mkforge`. Les controles de collection
+  sont desormais dans `scribpy.core.diagnostics`.
+- **Prototype immuable** : `MarkdownDocument` et `AssembledDocument` retournent
+  une nouvelle instance a chaque modification. Pas d'effet de bord, tests simples.
+- **Pipeline fonctionnel** : `apply_transforms` applique une sequence de fonctions
+  `TransformFn` de type `AssembledDocument -> AssembledDocument`. Chaque transform
+  est independant et testable seul.
+- **Strategy + Registry** : les regles de diagnostic implementent un protocole
+  commun. Le registre par defaut `DEFAULT_COLLECTION_DIAGNOSTIC_RULES` liste
+  les regles actives sans condition centrale.
+- **Isolation du backend** : `diagram_encoding` est generique. Tout ce qui
+  concerne kroki.io (URL, HTTP, format de reponse) reste dans les modules `kroki.py`.
 
 ## Extension prevue
 
-Les futurs rendus utiliseront le pattern Strategy afin d'ajouter HTML, MkDocs
-ou d'autres sorties sans modifier les objets Markdown de base.
+Les futurs rendeurs (HTML, MkDocs) utiliseront le pattern Strategy afin d'ajouter
+des sorties sans modifier les objets Markdown de base. Le backend `local` pour
+PlantUML et Mermaid sera implemente dans une version ulterieure.
 
 ```plantuml
 @startuml
@@ -374,15 +415,3 @@ HtmlRenderer ..> MarkdownDocument
 MkDocsSiteRenderer ..> MarkdownCollection
 @enduml
 ```
-
-## Decision de conception
-
-Le premier design pattern applique est l'adaptateur : `MarkdownFile` expose une
-API metier stable pour Scribpy et delegue les controles Markdown a `mkforge`.
-`MarkdownDocument` applique une approche de prototype immuable : chaque
-modification retourne un nouveau document avec ses references derivees
-recalculees. `MarkdownCollection` applique une strategie d'ordre simple en v1
-basee sur `scribpy.yml`, avec repli alphabetique lorsqu'un dossier n'a pas de
-manifeste. Les diagnostics de collection appliquent Strategy et Registry :
-`MarkdownCollection` depend d'une interface de regle, et le registre par defaut
-permet d'ajouter des controles sans etendre une grande condition centrale.

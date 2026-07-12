@@ -14,13 +14,10 @@ from scribpy.core.assembly.plantuml_transform import (
     _png_filename,
     render_plantuml_blocks,
 )
+from scribpy.core.diagram_encoding import encode_diagram as _encode_diagram
+from scribpy.core.plantuml.kroki import KrokiRenderer
 from scribpy.core.plantuml.local import LocalRenderer
 from scribpy.core.plantuml.renderer import make_renderer
-from scribpy.core.plantuml.web_server import (
-    WebServerRenderer,
-    _encode_diagram,
-    _plantuml_b64encode,
-)
 from scribpy.errors import PlantUmlRenderError
 
 
@@ -43,7 +40,7 @@ class TestPngFilename:
 
 
 class TestEncodeDiagram:
-    """Tests for the _encode_diagram helper in web_server.py."""
+    """Tests for the encode_diagram helper in diagram_encoding.py."""
 
     def test_encode_diagram_returns_string(self) -> None:
         """Requirement: encoded result is an ASCII string."""
@@ -60,17 +57,9 @@ class TestEncodeDiagram:
         """Requirement: different sources produce different encodings."""
         assert _encode_diagram("A") != _encode_diagram("B")
 
-    def test_encode_diagram_two_byte_remainder(self) -> None:
-        """Requirement: two trailing bytes are encoded to 3 characters."""
-        data = b"\x01\x02"
-        result = _plantuml_b64encode(data)
-        assert isinstance(result, str)
-        assert len(result) == 3
-        assert result.isascii()
 
-
-class TestWebServerRenderer:
-    """Tests for WebServerRenderer."""
+class TestKrokiRenderer:
+    """Tests for plantuml KrokiRenderer."""
 
     def test_render_returns_png_bytes_on_success(self) -> None:
         """Requirement: successful HTTP 200 response returns PNG bytes."""
@@ -82,10 +71,10 @@ class TestWebServerRenderer:
         mock_response.read.return_value = png
 
         with patch(
-            "scribpy.core.plantuml.web_server.urlopen",
+            "scribpy.core.plantuml.kroki.urlopen",
             return_value=mock_response,
         ):
-            result = WebServerRenderer().render("@startuml\nA -> B\n@enduml")
+            result = KrokiRenderer().render("@startuml\nA -> B\n@enduml")
 
         assert result == png
 
@@ -99,23 +88,23 @@ class TestWebServerRenderer:
 
         with (
             patch(
-                "scribpy.core.plantuml.web_server.urlopen",
+                "scribpy.core.plantuml.kroki.urlopen",
                 return_value=mock_response,
             ),
             pytest.raises(PlantUmlRenderError, match="HTTP 400"),
         ):
-            WebServerRenderer().render("bad diagram")
+            KrokiRenderer().render("bad diagram")
 
     def test_render_raises_on_url_error(self) -> None:
         """Requirement: URLError is wrapped in PlantUmlRenderError."""
         with (
             patch(
-                "scribpy.core.plantuml.web_server.urlopen",
+                "scribpy.core.plantuml.kroki.urlopen",
                 side_effect=URLError("connection refused"),
             ),
             pytest.raises(PlantUmlRenderError, match="connection refused"),
         ):
-            WebServerRenderer().render("@startuml\nA -> B\n@enduml")
+            KrokiRenderer().render("@startuml\nA -> B\n@enduml")
 
 
 class TestLocalRenderer:
@@ -130,9 +119,9 @@ class TestLocalRenderer:
 class TestMakeRenderer:
     """Tests for make_renderer factory."""
 
-    def test_make_renderer_web_returns_web_server(self) -> None:
-        """Requirement: backend='web' returns a WebServerRenderer instance."""
-        assert isinstance(make_renderer("web"), WebServerRenderer)
+    def test_make_renderer_web_returns_kroki(self) -> None:
+        """Requirement: backend='web' returns a KrokiRenderer instance."""
+        assert isinstance(make_renderer("web"), KrokiRenderer)
 
     def test_make_renderer_local_returns_local(self) -> None:
         """Requirement: backend='local' returns a LocalRenderer instance."""
@@ -140,7 +129,7 @@ class TestMakeRenderer:
 
     def test_make_renderer_default_is_web(self) -> None:
         """Requirement: default backend is 'web'."""
-        assert isinstance(make_renderer(), WebServerRenderer)
+        assert isinstance(make_renderer(), KrokiRenderer)
 
     def test_make_renderer_raises_for_unknown_backend(self) -> None:
         """Requirement: unknown backend name raises ValueError."""
@@ -272,7 +261,7 @@ class TestConcatenateWithPlantuml:
 
         collection = MarkdownCollection.from_tree(src)
         with patch(
-            "scribpy.core.plantuml.web_server.urlopen",
+            "scribpy.core.plantuml.kroki.urlopen",
             return_value=mock_response,
         ):
             concatenate(collection, output)
