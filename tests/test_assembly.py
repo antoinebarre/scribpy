@@ -4,8 +4,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from scribpy.core import MarkdownCollection
 from scribpy.core.assembly.concatenate import concatenate
+from scribpy.core.assembly.heading_numbering import number_markdown_headings
 from scribpy.core.assembly.image_collector import collect_images
 from scribpy.core.assembly.link_rewriter import (
     _extract_h1_title,
@@ -249,6 +252,39 @@ class TestApplyTransforms:
         assert result.content == "hello"
 
 
+class TestHeadingNumbering:
+    """Tests for the MkForge heading numbering adapter."""
+
+    def test_number_markdown_headings_delegates_to_mkforge(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Requirement: heading numbering is delegated to MkForge."""
+        calls: list[str] = []
+
+        def _renumber(markdown: str) -> str:
+            """Record the MkForge renumbering call.
+
+            Args:
+                markdown: Markdown source passed to MkForge.
+
+            Returns:
+                Numbered Markdown source.
+            """
+            calls.append(markdown)
+            return "numbered"
+
+        monkeypatch.setattr(
+            "mkforge.renumber_markdown_headings",
+            _renumber,
+        )
+
+        result = number_markdown_headings("# Title\n")
+
+        assert result == "numbered"
+        assert calls == ["# Title\n"]
+
+
 class TestCollectImages:
     """Tests for collect_images."""
 
@@ -413,6 +449,44 @@ class TestConcatenate:
         concatenate(collection, output)
 
         assert output.exists()
+
+    def test_concatenate_numbers_headings_when_enabled(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: YAML heading numbering enables MkForge numbering."""
+        src = tmp_path / "src"
+        src.mkdir()
+        (src / "scribpy.yml").write_text(
+            "build:\n  heading_numbering:\n    enabled: true\n",
+            encoding="utf-8",
+        )
+        (src / "01-doc.md").write_text("# Doc\n\n## Part\n", encoding="utf-8")
+        output = tmp_path / "out" / "doc.md"
+        collection = MarkdownCollection.from_tree(src)
+
+        concatenate(collection, output)
+
+        text = output.read_text(encoding="utf-8")
+        assert "# 1. src" in text
+        assert "## 1.1. Doc" in text
+
+    def test_concatenate_does_not_number_headings_by_default(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: missing heading numbering leaves headings unchanged."""
+        src = tmp_path / "src"
+        src.mkdir()
+        (src / "01-doc.md").write_text("# Doc\n", encoding="utf-8")
+        output = tmp_path / "out" / "doc.md"
+        collection = MarkdownCollection.from_tree(src)
+
+        concatenate(collection, output)
+
+        text = output.read_text(encoding="utf-8")
+        assert "# src" in text
+        assert "# 1. src" not in text
 
 
 def _write(path: Path, content: str) -> None:

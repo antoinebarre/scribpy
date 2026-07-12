@@ -12,7 +12,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "mkforge>=0.1.0",
+    "mkforge>=0.3.0",
     "PyYAML>=6",
 ]
 

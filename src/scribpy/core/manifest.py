@@ -5,7 +5,7 @@ from __future__ import annotations
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
@@ -14,6 +14,7 @@ from scribpy.errors import InvalidScribpyManifestError, ScribpyManifestWarning
 MANIFEST_NAME = "scribpy.yml"
 ROOT_KEYS = frozenset({"project", "build", "order"})
 FOLDER_KEYS = frozenset({"title", "order"})
+HEADING_NUMBERING_KEYS = frozenset({"enabled"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,12 +66,30 @@ def load_root_manifest(root: Path) -> RootManifest:
         return RootManifest()
     data = _read_manifest_mapping(path)
     _warn_unknown_keys(path, data, ROOT_KEYS)
+    build = _optional_mapping(path, data, "build")
+    _validate_build_settings(path, build)
     return RootManifest(
         path=path,
         project=_optional_mapping(path, data, "project"),
-        build=_optional_mapping(path, data, "build"),
+        build=build,
         order=_optional_order(path, data),
     )
+
+
+def heading_numbering_enabled(manifest: RootManifest) -> bool:
+    """Return whether heading numbering is enabled for a root manifest.
+
+    Args:
+        manifest: Root manifest containing build settings.
+
+    Returns:
+        True when MkForge heading numbering should be applied.
+    """
+    if "heading_numbering" in manifest.build:
+        value = cast("dict[str, object]", manifest.build["heading_numbering"])
+        enabled = value.get("enabled", True)
+        return enabled is True
+    return manifest.build.get("renumber_headings") is True
 
 
 def load_folder_manifest(folder: Path) -> FolderManifest:
@@ -217,6 +236,106 @@ def _optional_mapping(
             f"{key!r} must be a mapping",
         )
     return _string_key_mapping(path, value)
+
+
+def _validate_build_settings(
+    path: Path,
+    build: dict[str, object],
+) -> None:
+    """Validate supported build settings with strict nested contracts.
+
+    Args:
+        path: Manifest file path.
+        build: Parsed build mapping.
+
+    Raises:
+        InvalidScribpyManifestError: If a supported setting is malformed.
+    """
+    _validate_heading_numbering(path, build)
+    _validate_legacy_renumber_headings(path, build)
+    _warn_ignored_legacy_renumber_headings(path, build)
+
+
+def _validate_heading_numbering(
+    path: Path,
+    build: dict[str, object],
+) -> None:
+    """Validate the build.heading_numbering mapping contract.
+
+    Args:
+        path: Manifest file path.
+        build: Parsed build mapping.
+
+    Raises:
+        InvalidScribpyManifestError: If heading_numbering is malformed.
+    """
+    if "heading_numbering" not in build:
+        return
+    value = build["heading_numbering"]
+    if not isinstance(value, dict):
+        raise InvalidScribpyManifestError(
+            str(path),
+            "'build.heading_numbering' must be a mapping",
+        )
+    heading_numbering = _string_key_mapping(path, value)
+    unsupported = sorted(set(heading_numbering) - HEADING_NUMBERING_KEYS)
+    if unsupported:
+        raise InvalidScribpyManifestError(
+            str(path),
+            (
+                "'build.heading_numbering' contains unsupported key: "
+                f"{unsupported[0]!r}"
+            ),
+        )
+    enabled = heading_numbering.get("enabled", True)
+    if not isinstance(enabled, bool):
+        raise InvalidScribpyManifestError(
+            str(path),
+            "'build.heading_numbering.enabled' must be a boolean",
+        )
+    build["heading_numbering"] = heading_numbering
+
+
+def _validate_legacy_renumber_headings(
+    path: Path,
+    build: dict[str, object],
+) -> None:
+    """Validate the legacy build.renumber_headings alias.
+
+    Args:
+        path: Manifest file path.
+        build: Parsed build mapping.
+
+    Raises:
+        InvalidScribpyManifestError: If renumber_headings is malformed.
+    """
+    if "renumber_headings" not in build:
+        return
+    if not isinstance(build["renumber_headings"], bool):
+        raise InvalidScribpyManifestError(
+            str(path),
+            "'build.renumber_headings' must be a boolean",
+        )
+
+
+def _warn_ignored_legacy_renumber_headings(
+    path: Path,
+    build: dict[str, object],
+) -> None:
+    """Warn when the legacy alias is ignored by the canonical setting.
+
+    Args:
+        path: Manifest file path.
+        build: Parsed build mapping.
+    """
+    if "heading_numbering" not in build or "renumber_headings" not in build:
+        return
+    warnings.warn(
+        f"Ignoring 'renumber_headings' in {path}; "
+        "'heading_numbering' takes precedence",
+        ScribpyManifestWarning,
+        stacklevel=2,
+    )
 
 
 def _optional_title(path: Path, data: dict[str, object]) -> str | None:

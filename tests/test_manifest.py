@@ -9,6 +9,7 @@ import pytest
 from scribpy.core.manifest import (
     FolderManifest,
     RootManifest,
+    heading_numbering_enabled,
     load_folder_manifest,
     load_root_manifest,
 )
@@ -49,6 +50,86 @@ class TestRootManifest:
         assert manifest.project == {"title": "Demo"}
         assert manifest.build == {"toc": True, "renumber_headings": False}
         assert manifest.order == ("intro.md", "guide")
+
+    def test_root_manifest_loads_heading_numbering(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: root manifests expose heading numbering settings."""
+        _write(
+            tmp_path / "scribpy.yml",
+            "build:\n  heading_numbering:\n    enabled: true\n",
+        )
+
+        manifest = load_root_manifest(tmp_path)
+
+        assert manifest.build == {"heading_numbering": {"enabled": True}}
+        assert heading_numbering_enabled(manifest) is True
+
+    def test_heading_numbering_absent_is_disabled(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: absent heading numbering settings are disabled."""
+        _write(tmp_path / "scribpy.yml", "build:\n  toc: true\n")
+
+        manifest = load_root_manifest(tmp_path)
+
+        assert heading_numbering_enabled(manifest) is False
+
+    def test_heading_numbering_empty_mapping_is_enabled(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: an empty heading numbering block enables numbering."""
+        _write(tmp_path / "scribpy.yml", "build:\n  heading_numbering: {}\n")
+
+        manifest = load_root_manifest(tmp_path)
+
+        assert heading_numbering_enabled(manifest) is True
+
+    def test_heading_numbering_enabled_false_is_disabled(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: enabled false disables heading numbering."""
+        _write(
+            tmp_path / "scribpy.yml",
+            "build:\n  heading_numbering:\n    enabled: false\n",
+        )
+
+        manifest = load_root_manifest(tmp_path)
+
+        assert heading_numbering_enabled(manifest) is False
+
+    def test_legacy_renumber_headings_enables_numbering(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: legacy renumber_headings remains supported."""
+        _write(tmp_path / "scribpy.yml", "build:\n  renumber_headings: true\n")
+
+        manifest = load_root_manifest(tmp_path)
+
+        assert heading_numbering_enabled(manifest) is True
+
+    def test_heading_numbering_overrides_legacy_alias(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: heading_numbering takes precedence over the alias."""
+        _write(
+            tmp_path / "scribpy.yml",
+            "build:\n"
+            "  renumber_headings: true\n"
+            "  heading_numbering:\n"
+            "    enabled: false\n",
+        )
+
+        with pytest.warns(ScribpyManifestWarning):
+            manifest = load_root_manifest(tmp_path)
+
+        assert heading_numbering_enabled(manifest) is False
 
     def test_root_manifest_warns_for_unknown_key(self, tmp_path: Path) -> None:
         """Requirement: unknown root keys are ignored with a warning."""
@@ -203,6 +284,55 @@ class TestManifestValidation:
         _write(
             tmp_path / "scribpy.yml",
             "order:\n  - guide/install.md\n",
+        )
+
+        with pytest.raises(InvalidScribpyManifestError):
+            load_root_manifest(tmp_path)
+
+    def test_heading_numbering_must_be_mapping(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: heading_numbering must be a mapping."""
+        _write(tmp_path / "scribpy.yml", "build:\n  heading_numbering: true\n")
+
+        with pytest.raises(InvalidScribpyManifestError):
+            load_root_manifest(tmp_path)
+
+    def test_heading_numbering_enabled_must_be_boolean(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: heading_numbering.enabled must be a boolean."""
+        _write(
+            tmp_path / "scribpy.yml",
+            'build:\n  heading_numbering:\n    enabled: "yes"\n',
+        )
+
+        with pytest.raises(InvalidScribpyManifestError):
+            load_root_manifest(tmp_path)
+
+    def test_heading_numbering_rejects_unknown_keys(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: heading_numbering rejects unsupported settings."""
+        _write(
+            tmp_path / "scribpy.yml",
+            "build:\n  heading_numbering:\n    style: decimal\n",
+        )
+
+        with pytest.raises(InvalidScribpyManifestError):
+            load_root_manifest(tmp_path)
+
+    def test_legacy_renumber_headings_must_be_boolean(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: legacy renumber_headings must be a boolean."""
+        _write(
+            tmp_path / "scribpy.yml",
+            'build:\n  renumber_headings: "yes"\n',
         )
 
         with pytest.raises(InvalidScribpyManifestError):
