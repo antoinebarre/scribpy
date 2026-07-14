@@ -40,7 +40,6 @@ class BuildSettings(BaseModel):
         toc: Whether to insert a table of contents after the first H1.
         toc_depth: Maximum heading depth included in the TOC.
         heading_numbering: Heading numbering configuration block.
-        renumber_headings: Legacy alias for heading_numbering.enabled.
         plantuml_backend: Backend name for PlantUML rendering.
         mermaid_backend: Backend name for Mermaid rendering.
     """
@@ -50,7 +49,6 @@ class BuildSettings(BaseModel):
     toc: Annotated[bool, Field(strict=True)] = False
     toc_depth: Annotated[int, Field(ge=1, strict=True)] = 3
     heading_numbering: HeadingNumberingSettings | None = None
-    renumber_headings: Annotated[bool, Field(strict=True)] | None = None
     plantuml_backend: str = "web"
     mermaid_backend: str = "web"
 
@@ -168,8 +166,6 @@ def heading_numbering_enabled(manifest: RootManifest) -> bool:
     """
     if manifest.build.heading_numbering is not None:
         return manifest.build.heading_numbering.enabled
-    if manifest.build.renumber_headings is not None:
-        return manifest.build.renumber_headings
     return False
 
 
@@ -310,30 +306,10 @@ def _parse_build_settings(
         InvalidScribpyManifestError: If the build section is malformed.
     """
     raw = _pop_optional_mapping(path, data, "build")
-    _warn_heading_numbering_override(path, raw)
     try:
         return BuildSettings.model_validate(raw)
     except Exception as exc:
         raise InvalidScribpyManifestError(str(path), str(exc)) from exc
-
-
-def _warn_heading_numbering_override(
-    path: Path,
-    build: dict[str, object],
-) -> None:
-    """Warn when the legacy alias is shadowed by the canonical setting.
-
-    Args:
-        path: Manifest file path.
-        build: Parsed build mapping.
-    """
-    if "heading_numbering" in build and "renumber_headings" in build:
-        warnings.warn(
-            f"Ignoring 'renumber_headings' in {path}; "
-            "'heading_numbering' takes precedence",
-            ScribpyManifestWarning,
-            stacklevel=4,
-        )
 
 
 def _pop_optional_title(path: Path, data: dict[str, object]) -> str | None:

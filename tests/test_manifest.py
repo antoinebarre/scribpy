@@ -39,7 +39,6 @@ class TestRootManifest:
             "  title: Demo\n"
             "build:\n"
             "  toc: true\n"
-            "  renumber_headings: false\n"
             "order:\n"
             "  - intro.md\n"
             "  - guide/\n",
@@ -49,7 +48,6 @@ class TestRootManifest:
 
         assert manifest.project == {"title": "Demo"}
         assert manifest.build.toc is True
-        assert manifest.build.renumber_headings is False
         assert manifest.order == ("intro.md", "guide")
 
     def test_root_manifest_loads_heading_numbering(
@@ -101,35 +99,6 @@ class TestRootManifest:
         )
 
         manifest = load_root_manifest(tmp_path)
-
-        assert heading_numbering_enabled(manifest) is False
-
-    def test_legacy_renumber_headings_enables_numbering(
-        self,
-        tmp_path: Path,
-    ) -> None:
-        """Requirement: legacy renumber_headings remains supported."""
-        _write(tmp_path / "scribpy.yml", "build:\n  renumber_headings: true\n")
-
-        manifest = load_root_manifest(tmp_path)
-
-        assert heading_numbering_enabled(manifest) is True
-
-    def test_heading_numbering_overrides_legacy_alias(
-        self,
-        tmp_path: Path,
-    ) -> None:
-        """Requirement: heading_numbering takes precedence over the alias."""
-        _write(
-            tmp_path / "scribpy.yml",
-            "build:\n"
-            "  renumber_headings: true\n"
-            "  heading_numbering:\n"
-            "    enabled: false\n",
-        )
-
-        with pytest.warns(ScribpyManifestWarning):
-            manifest = load_root_manifest(tmp_path)
 
         assert heading_numbering_enabled(manifest) is False
 
@@ -322,19 +291,6 @@ class TestManifestValidation:
         _write(
             tmp_path / "scribpy.yml",
             "build:\n  heading_numbering:\n    style: decimal\n",
-        )
-
-        with pytest.raises(InvalidScribpyManifestError):
-            load_root_manifest(tmp_path)
-
-    def test_legacy_renumber_headings_must_be_boolean(
-        self,
-        tmp_path: Path,
-    ) -> None:
-        """Requirement: legacy renumber_headings must be a boolean."""
-        _write(
-            tmp_path / "scribpy.yml",
-            'build:\n  renumber_headings: "yes"\n',
         )
 
         with pytest.raises(InvalidScribpyManifestError):
