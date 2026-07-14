@@ -46,6 +46,7 @@ build:
     enabled: true
   plantuml_backend: web
   toc: true
+  toc_depth: 2
 order:
   - 01-intro.md
   - 02-quickstart.md

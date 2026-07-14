@@ -18,4 +18,4 @@ def number_markdown_headings(content: str) -> str:
         TypeError: If MkForge rejects the Markdown source type.
         ValueError: If MkForge rejects its numbering configuration.
     """
-    return mkforge.renumber_markdown_headings(content)
+    return mkforge.renumber_markdown_headings(content, start_level=2)

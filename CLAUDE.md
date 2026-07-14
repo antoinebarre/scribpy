@@ -1,6 +1,106 @@
-# Claude Code Instructions
+# CLAUDE.md
 
-These instructions apply to the whole repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+---
+
+## Commands
+
+```bash
+# Full quality gate (lint + typecheck + security + tests + metrics)
+make check
+
+# Run tests only
+make test
+
+# Run a single test file or test by name
+uv run pytest tests/test_manifest.py
+uv run pytest tests/test_assembly.py::TestLinkRewriter::test_rewrite_link_to_known_file
+
+# Lint only
+make lint
+
+# Type-check only
+make typecheck
+
+# Format source
+make format
+
+# Build wheel
+make build
+
+# Clean work/ directory (done automatically by make check)
+make clean
+```
+
+All tools run through `uv run`. The `work/` directory holds all cache and artifact output (pytest cache, mypy cache, ruff cache, coverage data, build output). Never commit it.
+
+---
+
+## Architecture
+
+scribpy is a **Markdown collection assembler**: it reads a tree of `.md` files described by `scribpy.yml` manifests and produces a single assembled Markdown document with rewritten links, numbered headings, and rendered diagrams.
+
+### Domain model (`src/scribpy/core/`)
+
+| Module | Role |
+|---|---|
+| `manifest.py` | Load and validate `scribpy.yml` files (root and folder variants) |
+| `markdown_file.py` | Single `.md` file on disk; validates via mkforge |
+| `markdown_document.py` | In-memory Markdown text; extracts images, manipulates content |
+| `markdown_collection.py` | Recursive tree of `MarkdownFile`s; drives traversal and ordering |
+| `markdown_image.py` | Represents a local image reference found in Markdown |
+| `heading_normalizer.py` | Shifts ATX heading levels in Markdown text |
+| `diagram_encoding.py` | zlib + base64url encoding used by Kroki web backend |
+| `errors.py` | Domain exception hierarchy |
+| `log.py` | Logging context manager |
+
+### Assembly pipeline (`src/scribpy/core/assembly/`)
+
+`concatenate()` in `concatenate.py` is the single public entry point. It builds a `tuple[TransformFn, ...]` and drives them through `apply_transforms()` in `pipeline.py`. Each `TransformFn` is `Callable[[AssembledDocument], AssembledDocument]`.
+
+Pipeline order (fixed):
+1. **Heading numbering** (`heading_numbering.py`) — MkForge adapter; enabled by `build.heading_numbering.enabled`
+2. **Link rewriting** (`link_rewriter.py`) — rewrites `[label](file.md)` → `[label](#slug)`; uses numbered slugs when step 1 ran
+3. **TOC generation** (`toc.py`) — inserts a Markdown list after the H1; enabled by `build.toc: true`; slugs are consistent with step 2
+4. **PlantUML rendering** (`plantuml_transform.py`) — renders fenced ` ```plantuml ` blocks via backend
+5. **Mermaid rendering** (`mermaid_transform.py`) — renders fenced ` ```mermaid ` blocks via backend
+6. **Image collection** (`image_collector.py`) — copies local images to `assets/`, rewrites paths
+
+### Renderer backends (`src/scribpy/core/plantuml/`, `src/scribpy/core/mermaid/`)
+
+Each diagram type defines a `Protocol` (e.g. `PlantUmlRenderer`) and a `make_renderer(backend: str)` factory. The only implemented backend is `"web"` (Kroki). The `"local"` backend raises `NotImplementedError` intentionally.
+
+### Diagnostic engine (`src/scribpy/core/diagnostics/`)
+
+`diagnose_collection()` runs an `Iterable[CollectionDiagnosticRule]` (Strategy + Registry) against a `MarkdownCollection`. Each rule implements a single-method Protocol (`diagnose()`). The 8 default rules live in `diagnostics/rules/`. Adding a rule requires no changes to the engine.
+
+### Manifest contract
+
+Root `scribpy.yml` keys: `project`, `build`, `order`.
+
+`build` supports:
+- `toc` (bool, default `false`) — inserts a TOC after the first H1 of the assembled document
+- `heading_numbering.enabled` (bool, default `True` when block is present)
+- `renumber_headings` (bool, legacy alias — ignored when `heading_numbering` also present)
+- `plantuml_backend` / `mermaid_backend` (str, default `"web"`)
+
+### Extension points
+
+- **New diagnostic rule**: implement `CollectionDiagnosticRule` protocol, add to `DEFAULT_COLLECTION_DIAGNOSTIC_RULES` in `diagnostics/rules/__init__.py`.
+- **New renderer backend**: implement the relevant `Protocol` (`PlantUmlRenderer` or `MermaidRenderer`), register in the `make_renderer()` factory.
+- **New pipeline step**: write a pure `TransformFn`, inject it into the `transforms` tuple in `concatenate()`.
+
+---
+
+## Project Structure
+
+- Source code lives in `src/scribpy/`.
+- Tests live in `tests/`.
+- Temporary outputs (coverage, caches, build artifacts) go into `work/`.
+- Architecture docs and ADRs live in `doc/`.
+
+---
 
 ## Coding Standards
 

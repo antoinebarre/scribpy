@@ -338,6 +338,60 @@ class TestManifestValidation:
         with pytest.raises(InvalidScribpyManifestError):
             load_root_manifest(tmp_path)
 
+    def test_toc_true_is_accepted(self, tmp_path: Path) -> None:
+        """Requirement: build.toc accepts a true boolean value."""
+        _write(tmp_path / "scribpy.yml", "build:\n  toc: true\n")
+
+        manifest = load_root_manifest(tmp_path)
+
+        assert manifest.build.get("toc") is True
+
+    def test_toc_false_is_accepted(self, tmp_path: Path) -> None:
+        """Requirement: build.toc accepts a false boolean value."""
+        _write(tmp_path / "scribpy.yml", "build:\n  toc: false\n")
+
+        manifest = load_root_manifest(tmp_path)
+
+        assert manifest.build.get("toc") is False
+
+    def test_toc_must_be_boolean(self, tmp_path: Path) -> None:
+        """Requirement: build.toc must be a boolean."""
+        _write(tmp_path / "scribpy.yml", 'build:\n  toc: "yes"\n')
+
+        with pytest.raises(InvalidScribpyManifestError):
+            load_root_manifest(tmp_path)
+
+    def test_toc_depth_positive_integer_is_accepted(
+        self, tmp_path: Path
+    ) -> None:
+        """Requirement: build.toc_depth accepts a positive integer."""
+        _write(tmp_path / "scribpy.yml", "build:\n  toc_depth: 2\n")
+
+        manifest = load_root_manifest(tmp_path)
+
+        assert manifest.build.get("toc_depth") == 2
+
+    def test_toc_depth_must_be_integer(self, tmp_path: Path) -> None:
+        """Requirement: build.toc_depth must be an integer."""
+        _write(tmp_path / "scribpy.yml", 'build:\n  toc_depth: "3"\n')
+
+        with pytest.raises(InvalidScribpyManifestError):
+            load_root_manifest(tmp_path)
+
+    def test_toc_depth_must_be_positive(self, tmp_path: Path) -> None:
+        """Requirement: build.toc_depth must be a positive integer."""
+        _write(tmp_path / "scribpy.yml", "build:\n  toc_depth: 0\n")
+
+        with pytest.raises(InvalidScribpyManifestError):
+            load_root_manifest(tmp_path)
+
+    def test_toc_depth_boolean_is_rejected(self, tmp_path: Path) -> None:
+        """Requirement: build.toc_depth rejects boolean values."""
+        _write(tmp_path / "scribpy.yml", "build:\n  toc_depth: true\n")
+
+        with pytest.raises(InvalidScribpyManifestError):
+            load_root_manifest(tmp_path)
+
 
 def _write(path: Path, content: str) -> None:
     """Write UTF-8 test content, creating parent directories as needed.

@@ -305,18 +305,19 @@ class TestHeadingNumbering:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Requirement: heading numbering is delegated to MkForge."""
-        calls: list[str] = []
+        calls: list[tuple[str, int]] = []
 
-        def _renumber(markdown: str) -> str:
+        def _renumber(markdown: str, *, start_level: int = 1) -> str:
             """Record the MkForge renumbering call.
 
             Args:
                 markdown: Markdown source passed to MkForge.
+                start_level: First heading level that receives numbering.
 
             Returns:
                 Numbered Markdown source.
             """
-            calls.append(markdown)
+            calls.append((markdown, start_level))
             return "numbered"
 
         monkeypatch.setattr(
@@ -327,7 +328,15 @@ class TestHeadingNumbering:
         result = number_markdown_headings("# Title\n")
 
         assert result == "numbered"
-        assert calls == ["# Title\n"]
+        assert calls == [("# Title\n", 2)]
+
+    def test_number_markdown_headings_skips_h1(self) -> None:
+        """Requirement: the global H1 title is never renumbered."""
+        content = "# Title\n\n## Part A\n\n### Sub\n"
+        result = number_markdown_headings(content)
+        assert result.startswith("# Title\n")
+        assert "## 1. Part A" in result
+        assert "### 1.1. Sub" in result
 
 
 class TestCollectImages:
@@ -513,8 +522,9 @@ class TestConcatenate:
         concatenate(collection, output)
 
         text = output.read_text(encoding="utf-8")
-        assert "# 1. src" in text
-        assert "## 1.1. Doc" in text
+        assert "# src" in text
+        assert "# 1. src" not in text
+        assert "## 1. Doc" in text
 
     def test_concatenate_rewrites_links_to_numbered_headings(
         self,
@@ -541,9 +551,8 @@ class TestConcatenate:
         concatenate(collection, output)
 
         text = output.read_text(encoding="utf-8")
-        assert "## 1.2. Usage" in text
-        assert "[Usage](#12-usage)" in text
-        assert "#12---usage" not in text
+        assert "## 2. Usage" in text
+        assert "[Usage](#2-usage)" in text
 
     def test_concatenate_does_not_number_headings_by_default(
         self,
@@ -561,6 +570,55 @@ class TestConcatenate:
         text = output.read_text(encoding="utf-8")
         assert "# src" in text
         assert "# 1. src" not in text
+
+    def test_concatenate_inserts_toc_when_enabled(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: build.toc true inserts a TOC after the H1."""
+        src = tmp_path / "src"
+        src.mkdir()
+        (src / "scribpy.yml").write_text(
+            "build:\n  toc: true\n", encoding="utf-8"
+        )
+        (src / "01-doc.md").write_text(
+            "# Guide\n\n## Installation\n\n## Usage\n",
+            encoding="utf-8",
+        )
+        output = tmp_path / "out" / "doc.md"
+        collection = MarkdownCollection.from_tree(src)
+
+        concatenate(collection, output)
+
+        text = output.read_text(encoding="utf-8")
+        assert "- [Installation](#installation)" in text
+        assert "- [Usage](#usage)" in text
+
+    def test_concatenate_toc_depth_limits_entries(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: build.toc_depth limits TOC entries by heading level."""
+        src = tmp_path / "src"
+        src.mkdir()
+        (src / "scribpy.yml").write_text(
+            "build:\n  toc: true\n  toc_depth: 1\n", encoding="utf-8"
+        )
+        (src / "01-doc.md").write_text(
+            "# Guide\n\n## Section\n\n### Sub\n",
+            encoding="utf-8",
+        )
+        output = tmp_path / "out" / "doc.md"
+        collection = MarkdownCollection.from_tree(src)
+
+        concatenate(collection, output)
+
+        text = output.read_text(encoding="utf-8")
+        # H1 = src (root folder), H2 = Guide (file H1 shifted), H3 = Section,
+        # H4 = Sub. With toc_depth=1 only H2 entries are included.
+        assert "- [Guide](#guide)" in text
+        assert "[Section]" not in text
+        assert "[Sub]" not in text
 
 
 def _write(path: Path, content: str) -> None:

@@ -117,6 +117,9 @@ metadonnees du projet, les reglages globaux et l'ordre des enfants directs :
 project:
   title: Guide utilisateur
 build:
+  toc: true
+  heading_numbering:
+    enabled: true
   plantuml_backend: web
   mermaid_backend: web
 order:
@@ -124,8 +127,15 @@ order:
   - architecture/
 ```
 
-Les valeurs acceptees pour `plantuml_backend` et `mermaid_backend` sont `web`
-(defaut, via kroki.io) et `local` (non encore implemente).
+Les cles supportees dans `build` :
+
+| Cle | Type | Defaut | Description |
+|-----|------|--------|-------------|
+| `toc` | boolean | `false` | Insere une table des matieres apres le H1 du document assemble |
+| `heading_numbering.enabled` | boolean | `true` si le bloc est present | Deleguee a MkForge (voir ADR-001) |
+| `renumber_headings` | boolean | — | Alias legacy de `heading_numbering.enabled` |
+| `plantuml_backend` | string | `"web"` | Backend de rendu PlantUML (`"web"` via kroki.io, `"local"` non implemente) |
+| `mermaid_backend` | string | `"web"` | Backend de rendu Mermaid (`"web"` via kroki.io, `"local"` non implemente) |
 
 Les `scribpy.yml` de dossier sont limites a `title` et `order` :
 
@@ -161,15 +171,22 @@ concatenation leve `InvalidMarkdownError` avant de produire du contenu.
 
 ### Etape 2 — Pipeline de transforms
 
-`concatenate()` (module `scribpy.core.assembly.concatenate`) orchestre quatre
+`concatenate()` (module `scribpy.core.assembly.concatenate`) orchestre les
 transforms appliquees en sequence par `apply_transforms` :
 
-| Ordre | Transform | Role |
-|-------|-----------|------|
-| 1 | `rewrite_internal_links` | Remplace `[label](file.md)` par `[label](#slug)` |
-| 2 | `render_plantuml_blocks` | Rend les blocs ` ```plantuml ` en PNG |
-| 3 | `render_mermaid_blocks` | Rend les blocs ` ```mermaid ` en PNG |
-| 4 | `collect_images` | Copie les images locales dans `assets/` |
+| Ordre | Transform | Conditionnel | Role |
+|-------|-----------|--------------|------|
+| 1 | `number_markdown_headings` | `build.heading_numbering.enabled` | Numerote les titres via MkForge |
+| 2 | `rewrite_internal_links` | toujours | Remplace `[label](file.md)` par `[label](#slug)` |
+| 3 | `generate_toc` | `build.toc: true` | Insere un TOC apres le H1 du document assemble |
+| 4 | `render_plantuml_blocks` | toujours | Rend les blocs ` ```plantuml ` en PNG |
+| 5 | `render_mermaid_blocks` | toujours | Rend les blocs ` ```mermaid ` en PNG |
+| 6 | `collect_images` | toujours | Copie les images locales dans `assets/` |
+
+Le TOC est positionne apres la reecriture des liens (etape 2) pour que ses
+ancres soient coherentes avec celles produites par le link rewriter. Si le
+numbering est actif (etape 1), `generate_toc` lit les titres deja numerotes
+et produit des slugs identiques a ceux du document final.
 
 Chaque PNG genere est nomme d'apres le SHA-256 de la source du diagramme. Les
 diagrammes identiques partagent ainsi un seul fichier sans recalcul.
@@ -180,15 +197,21 @@ skinparam participantPadding 10
 
 participant "concatenate()" as concat
 participant "apply_transforms()" as pipeline
+participant "number_markdown_headings\n[optionnel]" as numbering
 participant "rewrite_internal_links" as links
+participant "generate_toc\n[optionnel]" as toc
 participant "render_plantuml_blocks" as puml
 participant "render_mermaid_blocks" as mmid
 participant "collect_images" as images
 participant "output.md" as file
 
 concat -> pipeline : AssembledDocument(content, root, output)
+pipeline -> numbering : AssembledDocument
+numbering --> pipeline : AssembledDocument (titres numerotes)
 pipeline -> links : AssembledDocument
 links --> pipeline : AssembledDocument (liens renames)
+pipeline -> toc : AssembledDocument
+toc --> pipeline : AssembledDocument (TOC insere apres H1)
 pipeline -> puml : AssembledDocument
 puml --> pipeline : AssembledDocument (blocs PlantUML -> PNG)
 pipeline -> mmid : AssembledDocument

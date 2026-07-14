@@ -254,6 +254,59 @@ def _validate_build_settings(
     _validate_heading_numbering(path, build)
     _validate_legacy_renumber_headings(path, build)
     _warn_ignored_legacy_renumber_headings(path, build)
+    _validate_toc(path, build)
+    _validate_toc_depth(path, build)
+
+
+def _validate_toc(
+    path: Path,
+    build: dict[str, object],
+) -> None:
+    """Validate the build.toc boolean flag.
+
+    Args:
+        path: Manifest file path.
+        build: Parsed build mapping.
+
+    Raises:
+        InvalidScribpyManifestError: If build.toc is not a boolean.
+    """
+    if "toc" not in build:
+        return
+    if not isinstance(build["toc"], bool):
+        raise InvalidScribpyManifestError(
+            str(path),
+            "'build.toc' must be a boolean",
+        )
+
+
+def _validate_toc_depth(
+    path: Path,
+    build: dict[str, object],
+) -> None:
+    """Validate the build.toc_depth integer setting.
+
+    Args:
+        path: Manifest file path.
+        build: Parsed build mapping.
+
+    Raises:
+        InvalidScribpyManifestError: If build.toc_depth is not a positive
+            integer.
+    """
+    if "toc_depth" not in build:
+        return
+    value = build["toc_depth"]
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise InvalidScribpyManifestError(
+            str(path),
+            "'build.toc_depth' must be a positive integer",
+        )
+    if value < 1:
+        raise InvalidScribpyManifestError(
+            str(path),
+            "'build.toc_depth' must be a positive integer",
+        )
 
 
 def _validate_heading_numbering(
