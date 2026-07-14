@@ -6,6 +6,7 @@ under ``work/demo/input`` and assembles it into a single Markdown file under
 
 - Multi-level folder hierarchy with local manifests
 - Internal Markdown link rewriting (file.md -> #slug)
+- Heading numbering cleanup delegated to MkForge
 - Local image collection (PNG/SVG -> assets/)
 - PlantUML diagram rendering (fenced blocks -> assets/generated/)
 - Collection diagnostics (heading rules, image rules, link rules)
@@ -41,6 +42,8 @@ project:
   version: 2.1.0
   author: Equipe Architecture
 build:
+  heading_numbering:
+    enabled: true
   plantuml_backend: web
   toc: true
 order:
@@ -52,18 +55,18 @@ order:
 """
 
 _INTRO = """\
-# Introduction
+# 99. Introduction
 
 Bienvenue dans la documentation du **Projet Alpha**.
 
 Ce document couvre l'architecture, l'API et les operations.
 
-## Perimetre
+## 4 - Perimetre
 
 Le projet Alpha est un service de traitement de donnees distribue.
 Il expose une API REST et s'integre avec plusieurs systemes tiers.
 
-## Navigation rapide
+## 2.7 Navigation rapide
 
 - [Demarrage rapide](02-quickstart.md)
 - [Architecture](architecture/01-overview.md)
@@ -74,22 +77,22 @@ Il expose une API REST et s'integre avec plusieurs systemes tiers.
 """
 
 _QUICKSTART = """\
-# Demarrage rapide
+# 12 - Demarrage rapide
 
-## Prerequis
+## 8.3 Prerequis
 
 - Python 3.11+
 - Docker 24+
 - PostgreSQL 15+
 
-## Installation
+## 8.1.99 Installation
 
 ```bash
 pip install project-alpha
 docker compose up -d
 ```
 
-## Premier appel API
+## 42 Premier appel API
 
 ```python
 import alpha
@@ -110,13 +113,13 @@ order:
 """
 
 _ARCH_OVERVIEW = """\
-# Vue d'ensemble
+# 7.7 Vue d'ensemble
 
 Le systeme Alpha est compose de trois couches principales.
 
 ![Diagramme d'architecture](../assets/architecture.png)
 
-## Couches
+## 3 - Couches
 
 | Couche | Role |
 |--------|------|
@@ -139,9 +142,9 @@ package "Projet Alpha" {
 """
 
 _ARCH_COMPONENTS = """\
-# Composants
+# 2.4.6 Composants
 
-## API Gateway
+## 9 API Gateway
 
 Le gateway expose les endpoints REST et gere l'authentification JWT.
 
@@ -160,7 +163,7 @@ GW --> Client : 200 OK
 @enduml
 ```
 
-## Processing Engine
+## 9.9 Processing Engine
 
 Le moteur de traitement applique les transformations via un pipeline.
 
@@ -188,9 +191,9 @@ Voir [Flux de donnees](03-data-flow.md).
 """
 
 _ARCH_DATAFLOW = """\
-# Flux de donnees
+# 0.0 Flux de donnees
 
-## Flux nominal
+## 18 - Flux nominal
 
 ```plantuml
 @startuml
@@ -208,12 +211,12 @@ stop
 @enduml
 ```
 
-## Gestion des erreurs
+## 1 Gestion des erreurs
 
 Les erreurs transitoires declenchent un retry automatique
 avec backoff exponentiel (max 3 tentatives).
 
-## Etats du traitement
+## 1.1 Etats du traitement
 
 ```mermaid
 stateDiagram-v2
@@ -236,9 +239,9 @@ order:
 """
 
 _API_ENDPOINTS = """\
-# Endpoints
+# 300 Endpoints
 
-## POST /process
+## 3.3 POST /process
 
 Lance le traitement d'un payload.
 
@@ -264,16 +267,16 @@ Voir [Modeles](02-models.md) pour la description complete des types.
 """
 
 _API_MODELS = """\
-# Modeles de donnees
+# 0 - Modeles de donnees
 
-## ProcessRequest
+## 88 ProcessRequest
 
 | Champ | Type | Requis | Description |
 |-------|------|--------|-------------|
 | data | list[int] | oui | Donnees a traiter |
 | options | Options | non | Parametres optionnels |
 
-## ProcessResult
+## 77.2 ProcessResult
 
 | Champ | Type | Description |
 |-------|------|-------------|
@@ -310,9 +313,9 @@ order:
 """
 
 _OPS_DEPLOY = """\
-# Deploiement
+# 5 Deploiement
 
-## Docker Compose
+## 5.5 Docker Compose
 
 Le deploiement de developpement utilise Docker Compose.
 
@@ -327,7 +330,7 @@ services:
       POSTGRES_DB: alpha
 ```
 
-## Kubernetes
+## 5.4 Kubernetes
 
 ```plantuml
 @startuml
@@ -347,9 +350,9 @@ Voir [Monitoring](02-monitoring.md) pour les metriques de prod.
 """
 
 _OPS_MONITORING = """\
-# Monitoring
+# 999 Monitoring
 
-## Metriques exposees
+## 123 Metriques exposees
 
 | Metrique | Type | Description |
 |----------|------|-------------|
@@ -357,13 +360,13 @@ _OPS_MONITORING = """\
 | `alpha_duration_seconds` | Histogram | Duree de traitement |
 | `alpha_errors_total` | Counter | Erreurs par type |
 
-## Alertes
+## 2.2 Alertes
 
 - **P1** : taux d'erreur > 5 % sur 5 minutes
 - **P2** : latence p99 > 2 s sur 10 minutes
 - **P3** : aucune requete depuis 15 minutes (service down)
 
-## Flux de garde
+## 2.1 Flux de garde
 
 ```mermaid
 sequenceDiagram
@@ -467,8 +470,11 @@ def main() -> None:
 
     sys.stdout.write("\n--- File-level validation ---\n")
     intro = MarkdownFile.from_path(INPUT_ROOT / "01-intro.md")
-    has_h1 = intro.has_expected_headings(((1, "Introduction"),))
-    sys.stdout.write(f"  01-intro.md has H1 'Introduction': {has_h1}\n")
+    has_messy_h1 = intro.has_expected_headings(((1, "99. Introduction"),))
+    sys.stdout.write(
+        "  01-intro.md keeps intentionally messy source H1 "
+        f"'99. Introduction': {has_messy_h1}\n"
+    )
     arch = MarkdownFile.from_path(
         INPUT_ROOT / "architecture" / "01-overview.md"
     )

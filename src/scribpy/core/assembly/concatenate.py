@@ -8,6 +8,7 @@ from scribpy.core.assembly.heading_numbering import number_markdown_headings
 from scribpy.core.assembly.image_collector import collect_images
 from scribpy.core.assembly.link_rewriter import (
     build_file_slug_map,
+    build_numbered_file_slug_map,
     rewrite_internal_links,
 )
 from scribpy.core.assembly.mermaid_transform import render_mermaid_blocks
@@ -77,14 +78,18 @@ def concatenate(collection: MarkdownCollection, output: Path) -> None:
     )
     plantuml_renderer = make_plantuml_renderer(plantuml_backend)
     mermaid_renderer = make_mermaid_renderer(mermaid_backend)
+    should_number_headings = heading_numbering_enabled(collection.manifest)
 
     def _number_headings(doc: AssembledDocument) -> AssembledDocument:
         return doc.with_content(number_markdown_headings(doc.content))
 
     def _rewrite_links(doc: AssembledDocument) -> AssembledDocument:
-        return doc.with_content(
-            rewrite_internal_links(doc.content, file_slug_map)
+        slug_map = (
+            build_numbered_file_slug_map(collection.files, doc.content)
+            if should_number_headings
+            else file_slug_map
         )
+        return doc.with_content(rewrite_internal_links(doc.content, slug_map))
 
     def _render_plantuml(doc: AssembledDocument) -> AssembledDocument:
         return doc.with_content(
@@ -108,11 +113,7 @@ def concatenate(collection: MarkdownCollection, output: Path) -> None:
         source_root=collection.root,
         output=output,
     )
-    optional_numbering = (
-        (_number_headings,)
-        if heading_numbering_enabled(collection.manifest)
-        else ()
-    )
+    optional_numbering = (_number_headings,) if should_number_headings else ()
     final = apply_transforms(
         initial,
         (

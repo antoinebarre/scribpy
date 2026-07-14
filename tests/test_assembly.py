@@ -13,6 +13,7 @@ from scribpy.core.assembly.image_collector import collect_images
 from scribpy.core.assembly.link_rewriter import (
     _extract_h1_title,
     build_file_slug_map,
+    build_numbered_file_slug_map,
     rewrite_internal_links,
 )
 from scribpy.core.assembly.pipeline import (
@@ -128,6 +129,50 @@ class TestBuildFileSlugMap:
     def test_build_file_slug_map_empty_collection(self) -> None:
         """Requirement: empty collection yields an empty map."""
         assert build_file_slug_map(()) == {}
+
+
+class TestBuildNumberedFileSlugMap:
+    """Tests for numbered output file slug mapping."""
+
+    def test_build_numbered_file_slug_map_uses_final_numbered_heading(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: numbered output anchors use final heading text."""
+        path = tmp_path / "usage.md"
+        path.write_text("# 12 - Usage Guide\n", encoding="utf-8")
+        files = (MarkdownFile.from_path(path),)
+        content = "# 1. Demo\n\n## 1.1. Usage Guide\n"
+
+        slug_map = build_numbered_file_slug_map(files, content)
+
+        assert slug_map == {"usage.md": "11-usage-guide"}
+
+    def test_build_numbered_file_slug_map_skips_missing_heading(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: absent numbered headings are excluded from the map."""
+        path = tmp_path / "usage.md"
+        path.write_text("# Usage Guide\n", encoding="utf-8")
+        files = (MarkdownFile.from_path(path),)
+
+        slug_map = build_numbered_file_slug_map(files, "# 1. Demo\n")
+
+        assert slug_map == {}
+
+    def test_build_numbered_file_slug_map_skips_files_without_h1(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: files without H1 are excluded from numbered maps."""
+        path = tmp_path / "notes.md"
+        path.write_text("## Notes\n", encoding="utf-8")
+        files = (MarkdownFile.from_path(path),)
+
+        slug_map = build_numbered_file_slug_map(files, "## 1.1. Notes\n")
+
+        assert slug_map == {}
 
 
 class TestRewriteInternalLinks:
@@ -470,6 +515,35 @@ class TestConcatenate:
         text = output.read_text(encoding="utf-8")
         assert "# 1. src" in text
         assert "## 1.1. Doc" in text
+
+    def test_concatenate_rewrites_links_to_numbered_headings(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: numbered output links target final heading anchors."""
+        src = tmp_path / "src"
+        src.mkdir()
+        (src / "scribpy.yml").write_text(
+            "build:\n  heading_numbering:\n    enabled: true\n",
+            encoding="utf-8",
+        )
+        (src / "01-intro.md").write_text(
+            "# 99. Intro\n\nSee [Usage](02-usage.md).\n",
+            encoding="utf-8",
+        )
+        (src / "02-usage.md").write_text(
+            "# 12 - Usage\n",
+            encoding="utf-8",
+        )
+        output = tmp_path / "out" / "doc.md"
+        collection = MarkdownCollection.from_tree(src)
+
+        concatenate(collection, output)
+
+        text = output.read_text(encoding="utf-8")
+        assert "## 1.2. Usage" in text
+        assert "[Usage](#12-usage)" in text
+        assert "#12---usage" not in text
 
     def test_concatenate_does_not_number_headings_by_default(
         self,
