@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from scribpy.core.assembly.heading_numbering import number_markdown_headings
@@ -26,6 +27,8 @@ from scribpy.core.mermaid.renderer import (
 from scribpy.core.plantuml.renderer import (
     make_renderer as make_plantuml_renderer,
 )
+
+_log = logging.getLogger(__name__)
 
 
 def concatenate(collection: MarkdownCollection, output: Path) -> None:
@@ -64,6 +67,12 @@ def concatenate(collection: MarkdownCollection, output: Path) -> None:
         NotImplementedError: If a ``local`` backend is configured.
         OSError: If the output file cannot be written.
     """
+    _log.info(
+        "Assembling %d file(s) from '%s' → '%s'",
+        len(collection.files),
+        collection.root,
+        output,
+    )
     raw_doc = collection.concatenate()
     assets_dir = output.parent / "assets"
     generated_dir = assets_dir / "generated"
@@ -127,3 +136,4 @@ def concatenate(collection: MarkdownCollection, output: Path) -> None:
     )
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(final.content, encoding="utf-8")
+    _log.info("Write complete: '%s' (%d chars)", output, len(final.content))

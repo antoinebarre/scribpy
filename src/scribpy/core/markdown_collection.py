@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import warnings
 from collections.abc import Iterable
 from dataclasses import dataclass, field
@@ -26,6 +27,8 @@ from scribpy.errors import (
     InvalidScribpyManifestError,
     ScribpyManifestWarning,
 )
+
+_log = logging.getLogger(__name__)
 
 _MARKDOWN_SUFFIXES = frozenset({".md", ".markdown"})
 _ROOT_FILE_HEADING_LEVEL = 2
@@ -74,14 +77,15 @@ class MarkdownCollection:
             raise NotADirectoryError(collection_root)
         root_manifest = load_root_manifest(collection_root)
         paths = _ordered_markdown_paths(collection_root, root_manifest)
-        return cls(
-            root=collection_root,
-            files=tuple(
-                MarkdownFile.from_path(path, encoding=encoding)
-                for path in paths
-            ),
-            manifest=root_manifest,
+        files = tuple(
+            MarkdownFile.from_path(path, encoding=encoding) for path in paths
         )
+        _log.debug(
+            "Loaded collection from '%s': %d file(s)",
+            collection_root,
+            len(files),
+        )
+        return cls(root=collection_root, files=files, manifest=root_manifest)
 
     def concatenate(self) -> MarkdownDocument:
         """Concatenate files into one normalized Markdown document.
@@ -95,10 +99,17 @@ class MarkdownCollection:
                 errors.
         """
         if not self.files:
+            _log.debug("Empty collection — returning empty document")
             return MarkdownDocument("")
         report = self.diagnose()
         if report.has_errors:
+            _log.error("Collection diagnostics failed:\n%s", report.summary())
             raise InvalidMarkdownError(report.summary())
+        if report.diagnostics:
+            _log.warning(
+                "Collection diagnostics: %d warning(s)",
+                len(report.diagnostics),
+            )
         chunks = [f"# {_document_title(self.root, self.manifest)}"]
         previous_folder_parts: tuple[str, ...] = ()
         for markdown_file in self.files:

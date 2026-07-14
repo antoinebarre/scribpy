@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
 TransformFn = Callable[["AssembledDocument"], "AssembledDocument"]
+
+_log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,5 +59,11 @@ def apply_transforms(
         Final assembled document after all transforms have been applied.
     """
     for transform in transforms:
+        _log.debug("Pipeline step: %s", transform.__name__)
         doc = transform(doc)
+        _log.debug(
+            "Pipeline step done: %s (%d chars)",
+            transform.__name__,
+            len(doc.content),
+        )
     return doc

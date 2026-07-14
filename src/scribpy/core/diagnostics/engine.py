@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -21,6 +22,8 @@ from scribpy.core.diagnostics.rules import (
     SourceH1CountRule,
 )
 from scribpy.core.markdown_file import MarkdownFile
+
+_log = logging.getLogger(__name__)
 
 DEFAULT_COLLECTION_DIAGNOSTIC_RULES: tuple[CollectionDiagnosticRule, ...] = (
     SourceFirstHeadingH1Rule(),
@@ -51,8 +54,15 @@ def diagnose_collection(
     Returns:
         Diagnostic report emitted by all rules.
     """
+    _log.debug("Running diagnostics on %d file(s) in '%s'", len(files), root)
     context = CollectionDiagnosticContext(root=root, files=files)
     diagnostics = tuple(
         diagnostic for rule in rules for diagnostic in rule.diagnose(context)
     )
-    return CollectionDiagnosticReport(diagnostics)
+    report = CollectionDiagnosticReport(diagnostics)
+    _log.debug(
+        "Diagnostics complete: %d finding(s), has_errors=%s",
+        len(diagnostics),
+        report.has_errors,
+    )
+    return report

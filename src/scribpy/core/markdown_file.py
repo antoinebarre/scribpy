@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -9,6 +10,8 @@ from pathlib import Path
 import mkforge
 
 from scribpy.core.markdown_document import MarkdownDocument
+
+_log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,11 +49,9 @@ class MarkdownFile:
             UnicodeDecodeError: If the file content cannot be decoded.
         """
         markdown_path = Path(path)
-        return cls(
-            path=markdown_path,
-            content=markdown_path.read_text(encoding=encoding),
-            encoding=encoding,
-        )
+        _log.debug("Reading Markdown file: '%s'", markdown_path)
+        content = markdown_path.read_text(encoding=encoding)
+        return cls(path=markdown_path, content=content, encoding=encoding)
 
     @property
     def name(self) -> str:

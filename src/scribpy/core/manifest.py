@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import warnings
 from pathlib import Path, PurePosixPath
 from typing import Annotated, Any
@@ -15,6 +16,8 @@ from pydantic import (
 )
 
 from scribpy.errors import InvalidScribpyManifestError, ScribpyManifestWarning
+
+_log = logging.getLogger(__name__)
 
 MANIFEST_NAME = "scribpy.yml"
 _ROOT_KEYS = frozenset({"project", "build", "order"})
@@ -120,7 +123,9 @@ def load_root_manifest(root: Path) -> RootManifest:
     """
     path = root / MANIFEST_NAME
     if not path.exists():
+        _log.debug("No root manifest found in '%s', using defaults", root)
         return RootManifest()
+    _log.debug("Loading root manifest: '%s'", path)
     data = _read_manifest_mapping(path)
     _warn_unknown_keys(path, data, _ROOT_KEYS)
     return RootManifest(
@@ -146,6 +151,7 @@ def load_folder_manifest(folder: Path) -> FolderManifest:
     path = folder / MANIFEST_NAME
     if not path.exists():
         return FolderManifest()
+    _log.debug("Loading folder manifest: '%s'", path)
     data = _read_manifest_mapping(path)
     _warn_unknown_keys(path, data, _FOLDER_KEYS)
     return FolderManifest(

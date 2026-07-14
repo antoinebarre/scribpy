@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
 from scribpy.core.diagram_encoding import encode_diagram
 from scribpy.errors import MermaidRenderError
+
+_log = logging.getLogger(__name__)
 
 _KROKI_URL = "https://kroki.io/mermaid/png"
 _HTTP_OK = 200
@@ -37,6 +40,7 @@ class KrokiRenderer:
         """
         encoded = encode_diagram(diagram)
         url = f"{_KROKI_URL}/{encoded}"
+        _log.debug("Mermaid render request: %s", url)
         request = Request(  # nosec B310  # noqa: S310
             url,
             headers={"User-Agent": _USER_AGENT},
@@ -48,9 +52,12 @@ class KrokiRenderer:
             ) as response:
                 if response.status != _HTTP_OK:
                     msg = f"Kroki returned HTTP {response.status}."
+                    _log.error("Mermaid render failed: %s", msg)
                     raise MermaidRenderError(msg)
                 data: bytes = response.read()
+                _log.info("Mermaid render OK (%d bytes)", len(data))
                 return data
         except URLError as exc:
             msg = f"Kroki request failed: {exc.reason}"
+            _log.error("Mermaid render error: %s", exc.reason)
             raise MermaidRenderError(msg) from exc
