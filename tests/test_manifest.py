@@ -48,7 +48,8 @@ class TestRootManifest:
         manifest = load_root_manifest(tmp_path)
 
         assert manifest.project == {"title": "Demo"}
-        assert manifest.build == {"toc": True, "renumber_headings": False}
+        assert manifest.build.toc is True
+        assert manifest.build.renumber_headings is False
         assert manifest.order == ("intro.md", "guide")
 
     def test_root_manifest_loads_heading_numbering(
@@ -63,7 +64,8 @@ class TestRootManifest:
 
         manifest = load_root_manifest(tmp_path)
 
-        assert manifest.build == {"heading_numbering": {"enabled": True}}
+        assert manifest.build.heading_numbering is not None
+        assert manifest.build.heading_numbering.enabled is True
         assert heading_numbering_enabled(manifest) is True
 
     def test_heading_numbering_absent_is_disabled(
@@ -344,7 +346,7 @@ class TestManifestValidation:
 
         manifest = load_root_manifest(tmp_path)
 
-        assert manifest.build.get("toc") is True
+        assert manifest.build.toc is True
 
     def test_toc_false_is_accepted(self, tmp_path: Path) -> None:
         """Requirement: build.toc accepts a false boolean value."""
@@ -352,7 +354,7 @@ class TestManifestValidation:
 
         manifest = load_root_manifest(tmp_path)
 
-        assert manifest.build.get("toc") is False
+        assert manifest.build.toc is False
 
     def test_toc_must_be_boolean(self, tmp_path: Path) -> None:
         """Requirement: build.toc must be a boolean."""
@@ -369,7 +371,7 @@ class TestManifestValidation:
 
         manifest = load_root_manifest(tmp_path)
 
-        assert manifest.build.get("toc_depth") == 2
+        assert manifest.build.toc_depth == 2
 
     def test_toc_depth_must_be_integer(self, tmp_path: Path) -> None:
         """Requirement: build.toc_depth must be an integer."""

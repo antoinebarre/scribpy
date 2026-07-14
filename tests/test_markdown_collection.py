@@ -107,7 +107,7 @@ class TestMarkdownCollectionFromTree:
         collection = MarkdownCollection.from_tree(tmp_path)
 
         assert collection.manifest.project == {"title": "Demo"}
-        assert collection.manifest.build == {"toc": True}
+        assert collection.manifest.build.toc is True
         assert tuple(
             file.path.relative_to(tmp_path) for file in collection.files
         ) == (

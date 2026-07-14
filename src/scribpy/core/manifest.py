@@ -3,22 +3,78 @@
 from __future__ import annotations
 
 import warnings
-from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
-from typing import Any, cast
+from typing import Annotated, Any
 
 import yaml
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+)
 
 from scribpy.errors import InvalidScribpyManifestError, ScribpyManifestWarning
 
 MANIFEST_NAME = "scribpy.yml"
-ROOT_KEYS = frozenset({"project", "build", "order"})
-FOLDER_KEYS = frozenset({"title", "order"})
-HEADING_NUMBERING_KEYS = frozenset({"enabled"})
+_ROOT_KEYS = frozenset({"project", "build", "order"})
+_FOLDER_KEYS = frozenset({"title", "order"})
 
 
-@dataclass(frozen=True, slots=True)
-class RootManifest:
+class HeadingNumberingSettings(BaseModel):
+    """Represent the build.heading_numbering sub-mapping.
+
+    Attributes:
+        enabled: Whether MkForge heading numbering is applied.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    enabled: Annotated[bool, Field(strict=True)] = True
+
+
+class BuildSettings(BaseModel):
+    """Represent the build section of a root scribpy.yml manifest.
+
+    Attributes:
+        toc: Whether to insert a table of contents after the first H1.
+        toc_depth: Maximum heading depth included in the TOC.
+        heading_numbering: Heading numbering configuration block.
+        renumber_headings: Legacy alias for heading_numbering.enabled.
+        plantuml_backend: Backend name for PlantUML rendering.
+        mermaid_backend: Backend name for Mermaid rendering.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    toc: Annotated[bool, Field(strict=True)] = False
+    toc_depth: Annotated[int, Field(ge=1, strict=True)] = 3
+    heading_numbering: HeadingNumberingSettings | None = None
+    renumber_headings: Annotated[bool, Field(strict=True)] | None = None
+    plantuml_backend: str = "web"
+    mermaid_backend: str = "web"
+
+    @field_validator("toc_depth", mode="before")
+    @classmethod
+    def _reject_bool_as_depth(cls, value: object) -> object:
+        """Reject boolean values for toc_depth.
+
+        Args:
+            value: Raw field value.
+
+        Returns:
+            Unchanged value when it is not a boolean.
+
+        Raises:
+            ValueError: If value is a boolean.
+        """
+        if isinstance(value, bool):
+            msg = "'build.toc_depth' must be a positive integer"
+            raise ValueError(msg)
+        return value
+
+
+class RootManifest(BaseModel):
     """Represent the root scribpy.yml project manifest.
 
     Attributes:
@@ -28,14 +84,15 @@ class RootManifest:
         order: Optional ordered direct children of the root folder.
     """
 
+    model_config = ConfigDict(frozen=True)
+
     path: Path | None = None
-    project: dict[str, object] = field(default_factory=dict)
-    build: dict[str, object] = field(default_factory=dict)
+    project: dict[str, object] = Field(default_factory=dict)
+    build: BuildSettings = Field(default_factory=BuildSettings)
     order: tuple[str, ...] = ()
 
 
-@dataclass(frozen=True, slots=True)
-class FolderManifest:
+class FolderManifest(BaseModel):
     """Represent a folder-level scribpy.yml manifest.
 
     Attributes:
@@ -43,6 +100,8 @@ class FolderManifest:
         title: Optional replacement title for the folder.
         order: Optional ordered direct children of the folder.
     """
+
+    model_config = ConfigDict(frozen=True)
 
     path: Path | None = None
     title: str | None = None
@@ -65,31 +124,13 @@ def load_root_manifest(root: Path) -> RootManifest:
     if not path.exists():
         return RootManifest()
     data = _read_manifest_mapping(path)
-    _warn_unknown_keys(path, data, ROOT_KEYS)
-    build = _optional_mapping(path, data, "build")
-    _validate_build_settings(path, build)
+    _warn_unknown_keys(path, data, _ROOT_KEYS)
     return RootManifest(
         path=path,
-        project=_optional_mapping(path, data, "project"),
-        build=build,
-        order=_optional_order(path, data),
+        project=_pop_optional_mapping(path, data, "project"),
+        build=_parse_build_settings(path, data),
+        order=_pop_optional_order(path, data),
     )
-
-
-def heading_numbering_enabled(manifest: RootManifest) -> bool:
-    """Return whether heading numbering is enabled for a root manifest.
-
-    Args:
-        manifest: Root manifest containing build settings.
-
-    Returns:
-        True when MkForge heading numbering should be applied.
-    """
-    if "heading_numbering" in manifest.build:
-        value = cast("dict[str, object]", manifest.build["heading_numbering"])
-        enabled = value.get("enabled", True)
-        return enabled is True
-    return manifest.build.get("renumber_headings") is True
 
 
 def load_folder_manifest(folder: Path) -> FolderManifest:
@@ -108,12 +149,28 @@ def load_folder_manifest(folder: Path) -> FolderManifest:
     if not path.exists():
         return FolderManifest()
     data = _read_manifest_mapping(path)
-    _warn_unknown_keys(path, data, FOLDER_KEYS)
+    _warn_unknown_keys(path, data, _FOLDER_KEYS)
     return FolderManifest(
         path=path,
-        title=_optional_title(path, data),
-        order=_optional_order(path, data),
+        title=_pop_optional_title(path, data),
+        order=_pop_optional_order(path, data),
     )
+
+
+def heading_numbering_enabled(manifest: RootManifest) -> bool:
+    """Return whether heading numbering is enabled for a root manifest.
+
+    Args:
+        manifest: Root manifest containing build settings.
+
+    Returns:
+        True when MkForge heading numbering should be applied.
+    """
+    if manifest.build.heading_numbering is not None:
+        return manifest.build.heading_numbering.enabled
+    if manifest.build.renumber_headings is not None:
+        return manifest.build.renumber_headings
+    return False
 
 
 def validate_direct_child_entry(path: Path, entry: str) -> str:
@@ -140,7 +197,7 @@ def validate_direct_child_entry(path: Path, entry: str) -> str:
 
 
 def _read_manifest_mapping(path: Path) -> dict[str, object]:
-    """Read a YAML manifest as a mapping.
+    """Read a YAML manifest as a string-keyed mapping.
 
     Args:
         path: Manifest file path.
@@ -159,8 +216,7 @@ def _read_manifest_mapping(path: Path) -> dict[str, object]:
         return {}
     if not isinstance(loaded, dict):
         raise InvalidScribpyManifestError(
-            str(path),
-            "manifest must be a mapping",
+            str(path), "manifest must be a mapping"
         )
     return _string_key_mapping(path, loaded)
 
@@ -205,16 +261,16 @@ def _warn_unknown_keys(
         warnings.warn(
             f"Ignoring unsupported key {key!r} in {path}",
             ScribpyManifestWarning,
-            stacklevel=2,
+            stacklevel=3,
         )
 
 
-def _optional_mapping(
+def _pop_optional_mapping(
     path: Path,
     data: dict[str, object],
     key: str,
 ) -> dict[str, object]:
-    """Return an optional manifest mapping.
+    """Extract and return an optional nested mapping from manifest data.
 
     Args:
         path: Manifest file path.
@@ -227,172 +283,61 @@ def _optional_mapping(
     Raises:
         InvalidScribpyManifestError: If the value is not a mapping.
     """
-    value = data.get(key, {})
+    value = data.pop(key, {})
     if value is None:
         return {}
     if not isinstance(value, dict):
         raise InvalidScribpyManifestError(
-            str(path),
-            f"{key!r} must be a mapping",
+            str(path), f"{key!r} must be a mapping"
         )
     return _string_key_mapping(path, value)
 
 
-def _validate_build_settings(
+def _parse_build_settings(
     path: Path,
-    build: dict[str, object],
-) -> None:
-    """Validate supported build settings with strict nested contracts.
+    data: dict[str, object],
+) -> BuildSettings:
+    """Extract and parse the build section into a BuildSettings model.
 
     Args:
         path: Manifest file path.
-        build: Parsed build mapping.
+        data: Parsed manifest data (build key is consumed).
+
+    Returns:
+        Validated BuildSettings instance.
 
     Raises:
-        InvalidScribpyManifestError: If a supported setting is malformed.
+        InvalidScribpyManifestError: If the build section is malformed.
     """
-    _validate_heading_numbering(path, build)
-    _validate_legacy_renumber_headings(path, build)
-    _warn_ignored_legacy_renumber_headings(path, build)
-    _validate_toc(path, build)
-    _validate_toc_depth(path, build)
+    raw = _pop_optional_mapping(path, data, "build")
+    _warn_heading_numbering_override(path, raw)
+    try:
+        return BuildSettings.model_validate(raw)
+    except Exception as exc:
+        raise InvalidScribpyManifestError(str(path), str(exc)) from exc
 
 
-def _validate_toc(
+def _warn_heading_numbering_override(
     path: Path,
     build: dict[str, object],
 ) -> None:
-    """Validate the build.toc boolean flag.
-
-    Args:
-        path: Manifest file path.
-        build: Parsed build mapping.
-
-    Raises:
-        InvalidScribpyManifestError: If build.toc is not a boolean.
-    """
-    if "toc" not in build:
-        return
-    if not isinstance(build["toc"], bool):
-        raise InvalidScribpyManifestError(
-            str(path),
-            "'build.toc' must be a boolean",
-        )
-
-
-def _validate_toc_depth(
-    path: Path,
-    build: dict[str, object],
-) -> None:
-    """Validate the build.toc_depth integer setting.
-
-    Args:
-        path: Manifest file path.
-        build: Parsed build mapping.
-
-    Raises:
-        InvalidScribpyManifestError: If build.toc_depth is not a positive
-            integer.
-    """
-    if "toc_depth" not in build:
-        return
-    value = build["toc_depth"]
-    if not isinstance(value, int) or isinstance(value, bool):
-        raise InvalidScribpyManifestError(
-            str(path),
-            "'build.toc_depth' must be a positive integer",
-        )
-    if value < 1:
-        raise InvalidScribpyManifestError(
-            str(path),
-            "'build.toc_depth' must be a positive integer",
-        )
-
-
-def _validate_heading_numbering(
-    path: Path,
-    build: dict[str, object],
-) -> None:
-    """Validate the build.heading_numbering mapping contract.
-
-    Args:
-        path: Manifest file path.
-        build: Parsed build mapping.
-
-    Raises:
-        InvalidScribpyManifestError: If heading_numbering is malformed.
-    """
-    if "heading_numbering" not in build:
-        return
-    value = build["heading_numbering"]
-    if not isinstance(value, dict):
-        raise InvalidScribpyManifestError(
-            str(path),
-            "'build.heading_numbering' must be a mapping",
-        )
-    heading_numbering = _string_key_mapping(path, value)
-    unsupported = sorted(set(heading_numbering) - HEADING_NUMBERING_KEYS)
-    if unsupported:
-        raise InvalidScribpyManifestError(
-            str(path),
-            (
-                "'build.heading_numbering' contains unsupported key: "
-                f"{unsupported[0]!r}"
-            ),
-        )
-    enabled = heading_numbering.get("enabled", True)
-    if not isinstance(enabled, bool):
-        raise InvalidScribpyManifestError(
-            str(path),
-            "'build.heading_numbering.enabled' must be a boolean",
-        )
-    build["heading_numbering"] = heading_numbering
-
-
-def _validate_legacy_renumber_headings(
-    path: Path,
-    build: dict[str, object],
-) -> None:
-    """Validate the legacy build.renumber_headings alias.
-
-    Args:
-        path: Manifest file path.
-        build: Parsed build mapping.
-
-    Raises:
-        InvalidScribpyManifestError: If renumber_headings is malformed.
-    """
-    if "renumber_headings" not in build:
-        return
-    if not isinstance(build["renumber_headings"], bool):
-        raise InvalidScribpyManifestError(
-            str(path),
-            "'build.renumber_headings' must be a boolean",
-        )
-
-
-def _warn_ignored_legacy_renumber_headings(
-    path: Path,
-    build: dict[str, object],
-) -> None:
-    """Warn when the legacy alias is ignored by the canonical setting.
+    """Warn when the legacy alias is shadowed by the canonical setting.
 
     Args:
         path: Manifest file path.
         build: Parsed build mapping.
     """
-    if "heading_numbering" not in build or "renumber_headings" not in build:
-        return
-    warnings.warn(
-        f"Ignoring 'renumber_headings' in {path}; "
-        "'heading_numbering' takes precedence",
-        ScribpyManifestWarning,
-        stacklevel=2,
-    )
+    if "heading_numbering" in build and "renumber_headings" in build:
+        warnings.warn(
+            f"Ignoring 'renumber_headings' in {path}; "
+            "'heading_numbering' takes precedence",
+            ScribpyManifestWarning,
+            stacklevel=4,
+        )
 
 
-def _optional_title(path: Path, data: dict[str, object]) -> str | None:
-    """Return an optional folder title.
+def _pop_optional_title(path: Path, data: dict[str, object]) -> str | None:
+    """Extract and return an optional folder title.
 
     Args:
         path: Manifest file path.
@@ -404,19 +349,20 @@ def _optional_title(path: Path, data: dict[str, object]) -> str | None:
     Raises:
         InvalidScribpyManifestError: If the title is not a string.
     """
-    value = data.get("title")
+    value = data.pop("title", None)
     if value is None:
         return None
     if not isinstance(value, str):
         raise InvalidScribpyManifestError(
-            str(path),
-            "'title' must be a string",
+            str(path), "'title' must be a string"
         )
     return value
 
 
-def _optional_order(path: Path, data: dict[str, object]) -> tuple[str, ...]:
-    """Return optional manifest order entries.
+def _pop_optional_order(
+    path: Path, data: dict[str, object]
+) -> tuple[str, ...]:
+    """Extract and return optional manifest order entries.
 
     Args:
         path: Manifest file path.
@@ -428,9 +374,7 @@ def _optional_order(path: Path, data: dict[str, object]) -> tuple[str, ...]:
     Raises:
         InvalidScribpyManifestError: If order is not a string list.
     """
-    if "order" not in data:
-        return ()
-    value = data["order"]
+    value = data.pop("order", None)
     if value is None:
         return ()
     if not isinstance(value, list):

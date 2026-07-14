@@ -27,9 +27,6 @@ from scribpy.core.plantuml.renderer import (
     make_renderer as make_plantuml_renderer,
 )
 
-_DEFAULT_PLANTUML_BACKEND = "web"
-_DEFAULT_MERMAID_BACKEND = "web"
-
 
 def concatenate(collection: MarkdownCollection, output: Path) -> None:
     """Assemble the collection into a single Markdown file on disk.
@@ -72,22 +69,12 @@ def concatenate(collection: MarkdownCollection, output: Path) -> None:
     generated_dir = assets_dir / "generated"
     file_slug_map = build_file_slug_map(collection.files)
 
-    plantuml_backend = str(
-        collection.manifest.build.get(
-            "plantuml_backend", _DEFAULT_PLANTUML_BACKEND
-        )
-    )
-    mermaid_backend = str(
-        collection.manifest.build.get(
-            "mermaid_backend", _DEFAULT_MERMAID_BACKEND
-        )
-    )
-    plantuml_renderer = make_plantuml_renderer(plantuml_backend)
-    mermaid_renderer = make_mermaid_renderer(mermaid_backend)
+    build = collection.manifest.build
+    plantuml_renderer = make_plantuml_renderer(build.plantuml_backend)
+    mermaid_renderer = make_mermaid_renderer(build.mermaid_backend)
     should_number_headings = heading_numbering_enabled(collection.manifest)
-    should_generate_toc = collection.manifest.build.get("toc") is True
-    toc_depth_raw = collection.manifest.build.get("toc_depth")
-    toc_depth = int(toc_depth_raw) if isinstance(toc_depth_raw, int) else 3
+    should_generate_toc = build.toc
+    toc_depth = build.toc_depth
 
     def _number_headings(doc: AssembledDocument) -> AssembledDocument:
         return doc.with_content(number_markdown_headings(doc.content))
