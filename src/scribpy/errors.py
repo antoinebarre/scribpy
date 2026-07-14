@@ -78,3 +78,40 @@ class InvalidMarkdownError(ScribpyError):
         """
         self.detail = detail
         super().__init__(f"Invalid Markdown: {detail}")
+
+
+class OutlineValidationError(ScribpyError):
+    """An outline Markdown file is structurally invalid.
+
+    Attributes:
+        line_number: 1-based line number where the problem was detected.
+        detail: Description of the structural problem.
+    """
+
+    def __init__(self, line_number: int, detail: str) -> None:
+        """Initialise with line number and problem description.
+
+        Args:
+            line_number: 1-based line where the problem was detected.
+            detail: What makes the outline invalid.
+        """
+        self.line_number = line_number
+        self.detail = detail
+        super().__init__(line_number, detail)
+
+
+class ScaffoldCollisionError(ScribpyError):
+    """A scaffold target directory already contains a scribpy project.
+
+    Attributes:
+        path: Path to the conflicting scribpy.yml file.
+    """
+
+    def __init__(self, path: str) -> None:
+        """Initialise with the path of the conflicting manifest.
+
+        Args:
+            path: Path to the existing scribpy.yml that blocks scaffolding.
+        """
+        self.path = path
+        super().__init__(f"A scribpy project already exists at: {path}")

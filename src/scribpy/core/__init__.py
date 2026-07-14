@@ -23,6 +23,12 @@ from scribpy.core.diagnostics import (
     SourceH1CountRule,
 )
 from scribpy.core.html import html_export
+from scribpy.core.init import (
+    OutlineNode,
+    init_from_outline,
+    init_skeleton,
+    parse_outline,
+)
 from scribpy.core.manifest import FolderManifest, RootManifest
 from scribpy.core.markdown_collection import MarkdownCollection
 from scribpy.core.markdown_document import MarkdownDocument
@@ -44,6 +50,7 @@ __all__ = [
     "MarkdownDocument",
     "MarkdownFile",
     "MarkdownImageReference",
+    "OutlineNode",
     "RootManifest",
     "SourceFirstHeadingH1Rule",
     "SourceH1CountRule",
@@ -53,6 +60,9 @@ __all__ = [
     "collect_images",
     "concatenate",
     "html_export",
+    "init_from_outline",
+    "init_skeleton",
+    "parse_outline",
     "rewrite_internal_links",
     "slugify_heading",
 ]

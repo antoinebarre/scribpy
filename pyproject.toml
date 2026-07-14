@@ -13,7 +13,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "markdown>=3.6",
-    "mkforge>=0.3.0",
+    "mkforge>=0.4.0",
     "pydantic>=2.13.4",
     "PyYAML>=6",
 ]
@@ -75,6 +75,7 @@ docstring-convention = "google"
 count = true
 show-source = true
 statistics = true
+extend-ignore = ["E203"]
 
 
 [tool.bandit]
