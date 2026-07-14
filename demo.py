@@ -11,6 +11,7 @@ under ``work/demo/input`` and assembles it into a single Markdown file under
 - PlantUML diagram rendering (fenced blocks -> assets/generated/)
 - Collection diagnostics (heading rules, image rules, link rules)
 - File-level validation helpers
+- HTML export with embedded burger menu navigation
 """
 
 from __future__ import annotations
@@ -383,6 +384,30 @@ sequenceDiagram
 ![Dashboard Grafana](../assets/dashboard.png)
 """
 
+_CUSTOM_CSS = """\
+/* Demo custom theme — overrides default.css variables and base styles */
+:root {
+  --color-bg: #0f172a;
+  --color-text: #e2e8f0;
+  --color-muted: #94a3b8;
+  --color-border: #1e293b;
+  --color-code-bg: #1e293b;
+  --color-link: #38bdf8;
+  --color-link-hover: #7dd3fc;
+  --color-panel-bg: #0f172a;
+  --color-burger-bg: #e94560;
+  --color-burger-hover: #c73652;
+  --color-overlay: rgba(0, 0, 0, 0.6);
+}
+
+h1 { color: #e94560; }
+h2 { color: #38bdf8; }
+h3 { color: #7dd3fc; }
+
+th { background: #1e293b; color: #e2e8f0; }
+tr:nth-child(even) td { background: #0d1b2a; }
+"""
+
 _LOGO_SVG = """\
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">
   <rect width="200" height="60" rx="8" fill="#1a1a2e"/>
@@ -397,12 +422,9 @@ docs</text>
 def main() -> None:
     """Build the demo project and run the full Scribpy pipeline."""
     _add_source_root_to_path()
-    from scribpy.core import (  # noqa: PLC0415
-        MarkdownCollection,
-        MarkdownFile,
-        concatenate,
-    )
+    from scribpy.core import MarkdownCollection, MarkdownFile  # noqa: PLC0415
     from scribpy.core.diagnostics import (  # noqa: PLC0415
+        CollectionDiagnosticRule,
         ExternalImageReferenceRule,
         HeadingLevelOverflowRule,
         InternalMarkdownLinkRule,
@@ -425,7 +447,7 @@ def main() -> None:
         sys.stdout.write(f"  {f.path.relative_to(INPUT_ROOT).as_posix()}\n")
 
     sys.stdout.write("\n--- Diagnostics ---\n")
-    rules = [
+    rules: list[CollectionDiagnosticRule] = [
         SourceFirstHeadingH1Rule(),
         SourceH1CountRule(),
         HeadingLevelOverflowRule(),
@@ -444,20 +466,9 @@ def main() -> None:
             loc = "collection"
         sys.stdout.write(f"  [{diag.severity.name}] {loc}: {diag.message}\n")
 
-    sys.stdout.write("\n--- Assembly (plantuml via plantuml.com) ---\n")
     output = OUTPUT_ROOT / "assembled.md"
-    concatenate(collection, output)
-    sys.stdout.write(f"  Output: {output}\n")
-    sys.stdout.write(f"  Size: {output.stat().st_size} bytes\n")
-
-    assets = OUTPUT_ROOT / "assets"
-    images = list(assets.glob("**/*")) if assets.exists() else []
-    sys.stdout.write(f"  Collected assets: {len(images)} file(s)\n")
-    for img in sorted(images):
-        sys.stdout.write(
-            f"    {img.relative_to(OUTPUT_ROOT).as_posix()}"
-            f" ({img.stat().st_size} B)\n"
-        )
+    _run_assembly(collection, output)
+    _run_html_export(output)
 
     sys.stdout.write(
         f"\n--- Assembled document (first {_EXCERPT_LINES} lines) ---\n"
@@ -485,6 +496,59 @@ def main() -> None:
     )
 
     sys.stdout.write(f"\nDemo complete. Outputs in: {OUTPUT_ROOT}\n")
+    sys.stdout.write(
+        f"  Open {OUTPUT_ROOT / 'assembled.html'} in a browser"
+        " to see the burger menu.\n"
+    )
+
+
+def _run_assembly(collection: object, output: Path) -> None:
+    """Run the Markdown assembly step and report results.
+
+    Imports ``concatenate`` from ``scribpy.core`` at call time so the demo
+    works without the package being installed before
+    ``_add_source_root_to_path`` has run.
+
+    Args:
+        collection: Loaded ``MarkdownCollection`` instance.
+        output: Destination path for the assembled ``.md`` file.
+    """
+    from scribpy.core import concatenate  # noqa: PLC0415
+
+    sys.stdout.write("\n--- Assembly (plantuml via plantuml.com) ---\n")
+    concatenate(collection, output)  # type: ignore[arg-type]
+    sys.stdout.write(f"  Output: {output}\n")
+    sys.stdout.write(f"  Size: {output.stat().st_size} bytes\n")
+
+    assets = OUTPUT_ROOT / "assets"
+    images = list(assets.glob("**/*")) if assets.exists() else []
+    sys.stdout.write(f"  Collected assets: {len(images)} file(s)\n")
+    for img in sorted(images):
+        sys.stdout.write(
+            f"    {img.relative_to(OUTPUT_ROOT).as_posix()}"
+            f" ({img.stat().st_size} B)\n"
+        )
+
+
+def _run_html_export(output: Path) -> None:
+    """Run the HTML export step and report results.
+
+    Imports ``html_export`` from ``scribpy.core`` at call time so the demo
+    works without the package being installed before
+    ``_add_source_root_to_path`` has run.
+
+    Args:
+        output: Path to the assembled ``.md`` file produced by assembly.
+    """
+    from scribpy.core import html_export  # noqa: PLC0415
+
+    sys.stdout.write("\n--- HTML export ---\n")
+    css_file = INPUT_ROOT / "custom.css"
+    html_output = OUTPUT_ROOT / "assembled.html"
+    html_export(output, html_output, toc_depth=2, css=css_file)
+    sys.stdout.write(f"  Output: {html_output}\n")
+    sys.stdout.write(f"  CSS: {css_file}\n")
+    sys.stdout.write(f"  Size: {html_output.stat().st_size} bytes\n")
 
 
 def _create_demo_inputs() -> None:
@@ -505,6 +569,7 @@ def _create_demo_inputs() -> None:
     _write_input("assets/logo.svg", _LOGO_SVG)
     _write_input("assets/architecture.png", _FAKE_PNG.decode("latin-1"))
     _write_input("assets/dashboard.png", _FAKE_PNG.decode("latin-1"))
+    _write_input("custom.css", _CUSTOM_CSS)
     _write_input(
         "notes.txt",
         "Ce fichier est ignore par MarkdownCollection (extension .txt).\n",

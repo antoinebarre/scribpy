@@ -22,6 +22,7 @@ from scribpy.core.diagnostics import (
     SourceFirstHeadingH1Rule,
     SourceH1CountRule,
 )
+from scribpy.core.html import html_export
 from scribpy.core.manifest import FolderManifest, RootManifest
 from scribpy.core.markdown_collection import MarkdownCollection
 from scribpy.core.markdown_document import MarkdownDocument
@@ -51,6 +52,7 @@ __all__ = [
     "build_file_slug_map",
     "collect_images",
     "concatenate",
+    "html_export",
     "rewrite_internal_links",
     "slugify_heading",
 ]
