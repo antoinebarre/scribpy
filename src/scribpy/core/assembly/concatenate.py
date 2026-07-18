@@ -7,7 +7,6 @@ from pathlib import Path
 
 import mkforge
 
-from scribpy.core.assembly.image_collector import collect_images
 from scribpy.core.assembly.link_rewriter import (
     build_file_slug_map,
     build_numbered_file_slug_map,
@@ -19,6 +18,7 @@ from scribpy.core.assembly.pipeline import (
 )
 from scribpy.core.assembly.toc import generate_toc
 from scribpy.core.diagram_blocks import render_diagram_blocks
+from scribpy.core.image_collector import collect_images
 from scribpy.core.manifest import heading_numbering_enabled
 from scribpy.core.markdown_collection import MarkdownCollection
 

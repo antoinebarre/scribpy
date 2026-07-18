@@ -6,7 +6,6 @@ from pathlib import Path
 
 from scribpy.core import MarkdownCollection
 from scribpy.core.assembly.concatenate import concatenate
-from scribpy.core.assembly.image_collector import collect_images
 from scribpy.core.assembly.link_rewriter import (
     _extract_h1_title,
     build_file_slug_map,
@@ -18,6 +17,7 @@ from scribpy.core.assembly.pipeline import (
     apply_transforms,
 )
 from scribpy.core.assembly.slug import slugify_heading
+from scribpy.core.image_collector import collect_images
 from scribpy.core.markdown_file import MarkdownFile
 
 

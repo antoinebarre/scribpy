@@ -11,7 +11,6 @@ import pytest
 import yaml
 
 from scribpy import mkdocs_export
-from scribpy.core.assembly import image_collector as assembly_images
 from scribpy.core.image_collector import collect_images
 from scribpy.errors import InvalidMarkdownError, ScaffoldCollisionError
 
@@ -258,10 +257,6 @@ class TestSharedExportServices:
         assert not any(
             name.startswith("scribpy.core.assembly") for name in imports
         )
-
-    def test_assembly_reexports_shared_image_collector(self) -> None:
-        """Requirement: assembly keeps one shared image collector logic."""
-        assert assembly_images.collect_images is collect_images
 
     def test_collect_images_deduplicates_repeated_parent_names(
         self,

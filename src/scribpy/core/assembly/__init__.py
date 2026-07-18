@@ -1,7 +1,6 @@
 """Markdown collection assembly pipeline."""
 
 from scribpy.core.assembly.concatenate import concatenate
-from scribpy.core.assembly.image_collector import collect_images
 from scribpy.core.assembly.link_rewriter import (
     build_file_slug_map,
     rewrite_internal_links,
@@ -18,7 +17,6 @@ __all__ = [
     "TransformFn",
     "apply_transforms",
     "build_file_slug_map",
-    "collect_images",
     "concatenate",
     "rewrite_internal_links",
     "slugify_heading",

@@ -5,7 +5,6 @@ from scribpy.core.assembly import (
     TransformFn,
     apply_transforms,
     build_file_slug_map,
-    collect_images,
     concatenate,
     rewrite_internal_links,
     slugify_heading,
@@ -23,6 +22,7 @@ from scribpy.core.diagnostics import (
     SourceH1CountRule,
 )
 from scribpy.core.html import html_export
+from scribpy.core.image_collector import collect_images
 from scribpy.core.init import (
     OutlineNode,
     init_from_outline,
