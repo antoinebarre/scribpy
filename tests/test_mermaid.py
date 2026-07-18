@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import re
 from email.message import Message
 from io import BytesIO
 from pathlib import Path
@@ -15,7 +14,6 @@ import pytest
 from scribpy.core import MarkdownCollection, concatenate
 from scribpy.core.diagram_blocks import (
     png_filename,
-    render_blocks,
     render_diagram_blocks,
 )
 from scribpy.core.diagram_encoding import encode_diagram as _encode_diagram
@@ -26,10 +24,6 @@ from scribpy.core.mermaid.local import LocalRenderer
 from scribpy.core.mermaid.renderer import make_renderer
 from scribpy.errors import MermaidRenderError
 
-_MERMAID_BLOCK = re.compile(
-    r"^```mermaid\n(?P<diagram>.*?)^```",
-    re.DOTALL | re.MULTILINE | re.IGNORECASE,
-)
 _REFERENCE_PREFIX = "assets/generated"
 
 
@@ -377,116 +371,6 @@ class TestRenderMermaidBlocks:
 
         assert "![diagram](assets/generated/" in result
         assert ".png)" in result
-
-    def test_writes_png_to_generated_dir(self, tmp_path: Path) -> None:
-        """Requirement: PNG bytes are written to the generated directory."""
-        png = b"\x89PNG\r\n"
-        content = "```mermaid\ngraph TD\nA --> B\n```\n"
-        renderer = self._fake_renderer(png)
-        generated = tmp_path / "assets" / "generated"
-
-        render_blocks(
-            content,
-            renderer,
-            generated,
-            _REFERENCE_PREFIX,
-            _MERMAID_BLOCK,
-        )
-
-        files = list(generated.iterdir())
-        assert len(files) == 1
-        assert files[0].read_bytes() == png
-
-    def test_does_not_recopy_identical_diagram(self, tmp_path: Path) -> None:
-        """Requirement: identical diagrams are rendered only once on disk."""
-        content = (
-            "```mermaid\ngraph TD\nA --> B\n```\n"
-            "```mermaid\ngraph TD\nA --> B\n```\n"
-        )
-        renderer = self._fake_renderer()
-        generated = tmp_path / "assets" / "generated"
-
-        render_blocks(
-            content,
-            renderer,
-            generated,
-            _REFERENCE_PREFIX,
-            _MERMAID_BLOCK,
-        )
-
-        assert len(list(generated.iterdir())) == 1
-        assert renderer.render.call_count == 1
-
-    def test_creates_generated_dir_if_missing(self, tmp_path: Path) -> None:
-        """Requirement: generated dir is created when absent."""
-        content = "```mermaid\ngraph TD\nA --> B\n```\n"
-        renderer = self._fake_renderer()
-        generated = tmp_path / "deep" / "nested" / "generated"
-
-        render_blocks(
-            content,
-            renderer,
-            generated,
-            _REFERENCE_PREFIX,
-            _MERMAID_BLOCK,
-        )
-
-        assert generated.is_dir()
-
-    def test_leaves_content_without_mermaid_unchanged(
-        self, tmp_path: Path
-    ) -> None:
-        """Requirement: content with no mermaid blocks is returned as-is."""
-        content = "# Title\n\nSome text.\n"
-        renderer = self._fake_renderer()
-        generated = tmp_path / "generated"
-
-        result = render_blocks(
-            content,
-            renderer,
-            generated,
-            _REFERENCE_PREFIX,
-            _MERMAID_BLOCK,
-        )
-
-        assert result == content
-        renderer.render.assert_not_called()
-
-    def test_handles_multiple_different_diagrams(self, tmp_path: Path) -> None:
-        """Requirement: each unique diagram gets its own PNG file."""
-        content = (
-            "```mermaid\ngraph TD\nA --> B\n```\n"
-            "```mermaid\ngraph LR\nC --> D\n```\n"
-        )
-        renderer = self._fake_renderer()
-        generated = tmp_path / "generated"
-
-        result = render_blocks(
-            content,
-            renderer,
-            generated,
-            _REFERENCE_PREFIX,
-            _MERMAID_BLOCK,
-        )
-
-        assert len(list(generated.iterdir())) == 2
-        assert result.count("![diagram]") == 2
-
-    def test_mermaid_block_case_insensitive(self, tmp_path: Path) -> None:
-        """Requirement: mermaid fence tag is matched case-insensitively."""
-        content = "```Mermaid\ngraph TD\nA --> B\n```\n"
-        renderer = self._fake_renderer()
-        generated = tmp_path / "generated"
-
-        result = render_blocks(
-            content,
-            renderer,
-            generated,
-            _REFERENCE_PREFIX,
-            _MERMAID_BLOCK,
-        )
-
-        assert "![diagram]" in result
 
 
 class TestConcatenateWithMermaid:

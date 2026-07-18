@@ -88,33 +88,6 @@ def render_diagram_blocks(
     )
 
 
-def render_blocks(
-    content: str,
-    renderer: _DiagramRenderer,
-    generated_dir: Path,
-    reference_prefix: str,
-    pattern: re.Pattern[str],
-) -> str:
-    """Render blocks for one diagram language.
-
-    This compatibility seam lets existing focused transforms delegate their
-    storage behavior to the shared implementation.
-
-    Args:
-        content: Markdown containing diagram blocks.
-        renderer: Renderer for the selected diagram language.
-        generated_dir: Directory receiving generated PNG files.
-        reference_prefix: POSIX path written before generated filenames.
-        pattern: Compiled fenced-block pattern for the language.
-
-    Returns:
-        Markdown with matching blocks replaced by image references.
-    """
-    return _render_blocks(
-        content, pattern, renderer, generated_dir, reference_prefix
-    )
-
-
 def png_filename(diagram: str) -> str:
     """Derive a stable PNG filename from diagram source.
 

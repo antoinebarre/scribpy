@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import re
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 from urllib.error import URLError
@@ -13,7 +12,6 @@ import pytest
 from scribpy.core import MarkdownCollection, concatenate
 from scribpy.core.diagram_blocks import (
     png_filename,
-    render_blocks,
     render_diagram_blocks,
 )
 from scribpy.core.diagram_encoding import encode_diagram as _encode_diagram
@@ -24,10 +22,6 @@ from scribpy.core.plantuml.renderer import make_renderer
 from scribpy.core.plantuml.server import PlantUmlServerRenderer
 from scribpy.errors import PlantUmlRenderError
 
-_PLANTUML_BLOCK = re.compile(
-    r"^```plantuml\n(?P<diagram>.*?)^```",
-    re.DOTALL | re.MULTILINE | re.IGNORECASE,
-)
 _REFERENCE_PREFIX = "assets/generated"
 
 
@@ -258,116 +252,6 @@ class TestRenderPlantumlBlocks:
 
         assert "![diagram](assets/generated/" in result
         assert ".png)" in result
-
-    def test_writes_png_to_generated_dir(self, tmp_path: Path) -> None:
-        """Requirement: PNG bytes are written to the generated directory."""
-        png = b"\x89PNG\r\n"
-        content = "```plantuml\n@startuml\nA -> B\n@enduml\n```\n"
-        renderer = self._fake_renderer(png)
-        generated = tmp_path / "assets" / "generated"
-
-        render_blocks(
-            content,
-            renderer,
-            generated,
-            _REFERENCE_PREFIX,
-            _PLANTUML_BLOCK,
-        )
-
-        files = list(generated.iterdir())
-        assert len(files) == 1
-        assert files[0].read_bytes() == png
-
-    def test_does_not_recopy_identical_diagram(self, tmp_path: Path) -> None:
-        """Requirement: identical diagrams are rendered only once on disk."""
-        content = (
-            "```plantuml\n@startuml\nA -> B\n@enduml\n```\n"
-            "```plantuml\n@startuml\nA -> B\n@enduml\n```\n"
-        )
-        renderer = self._fake_renderer()
-        generated = tmp_path / "assets" / "generated"
-
-        render_blocks(
-            content,
-            renderer,
-            generated,
-            _REFERENCE_PREFIX,
-            _PLANTUML_BLOCK,
-        )
-
-        assert len(list(generated.iterdir())) == 1
-        assert renderer.render.call_count == 1
-
-    def test_creates_generated_dir_if_missing(self, tmp_path: Path) -> None:
-        """Requirement: generated dir is created when absent."""
-        content = "```plantuml\n@startuml\nA -> B\n@enduml\n```\n"
-        renderer = self._fake_renderer()
-        generated = tmp_path / "deep" / "nested" / "generated"
-
-        render_blocks(
-            content,
-            renderer,
-            generated,
-            _REFERENCE_PREFIX,
-            _PLANTUML_BLOCK,
-        )
-
-        assert generated.is_dir()
-
-    def test_leaves_content_without_plantuml_unchanged(
-        self, tmp_path: Path
-    ) -> None:
-        """Requirement: content with no plantuml blocks is returned as-is."""
-        content = "# Title\n\nSome text.\n"
-        renderer = self._fake_renderer()
-        generated = tmp_path / "generated"
-
-        result = render_blocks(
-            content,
-            renderer,
-            generated,
-            _REFERENCE_PREFIX,
-            _PLANTUML_BLOCK,
-        )
-
-        assert result == content
-        renderer.render.assert_not_called()
-
-    def test_handles_multiple_different_diagrams(self, tmp_path: Path) -> None:
-        """Requirement: each unique diagram gets its own PNG file."""
-        content = (
-            "```plantuml\n@startuml\nA -> B\n@enduml\n```\n"
-            "```plantuml\n@startuml\nC -> D\n@enduml\n```\n"
-        )
-        renderer = self._fake_renderer()
-        generated = tmp_path / "generated"
-
-        result = render_blocks(
-            content,
-            renderer,
-            generated,
-            _REFERENCE_PREFIX,
-            _PLANTUML_BLOCK,
-        )
-
-        assert len(list(generated.iterdir())) == 2
-        assert result.count("![diagram]") == 2
-
-    def test_plantuml_block_case_insensitive(self, tmp_path: Path) -> None:
-        """Requirement: plantuml fence tag is matched case-insensitively."""
-        content = "```PlantUML\n@startuml\nA -> B\n@enduml\n```\n"
-        renderer = self._fake_renderer()
-        generated = tmp_path / "generated"
-
-        result = render_blocks(
-            content,
-            renderer,
-            generated,
-            _REFERENCE_PREFIX,
-            _PLANTUML_BLOCK,
-        )
-
-        assert "![diagram]" in result
 
 
 class TestConcatenateWithPlantuml:
