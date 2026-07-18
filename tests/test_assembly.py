@@ -4,11 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from scribpy.core import MarkdownCollection
 from scribpy.core.assembly.concatenate import concatenate
-from scribpy.core.assembly.heading_numbering import number_markdown_headings
 from scribpy.core.assembly.image_collector import collect_images
 from scribpy.core.assembly.link_rewriter import (
     _extract_h1_title,
@@ -295,48 +292,6 @@ class TestApplyTransforms:
         result = apply_transforms(doc, ())
 
         assert result.content == "hello"
-
-
-class TestHeadingNumbering:
-    """Tests for the MkForge heading numbering adapter."""
-
-    def test_number_markdown_headings_delegates_to_mkforge(
-        self,
-        monkeypatch: pytest.MonkeyPatch,
-    ) -> None:
-        """Requirement: heading numbering is delegated to MkForge."""
-        calls: list[tuple[str, int]] = []
-
-        def _renumber(markdown: str, *, start_level: int = 1) -> str:
-            """Record the MkForge renumbering call.
-
-            Args:
-                markdown: Markdown source passed to MkForge.
-                start_level: First heading level that receives numbering.
-
-            Returns:
-                Numbered Markdown source.
-            """
-            calls.append((markdown, start_level))
-            return "numbered"
-
-        monkeypatch.setattr(
-            "mkforge.renumber_markdown_headings",
-            _renumber,
-        )
-
-        result = number_markdown_headings("# Title\n")
-
-        assert result == "numbered"
-        assert calls == [("# Title\n", 2)]
-
-    def test_number_markdown_headings_skips_h1(self) -> None:
-        """Requirement: the global H1 title is never renumbered."""
-        content = "# Title\n\n## Part A\n\n### Sub\n"
-        result = number_markdown_headings(content)
-        assert result.startswith("# Title\n")
-        assert "## 1. Part A" in result
-        assert "### 1.1. Sub" in result
 
 
 class TestCollectImages:

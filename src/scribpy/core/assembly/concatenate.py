@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from scribpy.core.assembly.heading_numbering import number_markdown_headings
+import mkforge
+
 from scribpy.core.assembly.image_collector import collect_images
 from scribpy.core.assembly.link_rewriter import (
     build_file_slug_map,
@@ -81,7 +82,9 @@ def concatenate(collection: MarkdownCollection, output: Path) -> None:
     toc_depth = build.toc_depth
 
     def _number_headings(doc: AssembledDocument) -> AssembledDocument:
-        return doc.with_content(number_markdown_headings(doc.content))
+        return doc.with_content(
+            mkforge.renumber_markdown_headings(doc.content, start_level=2)
+        )
 
     def _rewrite_links(doc: AssembledDocument) -> AssembledDocument:
         slug_map = (
