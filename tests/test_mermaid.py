@@ -87,28 +87,28 @@ class TestKrokiRenderer:
         """Requirement: successful HTTP 200 response returns PNG bytes."""
         png = b"\x89PNG\r\n\x1a\n"
         mock_response = MagicMock()
+        mock_response.getresponse.return_value = mock_response
         mock_response.__enter__ = MagicMock(return_value=mock_response)
         mock_response.__exit__ = MagicMock(return_value=False)
         mock_response.status = 200
         mock_response.read.return_value = png
 
         with patch(
-            "scribpy.core.mermaid.kroki.urlopen", return_value=mock_response
+            "scribpy.core.kroki_http.HTTPSConnection",
+            return_value=mock_response,
         ) as open_url:
             result = KrokiRenderer().render("graph TD\nA --> B")
 
         assert result == png
-        request = open_url.call_args.args[0]
-        assert request.full_url == "https://kroki.io/mermaid/png"
-        assert request.method == "POST"
-        assert request.data == b"graph TD\nA --> B"
-        assert request.get_header("Content-type") == (
-            "text/plain; charset=utf-8"
-        )
+        encoded = _encode_diagram("graph TD\nA --> B")
+        open_url.assert_called_once_with("kroki.io", timeout=30)
+        request_args = mock_response.request.call_args.args
+        assert request_args == ("GET", f"/mermaid/png/{encoded}")
 
     def test_render_raises_on_non_200_status(self) -> None:
         """Requirement: non-200 HTTP response raises MermaidRenderError."""
         mock_response = MagicMock()
+        mock_response.getresponse.return_value = mock_response
         mock_response.__enter__ = MagicMock(return_value=mock_response)
         mock_response.__exit__ = MagicMock(return_value=False)
         mock_response.status = 400
@@ -116,7 +116,7 @@ class TestKrokiRenderer:
 
         with (
             patch(
-                "scribpy.core.mermaid.kroki.urlopen",
+                "scribpy.core.kroki_http.HTTPSConnection",
                 return_value=mock_response,
             ),
             pytest.raises(MermaidRenderError, match="HTTP 400"),
@@ -127,7 +127,7 @@ class TestKrokiRenderer:
         """Requirement: URLError is wrapped in MermaidRenderError."""
         with (
             patch(
-                "scribpy.core.mermaid.kroki.urlopen",
+                "scribpy.core.kroki_http.HTTPSConnection",
                 side_effect=URLError("connection refused"),
             ),
             pytest.raises(MermaidRenderError, match="connection refused"),
@@ -146,7 +146,7 @@ class TestKrokiRenderer:
 
         with (
             patch(
-                "scribpy.core.mermaid.kroki.urlopen",
+                "scribpy.core.kroki_http.HTTPSConnection",
                 side_effect=error,
             ),
             pytest.raises(
@@ -168,7 +168,7 @@ class TestKrokiRenderer:
 
         with (
             patch(
-                "scribpy.core.mermaid.kroki.urlopen",
+                "scribpy.core.kroki_http.HTTPSConnection",
                 side_effect=error,
             ),
             pytest.raises(MermaidRenderError, match="HTTP 400: Bad Request"),
@@ -392,6 +392,7 @@ class TestConcatenateWithMermaid:
         png = b"\x89PNG\r\n\x1a\n"
 
         mock_response = MagicMock()
+        mock_response.getresponse.return_value = mock_response
         mock_response.__enter__ = MagicMock(return_value=mock_response)
         mock_response.__exit__ = MagicMock(return_value=False)
         mock_response.status = 200
@@ -399,7 +400,8 @@ class TestConcatenateWithMermaid:
 
         collection = MarkdownCollection.from_tree(src)
         with patch(
-            "scribpy.core.mermaid.kroki.urlopen", return_value=mock_response
+            "scribpy.core.kroki_http.HTTPSConnection",
+            return_value=mock_response,
         ):
             concatenate(collection, output)
 
@@ -483,6 +485,7 @@ class TestConcatenateWithMermaid:
         png = b"\x89PNG\r\n\x1a\n"
 
         mock_response = MagicMock()
+        mock_response.getresponse.return_value = mock_response
         mock_response.__enter__ = MagicMock(return_value=mock_response)
         mock_response.__exit__ = MagicMock(return_value=False)
         mock_response.status = 200
@@ -491,11 +494,7 @@ class TestConcatenateWithMermaid:
         collection = MarkdownCollection.from_tree(src)
         with (
             patch(
-                "scribpy.core.plantuml.kroki.urlopen",
-                return_value=mock_response,
-            ),
-            patch(
-                "scribpy.core.mermaid.kroki.urlopen",
+                "scribpy.core.kroki_http.HTTPSConnection",
                 return_value=mock_response,
             ),
         ):

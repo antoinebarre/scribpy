@@ -69,13 +69,14 @@ class TestKrokiRenderer:
         """Requirement: successful HTTP 200 response returns PNG bytes."""
         png = b"\x89PNG\r\n\x1a\n"
         mock_response = MagicMock()
+        mock_response.getresponse.return_value = mock_response
         mock_response.__enter__ = MagicMock(return_value=mock_response)
         mock_response.__exit__ = MagicMock(return_value=False)
         mock_response.status = 200
         mock_response.read.return_value = png
 
         with patch(
-            "scribpy.core.plantuml.kroki.urlopen",
+            "scribpy.core.kroki_http.HTTPSConnection",
             return_value=mock_response,
         ):
             result = KrokiRenderer().render("@startuml\nA -> B\n@enduml")
@@ -85,6 +86,7 @@ class TestKrokiRenderer:
     def test_render_raises_on_non_200_status(self) -> None:
         """Requirement: non-200 HTTP response raises PlantUmlRenderError."""
         mock_response = MagicMock()
+        mock_response.getresponse.return_value = mock_response
         mock_response.__enter__ = MagicMock(return_value=mock_response)
         mock_response.__exit__ = MagicMock(return_value=False)
         mock_response.status = 400
@@ -92,7 +94,7 @@ class TestKrokiRenderer:
 
         with (
             patch(
-                "scribpy.core.plantuml.kroki.urlopen",
+                "scribpy.core.kroki_http.HTTPSConnection",
                 return_value=mock_response,
             ),
             pytest.raises(PlantUmlRenderError, match="HTTP 400"),
@@ -103,7 +105,7 @@ class TestKrokiRenderer:
         """Requirement: URLError is wrapped in PlantUmlRenderError."""
         with (
             patch(
-                "scribpy.core.plantuml.kroki.urlopen",
+                "scribpy.core.kroki_http.HTTPSConnection",
                 side_effect=URLError("connection refused"),
             ),
             pytest.raises(PlantUmlRenderError, match="connection refused"),
@@ -269,6 +271,7 @@ class TestConcatenateWithPlantuml:
         png = b"\x89PNG\r\n\x1a\n"
 
         mock_response = MagicMock()
+        mock_response.getresponse.return_value = mock_response
         mock_response.__enter__ = MagicMock(return_value=mock_response)
         mock_response.__exit__ = MagicMock(return_value=False)
         mock_response.status = 200
@@ -276,7 +279,7 @@ class TestConcatenateWithPlantuml:
 
         collection = MarkdownCollection.from_tree(src)
         with patch(
-            "scribpy.core.plantuml.kroki.urlopen",
+            "scribpy.core.kroki_http.HTTPSConnection",
             return_value=mock_response,
         ):
             concatenate(collection, output)
