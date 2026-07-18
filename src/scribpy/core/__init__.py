@@ -34,6 +34,11 @@ from scribpy.core.markdown_collection import MarkdownCollection
 from scribpy.core.markdown_document import MarkdownDocument
 from scribpy.core.markdown_file import MarkdownFile
 from scribpy.core.markdown_image import MarkdownImageReference
+from scribpy.core.validation import (
+    ProjectDiagnostic,
+    ProjectValidationReport,
+    validate_project,
+)
 
 __all__ = [
     "AssembledDocument",
@@ -51,6 +56,8 @@ __all__ = [
     "MarkdownFile",
     "MarkdownImageReference",
     "OutlineNode",
+    "ProjectDiagnostic",
+    "ProjectValidationReport",
     "RootManifest",
     "SourceFirstHeadingH1Rule",
     "SourceH1CountRule",
@@ -65,4 +72,5 @@ __all__ = [
     "parse_outline",
     "rewrite_internal_links",
     "slugify_heading",
+    "validate_project",
 ]

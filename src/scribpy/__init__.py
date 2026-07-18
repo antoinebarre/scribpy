@@ -17,12 +17,16 @@ from scribpy.core import (
     MarkdownFile,
     MarkdownImageReference,
     OutlineNode,
+    ProjectDiagnostic,
+    ProjectValidationReport,
     RootManifest,
     SourceFirstHeadingH1Rule,
     SourceH1CountRule,
+    html_export,
     init_from_outline,
     init_skeleton,
     parse_outline,
+    validate_project,
 )
 from scribpy.errors import (
     InvalidMarkdownError,
@@ -33,6 +37,8 @@ from scribpy.errors import (
     ScribpyManifestWarning,
 )
 from scribpy.log import logging_context
+from scribpy.presentation import render_validation_report
+from scribpy.validation import valid_report
 
 __all__ = [
     "CollectionDiagnostic",
@@ -52,14 +58,20 @@ __all__ = [
     "MarkdownImageReference",
     "OutlineNode",
     "OutlineValidationError",
+    "ProjectDiagnostic",
+    "ProjectValidationReport",
     "RootManifest",
     "ScaffoldCollisionError",
     "ScribpyError",
     "ScribpyManifestWarning",
     "SourceFirstHeadingH1Rule",
     "SourceH1CountRule",
+    "html_export",
     "init_from_outline",
     "init_skeleton",
     "logging_context",
     "parse_outline",
+    "render_validation_report",
+    "valid_report",
+    "validate_project",
 ]
