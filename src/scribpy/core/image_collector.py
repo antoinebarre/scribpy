@@ -5,12 +5,13 @@ from __future__ import annotations
 import re
 import shutil
 from pathlib import Path, PurePosixPath
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
+
+from scribpy.core.markdown_patterns import _is_external_target
 
 _IMAGE_PATTERN = re.compile(
     r"!\[(?P<alt>[^\]]*)]\((?P<target>[^)\n]*)\)",
 )
-_EXTERNAL_SCHEMES = frozenset({"http", "https", "ftp", "ftps", "mailto"})
 
 
 def collect_images(
@@ -48,7 +49,7 @@ def collect_images(
             Original or rewritten Markdown image reference.
         """
         raw_target = match.group("target").strip()
-        if _is_external(raw_target):
+        if _is_external_target(raw_target):
             return match.group(0)
         source_path = _resolve_source(source_dir, raw_target)
         if source_path is None or not source_path.is_file():
@@ -64,19 +65,6 @@ def collect_images(
     return _IMAGE_PATTERN.sub(_replace, content)
 
 
-def _is_external(target: str) -> bool:
-    """Return whether an image target is external.
-
-    Args:
-        target: Raw image target.
-
-    Returns:
-        True for a URL with an external scheme or network location.
-    """
-    parsed = urlsplit(target)
-    return parsed.scheme in _EXTERNAL_SCHEMES or bool(parsed.netloc)
-
-
 def _resolve_source(source_dir: Path, target: str) -> Path | None:
     """Resolve one local image target.
 
@@ -90,7 +78,8 @@ def _resolve_source(source_dir: Path, target: str) -> Path | None:
     stripped = target.strip()
     if not stripped:
         return None
-    path = Path(stripped)
+    parsed = urlsplit(stripped)
+    path = Path(unquote(parsed.path))
     if path.is_absolute():
         return source_dir / path.relative_to("/")
     return source_dir / path

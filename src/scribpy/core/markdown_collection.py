@@ -22,6 +22,10 @@ from scribpy.core.manifest import (
 )
 from scribpy.core.markdown_document import MarkdownDocument
 from scribpy.core.markdown_file import MarkdownFile
+from scribpy.core.markdown_patterns import (
+    _MARKDOWN_SUFFIXES,
+    ROOT_FILE_HEADING_LEVEL,
+)
 from scribpy.errors import (
     InvalidMarkdownError,
     InvalidScribpyManifestError,
@@ -29,9 +33,6 @@ from scribpy.errors import (
 )
 
 _log = logging.getLogger(__name__)
-
-_MARKDOWN_SUFFIXES = frozenset({".md", ".markdown"})
-_ROOT_FILE_HEADING_LEVEL = 2
 
 
 @dataclass(frozen=True, slots=True)
@@ -129,7 +130,7 @@ class MarkdownCollection:
                 chunks.append(
                     normalize_markdown_headings(
                         content,
-                        _ROOT_FILE_HEADING_LEVEL + len(folder_parts),
+                        ROOT_FILE_HEADING_LEVEL + len(folder_parts),
                     ),
                 )
         return MarkdownDocument("\n\n".join(chunks) + "\n")
@@ -243,7 +244,7 @@ def _folder_heading(
     Returns:
         Markdown heading for the folder.
     """
-    level = min(6, _ROOT_FILE_HEADING_LEVEL + index)
+    level = min(6, ROOT_FILE_HEADING_LEVEL + index)
     folder_path = root.joinpath(*folder_parts)
     return f"{'#' * level} {_folder_title(folder_path)}"
 

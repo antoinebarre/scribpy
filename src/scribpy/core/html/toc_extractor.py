@@ -5,9 +5,8 @@ from __future__ import annotations
 import re
 
 from scribpy.core.assembly.slug import slugify_heading
+from scribpy.core.markdown_patterns import _ATX_HEADING, _mask_fenced_blocks
 
-_ATX_HEADING = re.compile(r"^(#{1,6})\s+(.+)$", re.MULTILINE)
-_FENCED_BLOCK = re.compile(r"^```.*?^```", re.MULTILINE | re.DOTALL)
 _TOC_BLOCK = re.compile(
     r"\n\n"
     r"(?:[ \t]*- \[.+?\]\(#[^\)]*\)[ \t]*\n)+"
@@ -76,29 +75,3 @@ def build_nav_entries(
         {"level": level, "title": title, "slug": slugify_heading(title)}
         for level, title in headings
     ]
-
-
-def _mask_fenced_blocks(content: str) -> str:
-    """Replace fenced code block interiors with blank lines.
-
-    Preserves line count so regex positions remain valid.
-
-    Args:
-        content: Markdown source text.
-
-    Returns:
-        Content with fenced block interiors replaced by newlines.
-    """
-
-    def _blank(match: re.Match[str]) -> str:
-        """Return blank lines matching the fenced block line count.
-
-        Args:
-            match: Regex match object for a fenced code block.
-
-        Returns:
-            String of newlines equal to the matched block line count.
-        """
-        return "\n" * match.group(0).count("\n")
-
-    return _FENCED_BLOCK.sub(_blank, content)

@@ -383,6 +383,22 @@ class TestCollectImages:
 
         assert "assets/logo.png" in result
 
+    def test_collect_images_handles_local_file_url(
+        self, tmp_path: Path
+    ) -> None:
+        """Requirement: file URLs identify local images for collection."""
+        (tmp_path / "logo.png").write_bytes(b"\x89PNG")
+        assets = tmp_path / "out" / "assets"
+
+        result = collect_images(
+            "![Logo](file:///logo.png)\n",
+            tmp_path,
+            assets,
+        )
+
+        assert result == "![Logo](assets/logo.png)\n"
+        assert (assets / "logo.png").read_bytes() == b"\x89PNG"
+
 
 class TestConcatenate:
     """Integration tests for the concatenate function."""

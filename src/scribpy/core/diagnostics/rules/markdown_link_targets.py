@@ -12,11 +12,11 @@ from mkforge import MarkdownSource
 from mkforge.verification.source_scan import lines_outside_fenced_code
 
 from scribpy.core.markdown_file import MarkdownFile
+from scribpy.core.markdown_patterns import _MARKDOWN_SUFFIXES
 
 _MARKDOWN_LINK = re.compile(
     r"(?<!!)\[(?P<label>[^\]]+)]\((?P<body>[^)\n]*)\)",
 )
-_MARKDOWN_SUFFIXES = frozenset({".md", ".markdown"})
 
 
 @dataclass(frozen=True, slots=True)

@@ -5,9 +5,7 @@ from __future__ import annotations
 import re
 
 from scribpy.core.assembly.slug import slugify_heading
-
-_ATX_HEADING = re.compile(r"^(#{1,6})\s+(.+)$", re.MULTILINE)
-_FENCED_BLOCK = re.compile(r"^```.*?^```", re.MULTILINE | re.DOTALL)
+from scribpy.core.markdown_patterns import _ATX_HEADING, _mask_fenced_blocks
 
 _DEFAULT_TOC_DEPTH = 3
 
@@ -53,32 +51,6 @@ def _extract_headings(content: str) -> list[tuple[int, str]]:
         (len(m.group(1)), m.group(2).strip())
         for m in _ATX_HEADING.finditer(masked)
     ]
-
-
-def _mask_fenced_blocks(content: str) -> str:
-    """Replace fenced code block content with blank lines.
-
-    Preserves line count so regex positions stay valid for heading extraction.
-
-    Args:
-        content: Markdown source text.
-
-    Returns:
-        Content with fenced block interiors replaced by blank lines.
-    """
-
-    def _blank(match: re.Match[str]) -> str:
-        """Return same number of newlines as matched block.
-
-        Args:
-            match: Regex match for a fenced code block.
-
-        Returns:
-            String of newlines matching the block line count.
-        """
-        return "\n" * match.group(0).count("\n")
-
-    return _FENCED_BLOCK.sub(_blank, content)
 
 
 def _render_toc(entries: list[tuple[int, str]]) -> str:

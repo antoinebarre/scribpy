@@ -12,9 +12,9 @@ from scribpy.core.diagnostics.model import (
 )
 from scribpy.core.heading_normalizer import iter_markdown_headings
 from scribpy.core.markdown_file import MarkdownFile
+from scribpy.core.markdown_patterns import ROOT_FILE_HEADING_LEVEL
 
 MAX_MARKDOWN_HEADING_LEVEL = 6
-ROOT_FILE_HEADING_LEVEL = 2
 HEADING_LEVEL_OVERFLOW = "HEADING_LEVEL_OVERFLOW"
 
 

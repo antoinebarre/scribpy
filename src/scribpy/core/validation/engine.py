@@ -17,13 +17,12 @@ from scribpy.core.manifest import (
     load_root_manifest,
 )
 from scribpy.core.markdown_collection import MarkdownCollection
+from scribpy.core.markdown_patterns import _MARKDOWN_SUFFIXES
 from scribpy.core.validation.model import (
     ProjectDiagnostic,
     ProjectValidationReport,
 )
 from scribpy.errors import InvalidScribpyManifestError, ScribpyManifestWarning
-
-_MARKDOWN_SUFFIXES = frozenset({".md", ".markdown"})
 
 
 @dataclass(frozen=True, slots=True)

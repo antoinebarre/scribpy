@@ -5,10 +5,10 @@ from __future__ import annotations
 from scribpy.core.assembly.toc import (
     _extract_headings,
     _insert_toc,
-    _mask_fenced_blocks,
     _render_toc,
     generate_toc,
 )
+from scribpy.core.markdown_patterns import _mask_fenced_blocks
 
 
 class TestMaskFencedBlocks:

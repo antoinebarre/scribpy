@@ -8,6 +8,7 @@ from urllib.parse import unquote, urlsplit
 
 from scribpy.core.markdown_file import MarkdownFile
 from scribpy.core.markdown_image import MarkdownImageReference
+from scribpy.core.markdown_patterns import _is_external_target
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,19 +52,6 @@ def classify_image_target(
         resolved_path=_local_image_path(root, markdown_file, reference.target),
         is_external=False,
     )
-
-
-def _is_external_target(target: str) -> bool:
-    """Return whether a Markdown target points outside local files.
-
-    Args:
-        target: Raw Markdown link target.
-
-    Returns:
-        True when the target has an external URL scheme or network location.
-    """
-    parsed = urlsplit(target)
-    return bool(parsed.netloc or (parsed.scheme and parsed.scheme != "file"))
 
 
 def _local_image_path(
