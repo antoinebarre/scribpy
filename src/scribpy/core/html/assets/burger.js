@@ -33,9 +33,12 @@
 
   function navigateTo(href) {
     closePanel();
-    var target = document.querySelector(href);
+    var target = document.getElementById(href.slice(1));
     if (target) {
-      setTimeout(function () { target.scrollIntoView({ behavior: "smooth" }); }, 260);
+      setTimeout(function () {
+        target.scrollIntoView({ behavior: "smooth" });
+        history.pushState(null, "", href);
+      }, 260);
     }
   }
 

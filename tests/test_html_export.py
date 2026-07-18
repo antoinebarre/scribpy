@@ -393,6 +393,24 @@ def test_html_export_nav_contains_headings(tmp_path: Path) -> None:
     assert "Section Beta" in content
 
 
+def test_html_export_numbered_heading_navigation_uses_html_id(
+    tmp_path: Path,
+) -> None:
+    """Requirement: numbered heading links use valid HTML ID navigation."""
+    source = tmp_path / "doc.md"
+    source.write_text("# Guide\n\n## 1. Introduction\n", encoding="utf-8")
+    output = tmp_path / "doc.html"
+
+    html_export(source, output, toc_depth=1)
+
+    content = output.read_text(encoding="utf-8")
+    assert 'href="#1-introduction"' in content
+    assert 'id="1-introduction"' in content
+    assert "document.getElementById(href.slice(1))" in content
+    assert 'history.pushState(null, "", href)' in content
+    assert "document.querySelector(href)" not in content
+
+
 def test_html_export_toc_depth_filters_headings(tmp_path: Path) -> None:
     """Requirement: toc_depth=1 excludes H3 from the burger menu."""
     source = tmp_path / "doc.md"
