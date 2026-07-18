@@ -221,7 +221,7 @@ def heading_numbering_enabled(manifest: RootManifest) -> bool:
     return False
 
 
-def validate_direct_child_entry(path: Path, entry: str) -> str:
+def _validate_direct_child_entry(path: Path, entry: str) -> str:
     """Validate and normalize one manifest order entry.
 
     Args:
@@ -428,4 +428,4 @@ def _order_entry(path: Path, entry: object) -> str:
             str(path),
             f"order entry must be a string: {entry!r}",
         )
-    return validate_direct_child_entry(path, entry)
+    return _validate_direct_child_entry(path, entry)
