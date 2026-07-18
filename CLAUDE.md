@@ -35,6 +35,18 @@ make clean
 
 All tools run through `uv run`. The `work/` directory holds all cache and artifact output (pytest cache, mypy cache, ruff cache, coverage data, build output). Never commit it.
 
+### CLI
+
+| Command | Purpose |
+|---|---|
+| `scribpy new` | Create a minimal project |
+| `scribpy scaffold` | Create a project from a Markdown outline |
+| `scribpy validate` | Validate a project and render its report |
+| `scribpy diagnose` | Report collection diagnostics |
+| `scribpy build` | Assemble a collection into Markdown |
+| `scribpy html` | Export assembled Markdown as standalone HTML |
+| `scribpy mkdocs-export` | Export a project as MkDocs input files |
+
 ---
 
 ## Architecture

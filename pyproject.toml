@@ -12,12 +12,16 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "click>=8.1",
     "markdown>=3.6",
     "mkforge>=0.5.0",
     "pydantic>=2.13.4",
     "PyYAML>=6",
     "rich>=15.0.0",
 ]
+
+[project.scripts]
+scribpy = "scribpy.cli:cli"
 
 [dependency-groups]
 dev = [
