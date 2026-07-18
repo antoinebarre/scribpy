@@ -11,6 +11,7 @@ from scribpy.core.diagnostics.model import (
     DiagnosticSeverity,
 )
 from scribpy.core.diagnostics.rules.image_targets import classify_image_target
+from scribpy.core.diagnostics.rules.path_utils import _is_inside_root
 from scribpy.core.markdown_file import MarkdownFile
 from scribpy.core.markdown_image import MarkdownImageReference
 
@@ -99,16 +100,3 @@ def _image_outside_root_diagnostic(
         path=markdown_file.path,
         line=reference.line,
     )
-
-
-def _is_inside_root(root: Path, path: Path) -> bool:
-    """Return whether a path resolves inside the collection root.
-
-    Args:
-        root: Collection root directory.
-        path: Candidate resolved path.
-
-    Returns:
-        True when the path is inside the collection root.
-    """
-    return path.resolve(strict=False).is_relative_to(root.resolve())

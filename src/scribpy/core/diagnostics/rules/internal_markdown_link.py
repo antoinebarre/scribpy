@@ -15,6 +15,7 @@ from scribpy.core.diagnostics.rules.markdown_link_targets import (
     classify_markdown_link_target,
     extract_markdown_links,
 )
+from scribpy.core.diagnostics.rules.path_utils import _is_inside_root
 from scribpy.core.markdown_file import MarkdownFile
 
 INTERNAL_MARKDOWN_LINK_MISSING = "INTERNAL_MARKDOWN_LINK_MISSING"
@@ -98,24 +99,11 @@ def _internal_markdown_link_diagnostic(
     target = classify_markdown_link_target(root, markdown_file, reference)
     if not target.is_markdown or target.resolved_path is None:
         return None
-    if not _is_relative_to_root(root, target.resolved_path):
+    if not _is_inside_root(root, target.resolved_path):
         return _outside_root_diagnostic(markdown_file, reference)
     if not target.resolved_path.is_file():
         return _missing_markdown_diagnostic(markdown_file, reference)
     return None
-
-
-def _is_relative_to_root(root: Path, path: Path) -> bool:
-    """Return whether a path resolves inside the collection root.
-
-    Args:
-        root: Collection root directory.
-        path: Candidate resolved or unresolved path.
-
-    Returns:
-        True when the path is inside the collection root.
-    """
-    return path.resolve(strict=False).is_relative_to(root.resolve())
 
 
 def _missing_markdown_diagnostic(
