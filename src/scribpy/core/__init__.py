@@ -34,6 +34,7 @@ from scribpy.core.markdown_collection import MarkdownCollection
 from scribpy.core.markdown_document import MarkdownDocument
 from scribpy.core.markdown_file import MarkdownFile
 from scribpy.core.markdown_image import MarkdownImageReference
+from scribpy.core.mkdocs import mkdocs_export
 from scribpy.core.validation import (
     ProjectDiagnostic,
     ProjectValidationReport,
@@ -69,6 +70,7 @@ __all__ = [
     "html_export",
     "init_from_outline",
     "init_skeleton",
+    "mkdocs_export",
     "parse_outline",
     "rewrite_internal_links",
     "slugify_heading",

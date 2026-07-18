@@ -179,9 +179,8 @@ transforms appliquees en sequence par `apply_transforms` :
 | 1 | `number_markdown_headings` | `build.heading_numbering.enabled` | Numerote les titres via MkForge |
 | 2 | `rewrite_internal_links` | toujours | Remplace `[label](file.md)` par `[label](#slug)` |
 | 3 | `generate_toc` | `build.toc: true` | Insere un TOC apres le H1 du document assemble |
-| 4 | `render_plantuml_blocks` | toujours | Rend les blocs ` ```plantuml ` en PNG |
-| 5 | `render_mermaid_blocks` | toujours | Rend les blocs ` ```mermaid ` en PNG |
-| 6 | `collect_images` | toujours | Copie les images locales dans `assets/` |
+| 4 | `render_diagram_blocks` | toujours | Rend les blocs PlantUML et Mermaid en PNG selon `BuildSettings` |
+| 5 | `collect_images` | toujours | Copie les images locales dans `assets/` |
 
 Le TOC est positionne apres la reecriture des liens (etape 2) pour que ses
 ancres soient coherentes avec celles produites par le link rewriter. Si le
@@ -200,8 +199,7 @@ participant "apply_transforms()" as pipeline
 participant "number_markdown_headings\n[optionnel]" as numbering
 participant "rewrite_internal_links" as links
 participant "generate_toc\n[optionnel]" as toc
-participant "render_plantuml_blocks" as puml
-participant "render_mermaid_blocks" as mmid
+participant "render_diagram_blocks\n[BuildSettings]" as diagrams
 participant "collect_images" as images
 participant "output.md" as file
 
@@ -212,10 +210,8 @@ pipeline -> links : AssembledDocument
 links --> pipeline : AssembledDocument (liens renames)
 pipeline -> toc : AssembledDocument
 toc --> pipeline : AssembledDocument (TOC insere apres H1)
-pipeline -> puml : AssembledDocument
-puml --> pipeline : AssembledDocument (blocs PlantUML -> PNG)
-pipeline -> mmid : AssembledDocument
-mmid --> pipeline : AssembledDocument (blocs Mermaid -> PNG)
+pipeline -> diagrams : AssembledDocument, BuildSettings
+diagrams --> pipeline : AssembledDocument (blocs PlantUML/Mermaid -> PNG)
 pipeline -> images : AssembledDocument
 images --> pipeline : AssembledDocument (images copiees)
 pipeline --> concat : AssembledDocument final
@@ -438,3 +434,123 @@ HtmlRenderer ..> MarkdownDocument
 MkDocsSiteRenderer ..> MarkdownCollection
 @enduml
 ```
+
+## Export MkDocs
+
+### Modules affectes
+
+L'export MkDocs ajoute un adaptateur de sortie arborescent sans modifier le
+modele `MarkdownCollection` ni le pipeline d'assemblage.
+
+| Module | Evolution |
+|---|---|
+| `scribpy.core.mkdocs.__init__` | Nouvelle orchestration et API publique `mkdocs_export()` |
+| `scribpy.core.mkdocs.markdown_exporter` | Export unitaire des sources Markdown et appel des services d'assets partages |
+| `scribpy.core.mkdocs.navigation` | Construction de la navigation ordonnee et hierarchique |
+| `scribpy.core.mkdocs.configuration` | Ecriture de `mkdocs.yml` avec PyYAML |
+| `scribpy.core.diagram_blocks` | API unique de rendu des blocs PlantUML et Mermaid configuree par `BuildSettings` |
+| `scribpy.core.image_collector` | Service neutre partage de collecte des images locales |
+| `scribpy.core.assembly.concatenate` | Remplacement des deux fonctions de diagramme par l'import direct de l'API partagee |
+| `scribpy.core.assembly.image_collector` | Reexport de compatibilite du collecteur neutre |
+| `scribpy.core.__init__` | Reexport de `mkdocs_export` |
+
+`scribpy.core.mkdocs` ne depend pas de `scribpy.core.assembly`. Les services
+d'assets partages dependent de chemins, de contenu Markdown et de
+`BuildSettings` ; ils ne connaissent ni `AssembledDocument` ni MkDocs.
+
+Le merge et l'export MkDocs utilisent exactement l'import suivant :
+
+```python
+from scribpy.core.diagram_blocks import render_diagram_blocks
+```
+
+Cette fonction reçoit le `BuildSettings` chargé depuis le manifeste racine.
+Elle est le seul endroit qui traduit les options YAML de diagrammes en choix de
+factories et de backends. Il n'existe pas de fonction de rendu propre au merge
+ou à MkDocs.
+
+### Interfaces publiques
+
+```python
+def mkdocs_export(source: Path, output: Path) -> None:
+    """Exporte un projet Scribpy vers une arborescence lisible par MkDocs."""
+```
+
+La fonction est exposee par `scribpy.core.mkdocs` et reexportee par
+`scribpy.core`. Les interfaces publiques existantes de l'assembly restent
+inchangees. Si `output/mkdocs.yml` existe avant l'appel,
+`ScaffoldCollisionError` est levee avant toute ecriture.
+
+### Flux de donnees
+
+```plantuml
+@startuml
+participant "mkdocs_export()" as export
+participant "MarkdownCollection.from_tree" as collection
+participant "markdown_exporter" as markdown
+participant "render_diagram_blocks" as diagrams
+participant "image_collector" as images
+participant "navigation" as nav
+participant "configuration" as config
+
+export -> export : verifier output/mkdocs.yml
+export -> collection : charger source et manifestes
+collection --> export : fichiers ordonnes, RootManifest
+loop pour chaque MarkdownFile
+  export -> markdown : source, destination, BuildSettings
+  markdown -> diagrams : contenu, BuildSettings, chemins
+  diagrams -> diagrams : make_renderer(backends du YAML)
+  diagrams -> diagrams : rendre blocs et ecrire PNG hashes
+  diagrams --> markdown : contenu avec cibles relatives
+  markdown -> images : copier images locales
+  images --> markdown : contenu avec cibles relatives
+  markdown -> markdown : ecrire sous docs/ au chemin source
+end
+export -> nav : collection, manifestes, premiers H1
+nav --> export : arbre nav ordonne
+export -> config : site_name, docs_dir, nav
+config -> config : ecrire mkdocs.yml avec safe_dump
+@enduml
+```
+
+Les liens Markdown internes ne sont jamais presentes a un rewriter. Les
+headings ne sont ni normalises ni numerotes. Les chemins de fichiers conserves
+dans `docs/` sont relatifs a la racine de collection ; les chemins YAML sont
+convertis au format POSIX. Les references d'assets sont calculees relativement
+au parent de chaque Markdown de destination.
+
+### Gestion des erreurs
+
+- `ScaffoldCollisionError` protege un `mkdocs.yml` existant avant toute
+  mutation.
+- Les erreurs de chargement ou de schema des manifestes sont propagees par
+  `MarkdownCollection.from_tree`.
+- `PlantUmlRenderError`, `MermaidRenderError` et `NotImplementedError` des
+  backends sont propagees sans conversion.
+- Les erreurs de lecture, copie, creation de repertoire et ecriture restent
+  des erreurs standard d'I/O.
+- Les images externes et les references locales introuvables restent
+  inchangees ; la validation de projet est responsable de les diagnostiquer.
+
+### Strategie de test
+
+Les tests unitaires mockent toute lecture/ecriture, copie et tout renderer
+externe. Ils couvrent le garde de collision, la selection des deux backends,
+le hash et la deduplication des diagrammes, la resolution d'image relative au
+fichier source, les collisions de noms, les references depuis plusieurs
+profondeurs, l'extraction du premier H1 hors blocs fenced, les titres de groupe
+avec et sans manifeste, l'ordre recursif et la serialisation YAML.
+
+Les tests de regression garantissent que `concatenate()` et `mkdocs_export()`
+appellent la même fonction `render_diagram_blocks` avec le `BuildSettings` de
+leur collection. Ils vérifient que les deux backends configurés dans le YAML
+sont transmis aux factories pour les deux workflows. Un test d'architecture
+interdit toute autre fonction de rendu de blocs dans l'assembly ainsi que les
+imports de `scribpy.core.assembly`, `mkdocs` et des moteurs de template depuis
+le nouveau package.
+
+Au moins un test d'integration exporte sans mock interne un projet temporaire
+avec fichiers imbriques, liens Markdown, images et diagrammes rendus par des
+renderers de test injectes au point de factory. Il verifie l'arbre produit et
+recharge `mkdocs.yml` avec `yaml.safe_load`. L'ensemble doit maintenir 100 % de
+coverage et passer `make check`.

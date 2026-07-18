@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 from urllib.error import URLError
@@ -10,15 +11,23 @@ from urllib.error import URLError
 import pytest
 
 from scribpy.core import MarkdownCollection, concatenate
-from scribpy.core.assembly.plantuml_transform import (
-    _png_filename,
-    render_plantuml_blocks,
+from scribpy.core.diagram_blocks import (
+    png_filename,
+    render_blocks,
+    render_diagram_blocks,
 )
 from scribpy.core.diagram_encoding import encode_diagram as _encode_diagram
+from scribpy.core.manifest import BuildSettings
 from scribpy.core.plantuml.kroki import KrokiRenderer
 from scribpy.core.plantuml.local import LocalRenderer
 from scribpy.core.plantuml.renderer import make_renderer
 from scribpy.errors import PlantUmlRenderError
+
+_PLANTUML_BLOCK = re.compile(
+    r"^```plantuml\n(?P<diagram>.*?)^```",
+    re.DOTALL | re.MULTILINE | re.IGNORECASE,
+)
+_REFERENCE_PREFIX = "assets/generated"
 
 
 class TestPngFilename:
@@ -28,15 +37,15 @@ class TestPngFilename:
         """Requirement: filename is the SHA-256 hex digest of the diagram."""
         diagram = "@startuml\nA -> B\n@enduml\n"
         expected = hashlib.sha256(diagram.encode("utf-8")).hexdigest() + ".png"
-        assert _png_filename(diagram) == expected
+        assert png_filename(diagram) == expected
 
     def test_png_filename_differs_for_different_diagrams(self) -> None:
         """Requirement: different diagrams produce different filenames."""
-        assert _png_filename("A") != _png_filename("B")
+        assert png_filename("A") != png_filename("B")
 
     def test_png_filename_is_stable(self) -> None:
         """Requirement: same diagram always produces the same filename."""
-        assert _png_filename("X") == _png_filename("X")
+        assert png_filename("X") == png_filename("X")
 
 
 class TestEncodeDiagram:
@@ -138,7 +147,7 @@ class TestMakeRenderer:
 
 
 class TestRenderPlantumlBlocks:
-    """Tests for render_plantuml_blocks."""
+    """Tests for generic PlantUML block rendering."""
 
     def _fake_renderer(self, png: bytes = b"\x89PNG") -> MagicMock:
         """Return a mock renderer that returns fixed PNG bytes.
@@ -159,7 +168,19 @@ class TestRenderPlantumlBlocks:
         renderer = self._fake_renderer()
         generated = tmp_path / "assets" / "generated"
 
-        result = render_plantuml_blocks(content, renderer, generated)
+        with (
+            patch(
+                "scribpy.core.diagram_blocks.make_plantuml_renderer",
+                return_value=renderer,
+            ),
+            patch("scribpy.core.diagram_blocks.make_mermaid_renderer"),
+        ):
+            result = render_diagram_blocks(
+                content,
+                BuildSettings(),
+                generated,
+                _REFERENCE_PREFIX,
+            )
 
         assert "![diagram](assets/generated/" in result
         assert ".png)" in result
@@ -171,7 +192,13 @@ class TestRenderPlantumlBlocks:
         renderer = self._fake_renderer(png)
         generated = tmp_path / "assets" / "generated"
 
-        render_plantuml_blocks(content, renderer, generated)
+        render_blocks(
+            content,
+            renderer,
+            generated,
+            _REFERENCE_PREFIX,
+            _PLANTUML_BLOCK,
+        )
 
         files = list(generated.iterdir())
         assert len(files) == 1
@@ -186,10 +213,16 @@ class TestRenderPlantumlBlocks:
         renderer = self._fake_renderer()
         generated = tmp_path / "assets" / "generated"
 
-        render_plantuml_blocks(content, renderer, generated)
+        render_blocks(
+            content,
+            renderer,
+            generated,
+            _REFERENCE_PREFIX,
+            _PLANTUML_BLOCK,
+        )
 
         assert len(list(generated.iterdir())) == 1
-        assert renderer.render.call_count == 2
+        assert renderer.render.call_count == 1
 
     def test_creates_generated_dir_if_missing(self, tmp_path: Path) -> None:
         """Requirement: generated dir is created when absent."""
@@ -197,7 +230,13 @@ class TestRenderPlantumlBlocks:
         renderer = self._fake_renderer()
         generated = tmp_path / "deep" / "nested" / "generated"
 
-        render_plantuml_blocks(content, renderer, generated)
+        render_blocks(
+            content,
+            renderer,
+            generated,
+            _REFERENCE_PREFIX,
+            _PLANTUML_BLOCK,
+        )
 
         assert generated.is_dir()
 
@@ -209,7 +248,13 @@ class TestRenderPlantumlBlocks:
         renderer = self._fake_renderer()
         generated = tmp_path / "generated"
 
-        result = render_plantuml_blocks(content, renderer, generated)
+        result = render_blocks(
+            content,
+            renderer,
+            generated,
+            _REFERENCE_PREFIX,
+            _PLANTUML_BLOCK,
+        )
 
         assert result == content
         renderer.render.assert_not_called()
@@ -223,7 +268,13 @@ class TestRenderPlantumlBlocks:
         renderer = self._fake_renderer()
         generated = tmp_path / "generated"
 
-        result = render_plantuml_blocks(content, renderer, generated)
+        result = render_blocks(
+            content,
+            renderer,
+            generated,
+            _REFERENCE_PREFIX,
+            _PLANTUML_BLOCK,
+        )
 
         assert len(list(generated.iterdir())) == 2
         assert result.count("![diagram]") == 2
@@ -234,7 +285,13 @@ class TestRenderPlantumlBlocks:
         renderer = self._fake_renderer()
         generated = tmp_path / "generated"
 
-        result = render_plantuml_blocks(content, renderer, generated)
+        result = render_blocks(
+            content,
+            renderer,
+            generated,
+            _REFERENCE_PREFIX,
+            _PLANTUML_BLOCK,
+        )
 
         assert "![diagram]" in result
 

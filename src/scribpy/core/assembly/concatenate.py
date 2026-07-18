@@ -12,21 +12,14 @@ from scribpy.core.assembly.link_rewriter import (
     build_numbered_file_slug_map,
     rewrite_internal_links,
 )
-from scribpy.core.assembly.mermaid_transform import render_mermaid_blocks
 from scribpy.core.assembly.pipeline import (
     AssembledDocument,
     apply_transforms,
 )
-from scribpy.core.assembly.plantuml_transform import render_plantuml_blocks
 from scribpy.core.assembly.toc import generate_toc
+from scribpy.core.diagram_blocks import render_diagram_blocks
 from scribpy.core.manifest import heading_numbering_enabled
 from scribpy.core.markdown_collection import MarkdownCollection
-from scribpy.core.mermaid.renderer import (
-    make_renderer as make_mermaid_renderer,
-)
-from scribpy.core.plantuml.renderer import (
-    make_renderer as make_plantuml_renderer,
-)
 
 _log = logging.getLogger(__name__)
 
@@ -79,8 +72,6 @@ def concatenate(collection: MarkdownCollection, output: Path) -> None:
     file_slug_map = build_file_slug_map(collection.files)
 
     build = collection.manifest.build
-    plantuml_renderer = make_plantuml_renderer(build.plantuml_backend)
-    mermaid_renderer = make_mermaid_renderer(build.mermaid_backend)
     should_number_headings = heading_numbering_enabled(collection.manifest)
     should_generate_toc = build.toc
     toc_depth = build.toc_depth
@@ -99,16 +90,17 @@ def concatenate(collection: MarkdownCollection, output: Path) -> None:
     def _insert_toc(doc: AssembledDocument) -> AssembledDocument:
         return doc.with_content(generate_toc(doc.content, toc_depth))
 
-    def _render_plantuml(doc: AssembledDocument) -> AssembledDocument:
-        return doc.with_content(
-            render_plantuml_blocks(
-                doc.content, plantuml_renderer, generated_dir
-            )
-        )
+    def _render_diagrams(doc: AssembledDocument) -> AssembledDocument:
+        """Render project diagrams with manifest build settings.
 
-    def _render_mermaid(doc: AssembledDocument) -> AssembledDocument:
+        Args:
+            doc: Assembled document containing diagram blocks.
+
+        Returns:
+            Assembled document with rendered diagram references.
+        """
         return doc.with_content(
-            render_mermaid_blocks(doc.content, mermaid_renderer, generated_dir)
+            render_diagram_blocks(doc.content, build, generated_dir)
         )
 
     def _collect_images(doc: AssembledDocument) -> AssembledDocument:
@@ -129,8 +121,7 @@ def concatenate(collection: MarkdownCollection, output: Path) -> None:
             *optional_numbering,
             _rewrite_links,
             *optional_toc,
-            _render_plantuml,
-            _render_mermaid,
+            _render_diagrams,
             _collect_images,
         ),
     )

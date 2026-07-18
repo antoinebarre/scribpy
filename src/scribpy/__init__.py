@@ -25,6 +25,7 @@ from scribpy.core import (
     html_export,
     init_from_outline,
     init_skeleton,
+    mkdocs_export,
     parse_outline,
     validate_project,
 )
@@ -70,6 +71,7 @@ __all__ = [
     "init_from_outline",
     "init_skeleton",
     "logging_context",
+    "mkdocs_export",
     "parse_outline",
     "render_validation_report",
     "valid_report",
