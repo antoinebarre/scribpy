@@ -1,5 +1,16 @@
 """Scribpy exception hierarchy."""
 
+__all__ = [
+    "InvalidMarkdownError",
+    "InvalidScribpyManifestError",
+    "MermaidRenderError",
+    "OutlineValidationError",
+    "PlantUmlRenderError",
+    "ScaffoldCollisionError",
+    "ScribpyError",
+    "ScribpyManifestWarning",
+]
+
 
 class ScribpyError(Exception):
     """Base exception for all scribpy domain failures."""
