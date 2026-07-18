@@ -24,6 +24,6 @@ class LocalRenderer:
         """
         msg = (
             "The 'local' PlantUML backend is not yet implemented. "
-            "Use plantuml_backend: web in your scribpy.yml."
+            "Use plantuml_backend: kroki or plantuml_server in scribpy.yml."
         )
         raise NotImplementedError(msg)

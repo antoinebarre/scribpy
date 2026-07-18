@@ -120,8 +120,10 @@ build:
   toc: true
   heading_numbering:
     enabled: true
-  plantuml_backend: web
-  mermaid_backend: web
+  plantuml_backend: plantuml_server
+  plantuml_server_url: https://www.plantuml.com/plantuml
+  mermaid_backend: kroki
+  mermaid_command: mmdc
 order:
   - intro.md
   - architecture/
@@ -134,8 +136,10 @@ Les cles supportees dans `build` :
 | `toc` | boolean | `false` | Insere une table des matieres apres le H1 du document assemble |
 | `heading_numbering.enabled` | boolean | `true` si le bloc est present | Deleguee a MkForge (voir ADR-001) |
 | `renumber_headings` | boolean | — | Alias legacy de `heading_numbering.enabled` |
-| `plantuml_backend` | string | `"web"` | Backend de rendu PlantUML (`"web"` via kroki.io, `"local"` non implemente) |
-| `mermaid_backend` | string | `"web"` | Backend de rendu Mermaid (`"web"` via kroki.io, `"local"` non implemente) |
+| `plantuml_backend` | string | `"plantuml_server"` | Fournisseur PlantUML : `"plantuml_server"`, `"kroki"`, `"web"` (alias Kroki) ou `"local"` |
+| `plantuml_server_url` | string URL | `"https://www.plantuml.com/plantuml"` | URL du serveur officiel ou d'une instance PlantUML Server auto-hebergee |
+| `mermaid_backend` | string | `"kroki"` | Fournisseur Mermaid : `"kroki"`, `"web"` (alias Kroki), `"mermaid_cli"` ou `"local"` (alias CLI) |
+| `mermaid_command` | string | `"mmdc"` | Executable officiel Mermaid CLI utilise pour le rendu local |
 
 Les `scribpy.yml` de dossier sont limites a `title` et `order` :
 
@@ -245,7 +249,7 @@ package "scribpy.core.mermaid" {
   }
   class "make_renderer(backend)" as mmid_factory
   class KrokiRenderer as mmid_kroki
-  class LocalRenderer as mmid_local
+  class MermaidCliRenderer as mmid_cli
 }
 
 package "scribpy.core" {
@@ -258,7 +262,7 @@ puml_factory ..> PlantUmlRenderer : instantiates
 puml_kroki ..> encoder : uses
 
 MermaidRenderer <|.. mmid_kroki
-MermaidRenderer <|.. mmid_local
+MermaidRenderer <|.. mmid_cli
 mmid_factory ..> MermaidRenderer : instantiates
 mmid_kroki ..> encoder : uses
 @enduml
@@ -279,12 +283,32 @@ En cas d'erreur HTTP ou reseau, ils levent `PlantUmlRenderError` ou
 `MermaidRenderError`. Aucune dependance externe n'est requise au-dela de la
 stdlib Python.
 
-### Backend local (placeholder)
+### Backend PlantUML Server
 
-Les `LocalRenderer` existent comme placeholder pour permettre a la factory et
-a la configuration de les referencer sans erreur. Ils levent
-`NotImplementedError` a chaque appel. L'implementation locale est prevue dans
-une version ulterieure.
+Le backend PlantUML `plantuml_server` utilise l'URL definie dans
+`build.plantuml_server_url`. `PlantUmlServerRenderer` encode la source UTF-8
+avec le format hexadecimal officiel `~h`, puis appelle
+`<plantuml_server_url>/png/<encoded>`. La meme strategie couvre le serveur
+officiel et les instances auto-hebergees. PlantUML Server est utilise par
+defaut. Le backend explicite `kroki` et son alias historique `web` continuent
+d'utiliser Kroki sur demande.
+
+### Backend Mermaid CLI
+
+Le backend Mermaid `kroki` est utilise par defaut. Le backend optionnel
+`mermaid_cli` appelle l'executable officiel defini dans
+`build.mermaid_command` (`mmdc` par defaut). Chaque rendu CLI
+utilise un dossier temporaire isole et une liste d'arguments sans shell. La
+commande doit etre installee separement avec Node.js et
+`@mermaid-js/mermaid-cli`. `local` est un alias de compatibilite du CLI et
+`web` reste un alias historique de Kroki.
+
+### Backend PlantUML local (placeholder)
+
+Le `LocalRenderer` PlantUML existe comme placeholder pour permettre a la
+factory et a la configuration de le referencer sans erreur. Il leve
+`NotImplementedError` a chaque appel. L'implementation locale PlantUML est
+prevue dans une version ulterieure.
 
 ## Diagnostics de collection
 

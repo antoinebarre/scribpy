@@ -63,13 +63,14 @@ Pipeline order (fixed):
 1. **Heading numbering** (`heading_numbering.py`) — MkForge adapter; enabled by `build.heading_numbering.enabled`
 2. **Link rewriting** (`link_rewriter.py`) — rewrites `[label](file.md)` → `[label](#slug)`; uses numbered slugs when step 1 ran
 3. **TOC generation** (`toc.py`) — inserts a Markdown list after the H1; enabled by `build.toc: true`; slugs are consistent with step 2
-4. **PlantUML rendering** (`plantuml_transform.py`) — renders fenced ` ```plantuml ` blocks via backend
-5. **Mermaid rendering** (`mermaid_transform.py`) — renders fenced ` ```mermaid ` blocks via backend
-6. **Image collection** (`image_collector.py`) — copies local images to `assets/`, rewrites paths
+4. **Diagram rendering** (`core/diagram_blocks.py`) — renders PlantUML and Mermaid fenced blocks through manifest-selected backends
+5. **Image collection** (`image_collector.py`) — copies local images to `assets/`, rewrites paths
 
 ### Renderer backends (`src/scribpy/core/plantuml/`, `src/scribpy/core/mermaid/`)
 
-Each diagram type defines a `Protocol` (e.g. `PlantUmlRenderer`) and a `make_renderer(backend: str)` factory. The only implemented backend is `"web"` (Kroki). The `"local"` backend raises `NotImplementedError` intentionally.
+Each diagram type defines a renderer `Protocol` and a factory registry.
+PlantUML Server is the PlantUML default, while Kroki is the Mermaid default.
+Mermaid CLI (`mmdc`) remains available explicitly for local rendering.
 
 ### Diagnostic engine (`src/scribpy/core/diagnostics/`)
 
@@ -83,7 +84,10 @@ Root `scribpy.yml` keys: `project`, `build`, `order`.
 - `toc` (bool, default `false`) — inserts a TOC after the first H1 of the assembled document
 - `heading_numbering.enabled` (bool, default `True` when block is present)
 - `renumber_headings` (bool, legacy alias — ignored when `heading_numbering` also present)
-- `plantuml_backend` / `mermaid_backend` (str, default `"web"`)
+- `plantuml_backend` (str, default `"plantuml_server"`)
+- `plantuml_server_url` (absolute HTTP(S) URL)
+- `mermaid_backend` (str, default `"kroki"`)
+- `mermaid_command` (str, default `"mmdc"`)
 
 ### Extension points
 

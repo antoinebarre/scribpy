@@ -42,11 +42,15 @@ def concatenate(collection: MarkdownCollection, output: Path) -> None:
     4. PlantUML rendering: ````plantuml`` fenced blocks are rendered to PNG
        files in ``output.parent/assets/generated/`` and replaced by image
        references.  The backend is selected from
-       ``manifest.build["plantuml_backend"]`` (default: ``"web"``).
+       ``manifest.build["plantuml_backend"]`` (default:
+       ``"plantuml_server"``). This backend uses the configured
+       ``manifest.build["plantuml_server_url"]``.
     5. Mermaid rendering: ````mermaid`` fenced blocks are rendered to PNG
        files in ``output.parent/assets/generated/`` and replaced by image
        references.  The backend is selected from
-       ``manifest.build["mermaid_backend"]`` (default: ``"web"``).
+       ``manifest.build["mermaid_backend"]`` (default: ``"kroki"``). The
+       optional ``mermaid_cli`` backend selects its executable from
+       ``manifest.build["mermaid_command"]`` (default: ``"mmdc"``).
     6. Image collection: local images are copied to ``output.parent/assets/``
        and their references are rewritten accordingly.
 

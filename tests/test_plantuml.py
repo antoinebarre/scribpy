@@ -21,6 +21,7 @@ from scribpy.core.manifest import BuildSettings
 from scribpy.core.plantuml.kroki import KrokiRenderer
 from scribpy.core.plantuml.local import LocalRenderer
 from scribpy.core.plantuml.renderer import make_renderer
+from scribpy.core.plantuml.server import PlantUmlServerRenderer
 from scribpy.errors import PlantUmlRenderError
 
 _PLANTUML_BLOCK = re.compile(
@@ -132,18 +133,91 @@ class TestMakeRenderer:
         """Requirement: backend='web' returns a KrokiRenderer instance."""
         assert isinstance(make_renderer("web"), KrokiRenderer)
 
+    def test_make_renderer_kroki_returns_kroki(self) -> None:
+        """Requirement: explicit kroki backend returns KrokiRenderer."""
+        assert isinstance(make_renderer("kroki"), KrokiRenderer)
+
+    def test_make_renderer_plantuml_server_uses_configured_url(self) -> None:
+        """Requirement: server backend receives its configured base URL."""
+        renderer = make_renderer(
+            "plantuml_server",
+            server_url="https://plantuml.example.test/service",
+        )
+
+        assert isinstance(renderer, PlantUmlServerRenderer)
+        assert renderer.server_url == "https://plantuml.example.test/service"
+
     def test_make_renderer_local_returns_local(self) -> None:
         """Requirement: backend='local' returns a LocalRenderer instance."""
         assert isinstance(make_renderer("local"), LocalRenderer)
 
-    def test_make_renderer_default_is_web(self) -> None:
-        """Requirement: default backend is 'web'."""
-        assert isinstance(make_renderer(), KrokiRenderer)
+    def test_make_renderer_default_is_plantuml_server(self) -> None:
+        """Requirement: PlantUML Server is the default backend."""
+        assert isinstance(make_renderer(), PlantUmlServerRenderer)
 
     def test_make_renderer_raises_for_unknown_backend(self) -> None:
         """Requirement: unknown backend name raises ValueError."""
         with pytest.raises(ValueError, match="unknown_backend"):
             make_renderer("unknown_backend")
+
+
+class TestPlantUmlServerRenderer:
+    """Tests for PlantUML Server HTTP rendering."""
+
+    def test_render_requests_hex_encoded_png(self) -> None:
+        """Requirement: server rendering uses official hexadecimal URLs."""
+        png = b"\x89PNG\r\n\x1a\n"
+        response = MagicMock()
+        response.__enter__ = MagicMock(return_value=response)
+        response.__exit__ = MagicMock(return_value=False)
+        response.status = 200
+        response.read.return_value = png
+        diagram = "@startuml\nAlice -> Bob : hé\n@enduml"
+
+        with patch(
+            "scribpy.core.plantuml.server.urlopen",
+            return_value=response,
+        ) as request:
+            result = PlantUmlServerRenderer(
+                "https://plantuml.example.test/plantuml/"
+            ).render(diagram)
+
+        encoded = f"~h{diagram.encode('utf-8').hex()}"
+        sent_request = request.call_args.args[0]
+        assert sent_request.full_url == (
+            f"https://plantuml.example.test/plantuml/png/{encoded}"
+        )
+        assert result == png
+
+    def test_render_raises_on_non_200_status(self) -> None:
+        """Requirement: server HTTP failures raise PlantUmlRenderError."""
+        response = MagicMock()
+        response.__enter__ = MagicMock(return_value=response)
+        response.__exit__ = MagicMock(return_value=False)
+        response.status = 503
+
+        with (
+            patch(
+                "scribpy.core.plantuml.server.urlopen",
+                return_value=response,
+            ),
+            pytest.raises(PlantUmlRenderError, match="HTTP 503"),
+        ):
+            PlantUmlServerRenderer().render("@startuml\nA -> B\n@enduml")
+
+    def test_render_wraps_network_error(self) -> None:
+        """Requirement: server network failures use the domain error."""
+        with (
+            patch(
+                "scribpy.core.plantuml.server.urlopen",
+                side_effect=URLError("server unavailable"),
+            ),
+            pytest.raises(
+                PlantUmlRenderError,
+                match="server unavailable",
+            ),
+        ):
+            PlantUmlServerRenderer().render("@startuml\nA -> B\n@enduml")
 
 
 class TestRenderPlantumlBlocks:
@@ -346,6 +420,43 @@ class TestConcatenateWithPlantuml:
         collection = MarkdownCollection.from_tree(src)
         with pytest.raises(NotImplementedError, match="local"):
             concatenate(collection, output)
+
+    def test_concatenate_uses_plantuml_server_from_manifest(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: YAML selects the configured PlantUML Server."""
+        source = tmp_path / "src"
+        source.mkdir()
+        (source / "scribpy.yml").write_text(
+            "build:\n"
+            "  plantuml_backend: plantuml_server\n"
+            "  plantuml_server_url: https://uml.example.test/plantuml\n",
+            encoding="utf-8",
+        )
+        (source / "diagram.md").write_text(
+            "# Diagram\n\n```plantuml\n@startuml\nA -> B\n@enduml\n```\n",
+            encoding="utf-8",
+        )
+        response = MagicMock()
+        response.__enter__ = MagicMock(return_value=response)
+        response.__exit__ = MagicMock(return_value=False)
+        response.status = 200
+        response.read.return_value = b"png"
+
+        with patch(
+            "scribpy.core.plantuml.server.urlopen",
+            return_value=response,
+        ) as request:
+            concatenate(
+                MarkdownCollection.from_tree(source),
+                tmp_path / "output" / "document.md",
+            )
+
+        sent_request = request.call_args.args[0]
+        assert sent_request.full_url.startswith(
+            "https://uml.example.test/plantuml/png/~h"
+        )
 
     def test_concatenate_no_plantuml_unchanged(self, tmp_path: Path) -> None:
         """Requirement: document without plantuml blocks is unaffected."""

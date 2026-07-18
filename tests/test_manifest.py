@@ -27,6 +27,9 @@ class TestRootManifest:
         manifest = load_root_manifest(tmp_path)
 
         assert manifest == RootManifest()
+        assert manifest.build.plantuml_backend == "plantuml_server"
+        assert manifest.build.mermaid_backend == "kroki"
+        assert manifest.build.mermaid_command == "mmdc"
 
     def test_root_manifest_loads_project_build_and_order(
         self,
@@ -65,6 +68,68 @@ class TestRootManifest:
         assert manifest.build.heading_numbering is not None
         assert manifest.build.heading_numbering.enabled is True
         assert heading_numbering_enabled(manifest) is True
+
+    def test_root_manifest_loads_plantuml_server_settings(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: manifests configure a PlantUML Server provider."""
+        _write(
+            tmp_path / "scribpy.yml",
+            "build:\n"
+            "  plantuml_backend: plantuml_server\n"
+            "  plantuml_server_url: https://uml.example.test/plantuml/\n",
+        )
+
+        manifest = load_root_manifest(tmp_path)
+
+        assert manifest.build.plantuml_backend == "plantuml_server"
+        assert manifest.build.plantuml_server_url == (
+            "https://uml.example.test/plantuml"
+        )
+
+    def test_root_manifest_rejects_invalid_plantuml_server_url(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: PlantUML Server URLs must be absolute HTTP URLs."""
+        _write(
+            tmp_path / "scribpy.yml",
+            "build:\n  plantuml_server_url: relative/server\n",
+        )
+
+        with pytest.raises(InvalidScribpyManifestError, match="HTTP"):
+            load_root_manifest(tmp_path)
+
+    def test_root_manifest_loads_mermaid_cli_settings(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: manifests configure the Mermaid CLI executable."""
+        _write(
+            tmp_path / "scribpy.yml",
+            "build:\n"
+            "  mermaid_backend: mermaid_cli\n"
+            "  mermaid_command: /opt/mermaid/mmdc\n",
+        )
+
+        manifest = load_root_manifest(tmp_path)
+
+        assert manifest.build.mermaid_backend == "mermaid_cli"
+        assert manifest.build.mermaid_command == "/opt/mermaid/mmdc"
+
+    def test_root_manifest_rejects_empty_mermaid_command(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Requirement: the Mermaid CLI executable cannot be empty."""
+        _write(
+            tmp_path / "scribpy.yml",
+            "build:\n  mermaid_command: '   '\n",
+        )
+
+        with pytest.raises(InvalidScribpyManifestError, match="must not"):
+            load_root_manifest(tmp_path)
 
     def test_heading_numbering_absent_is_disabled(
         self,

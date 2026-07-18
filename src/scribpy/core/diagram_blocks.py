@@ -64,8 +64,14 @@ def render_diagram_blocks(
         NotImplementedError: If a configured backend is not implemented.
         OSError: If a generated image cannot be written.
     """
-    plantuml_renderer = make_plantuml_renderer(build.plantuml_backend)
-    mermaid_renderer = make_mermaid_renderer(build.mermaid_backend)
+    plantuml_renderer = make_plantuml_renderer(
+        build.plantuml_backend,
+        server_url=build.plantuml_server_url,
+    )
+    mermaid_renderer = make_mermaid_renderer(
+        build.mermaid_backend,
+        command=build.mermaid_command,
+    )
     rendered = _render_blocks(
         content,
         _PLANTUML_BLOCK,

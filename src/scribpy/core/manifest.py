@@ -6,6 +6,7 @@ import logging
 import warnings
 from pathlib import Path, PurePosixPath
 from typing import Annotated, Any
+from urllib.parse import urlsplit
 
 import yaml
 from pydantic import (
@@ -15,6 +16,7 @@ from pydantic import (
     field_validator,
 )
 
+from scribpy.core.plantuml.configuration import DEFAULT_PLANTUML_SERVER_URL
 from scribpy.errors import InvalidScribpyManifestError, ScribpyManifestWarning
 
 _log = logging.getLogger(__name__)
@@ -44,7 +46,9 @@ class BuildSettings(BaseModel):
         toc_depth: Maximum heading depth included in the TOC.
         heading_numbering: Heading numbering configuration block.
         plantuml_backend: Backend name for PlantUML rendering.
+        plantuml_server_url: Base URL used by the PlantUML Server backend.
         mermaid_backend: Backend name for Mermaid rendering.
+        mermaid_command: Executable used by the Mermaid CLI backend.
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -52,8 +56,50 @@ class BuildSettings(BaseModel):
     toc: Annotated[bool, Field(strict=True)] = False
     toc_depth: Annotated[int, Field(ge=1, strict=True)] = 3
     heading_numbering: HeadingNumberingSettings | None = None
-    plantuml_backend: str = "web"
-    mermaid_backend: str = "web"
+    plantuml_backend: str = "plantuml_server"
+    plantuml_server_url: str = DEFAULT_PLANTUML_SERVER_URL
+    mermaid_backend: str = "kroki"
+    mermaid_command: str = "mmdc"
+
+    @field_validator("plantuml_server_url")
+    @classmethod
+    def _validate_plantuml_server_url(cls, value: str) -> str:
+        """Validate the configured PlantUML Server base URL.
+
+        Args:
+            value: Configured server URL.
+
+        Returns:
+            URL without trailing slash.
+
+        Raises:
+            ValueError: If the URL is not an absolute HTTP or HTTPS URL.
+        """
+        parsed = urlsplit(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            msg = "'build.plantuml_server_url' must be an absolute HTTP(S) URL"
+            raise ValueError(msg)
+        return value.rstrip("/")
+
+    @field_validator("mermaid_command")
+    @classmethod
+    def _validate_mermaid_command(cls, value: str) -> str:
+        """Validate the configured Mermaid CLI executable.
+
+        Args:
+            value: Executable name or path.
+
+        Returns:
+            Stripped executable value.
+
+        Raises:
+            ValueError: If the executable value is empty.
+        """
+        command = value.strip()
+        if not command:
+            msg = "'build.mermaid_command' must not be empty"
+            raise ValueError(msg)
+        return command
 
     @field_validator("toc_depth", mode="before")
     @classmethod

@@ -29,8 +29,9 @@ def _write_project(root: Path) -> None:
         "build:\n"
         "  heading_numbering:\n"
         "    enabled: true\n"
-        "  plantuml_backend: web\n"
-        "  mermaid_backend: local\n"
+        "  plantuml_backend: plantuml_server\n"
+        "  mermaid_backend: mermaid_cli\n"
+        "  mermaid_command: custom-mmdc\n"
         "order:\n"
         "  - intro.md\n"
         "  - architecture/\n",
@@ -120,8 +121,14 @@ def _assert_renderer_calls(
         plantuml: PlantUML renderer mock.
         mermaid: Mermaid renderer mock.
     """
-    make_plantuml.assert_any_call("web")
-    make_mermaid.assert_any_call("local")
+    make_plantuml.assert_any_call(
+        "plantuml_server",
+        server_url="https://www.plantuml.com/plantuml",
+    )
+    make_mermaid.assert_any_call(
+        "mermaid_cli",
+        command="custom-mmdc",
+    )
     plantuml.render.assert_called_once()
     mermaid.render.assert_called_once()
 

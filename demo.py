@@ -8,10 +8,12 @@ under ``work/demo/input`` and assembles it into a single Markdown file under
 - Internal Markdown link rewriting (file.md -> #slug)
 - Heading numbering cleanup delegated to MkForge
 - Local image collection (PNG/SVG -> assets/)
-- PlantUML diagram rendering (fenced blocks -> assets/generated/)
+- PlantUML rendering through the default official PlantUML Server
+- Mermaid rendering through the default Kroki backend
 - Collection diagnostics (heading rules, image rules, link rules)
 - File-level validation helpers
 - HTML export with embedded burger menu navigation
+
 """
 
 from __future__ import annotations
@@ -45,7 +47,6 @@ project:
 build:
   heading_numbering:
     enabled: true
-  plantuml_backend: web
   toc: true
   toc_depth: 2
 order:
@@ -515,7 +516,9 @@ def _run_assembly(collection: object, output: Path) -> None:
     """
     from scribpy.core import concatenate  # noqa: PLC0415
 
-    sys.stdout.write("\n--- Assembly (plantuml via plantuml.com) ---\n")
+    sys.stdout.write(
+        "\n--- Assembly (PlantUML Server + Kroki Mermaid defaults) ---\n"
+    )
     concatenate(collection, output)  # type: ignore[arg-type]
     sys.stdout.write(f"  Output: {output}\n")
     sys.stdout.write(f"  Size: {output.stat().st_size} bytes\n")
