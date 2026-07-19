@@ -1,1 +1,1 @@
-"""Shared pytest fixtures."""
+"""Pytest configuration."""

@@ -1,139 +1,32 @@
 [build-system]
-requires = ["hatchling", "hatch-vcs"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[project]
-name = "scribpy"
-dynamic = ["version"]
-description = "Manipulate, edit, and generate documents from Markdown files."
-readme = "README.md"
-requires-python = ">=3.12"
-license = "MIT"
-license-files = ["LICENSE"]
-authors = [{ name = "Antoine Barré" }]
-keywords = ["docs-as-code", "documentation", "markdown", "static-site", "compiler"]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Documentation",
-    "Topic :: Software Development :: Documentation",
-    "Typing :: Typed",
-]
-dependencies = [
-    "PyYAML>=6",
-    "tomlkit>=0.13",
-    "markdown-it-py>=3",
-    "mkdocs>=1.6",
-    "rich>=13",
-    "typer>=0.16",
-    "markdown-pdf>=1.13",
-]
-
-[project.urls]
-Homepage = "https://github.com/antoinebarre/scribpy"
-Repository = "https://github.com/antoinebarre/scribpy"
-Issues = "https://github.com/antoinebarre/scribpy/issues"
-Documentation = "https://github.com/antoinebarre/scribpy/blob/main/README.md"
-
-[project.scripts]
-scribpy = "scribpy.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/scribpy"]
-include = ["src/scribpy/vendor/*.jar"]
 
-[tool.hatch.version]
-source = "vcs"
-tag-pattern = "^v(?P<version>.+)$"
-fallback-version = "0.0.0"
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "--tb=short --cov=src/scribpy --cov-report=term-missing --cov-report=xml:work/coverage.xml --cov-report=html:work/htmlcov --junitxml=work/junit.xml"
-pythonpath = ["src"]
-cache_dir = "work/.pytest_cache"
-
-[tool.coverage.run]
-data_file = "work/.coverage"
-source = ["src/scribpy"]
-omit = [
-    "src/scribpy/__init__.py",
-    "src/scribpy/__main__.py",
-    "src/scribpy/**/__init__.py",
+[project]
+name = "scribpy"
+version = "0.1.0"
+description = "Assemble ordered Markdown collections into publishable Markdown, HTML, or MkDocs output."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.1",
+    "markdown>=3.6",
+    "mkforge>=0.5.0",
+    "pydantic>=2.13.4",
+    "PyYAML>=6",
+    "rich>=15.0.0",
 ]
 
-[tool.coverage.report]
-fail_under = 100
-show_missing = true
+[project.urls]
+Documentation = "https://antoinebarre.github.io/scribpy/"
+Repository = "https://github.com/antoinebarre/scribpy"
+Issues = "https://github.com/antoinebarre/scribpy/issues"
 
-[tool.coverage.html]
-directory = "work/htmlcov"
-
-[tool.coverage.xml]
-output = "work/coverage.xml"
-
-[tool.mypy]
-strict = true
-packages = ["scribpy"]
-cache_dir = "work/.mypy_cache"
-
-[tool.ruff]
-cache-dir = "work/.ruff_cache"
-line-length = 79
-exclude = ["tests/"]
-
-[tool.ruff.lint]
-select = ["E", "F", "I", "UP", "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915"]
-# E501 is managed by the formatter (line-length = 79) for code;
-# docstrings and comments are not reformatted and may legitimately exceed
-# the limit slightly — exclude E501 to avoid false positives there.
-ignore = ["E501"]
-
-[tool.ruff.lint.pydocstyle]
-convention = "google"
-
-[tool.ruff.lint.mccabe]
-max-complexity = 10
-
-[tool.ruff.lint.pylint]
-max-args = 8
-max-branches = 12
-max-returns = 6
-max-statements = 50
-
-[tool.quality-gate]
-project_name = "scribpy"
-source_root = "src/scribpy"
-source_base = "src"
-config_namespace = "scribpy"
-
-[tool.scribpy.code_metrics]
-paths = ["src/scribpy"]
-exclude = []
-max_cyclomatic_complexity = 10
-max_average_complexity = 4.0
-min_maintainability_index = 50
-max_module_logical_lines = 300
-max_module_source_lines = 520
-report_path = "work/code-metrics-report.md"
-
-[tool.bandit]
-exclude_dirs = ["tests", "work", "dist", "site"]
-skips = [
-    "B101",   # assert used in tests
-    "B105",   # hardcoded_password_string: false positive on status icon strings
-    "B404",   # import subprocess: used in report scripts for pip list introspection
-    "B603",   # subprocess_without_shell: call uses fixed args, no user input
-]
-
-[tool.scribpy.security_audit]
-# PYSEC-2026-89 affects Python-Markdown versions before 3.8.1; the lockfile
-# currently resolves markdown to 3.10.2, so pip-audit's match is a false positive.
-ignore_vulns = ["PYSEC-2026-89"]
+[project.scripts]
+scribpy = "scribpy.cli:cli"
 
 [dependency-groups]
 dev = [
@@ -141,12 +34,71 @@ dev = [
     "flake8>=7",
     "flake8-bugbear>=24",
     "flake8-docstrings>=1.7",
+    "flake8-pyproject>=1.2",
+    "mypy>=1.10",
     "pep8-naming>=0.14",
     "pip-audit>=2.8",
     "pytest>=8",
     "pytest-cov>=6",
-    "radon>=6",
     "ruff>=0.4",
-    "mypy>=1.10",
-    "types-pyyaml>=6.0.12.20260408",
+    "twine>=6",
+    "types-markdown>=3.10.2.20260712",
+    "types-PyYAML>=6",
+    "yggtools>=1.2.0",
 ]
+docs = [
+    "mkdocs-material>=9.6",
+    "plantuml-markdown>=3.11",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short --cov=src/scribpy --cov-report=term-missing --cov-fail-under=100"
+pythonpath = ["src"]
+cache_dir = "work/.pytest_cache"
+
+[tool.coverage.run]
+data_file = "work/.coverage"
+source = ["src/scribpy"]
+
+
+[tool.mypy]
+strict = true
+mypy_path = "src"
+cache_dir = "work/.mypy_cache"
+
+
+[tool.ruff]
+cache-dir = "work/.ruff_cache"
+line-length = 79
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["TC001", "TC002", "TC003", "TC004", "COM812", "TRY004"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "PLR2004", "S108", "PTH201", "EM101"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+
+[tool.flake8]
+max-line-length = 79
+max-complexity = 10
+docstring-convention = "google"
+count = true
+show-source = true
+statistics = true
+extend-ignore = ["E203"]
+
+
+[tool.bandit]
+exclude_dirs = ["tests", "work", ".venv"]
+
+
+[tool.yggtools.code_metrics]
+paths = ["src/scribpy", "tests"]
+exclude = []
+max_cyclomatic_complexity = 10
+max_module_logical_lines = 900

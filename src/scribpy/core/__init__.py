@@ -1,28 +1,78 @@
-"""Public Python API facade for Scribpy."""
+"""Core domain objects for Scribpy."""
 
-from scribpy.builders import merge_documents
-from scribpy.core.build_html import build_html_project
-from scribpy.core.build_pdf import build_pdf_project
-from scribpy.core.build_project import build_project
-from scribpy.core.demo import DemoVariant, create_demo_project
-from scribpy.core.index_check import (
-    run_index_check,
+from scribpy.core.assembly import (
+    AssembledDocument,
+    TransformFn,
+    apply_transforms,
+    build_file_slug_map,
+    concatenate,
+    rewrite_internal_links,
+    slugify_heading,
 )
-from scribpy.core.index_check import (
-    run_index_check as check_index,
+from scribpy.core.diagnostics import (
+    CollectionDiagnostic,
+    CollectionDiagnosticReport,
+    CollectionDiagnosticRule,
+    DiagnosticSeverity,
+    ExternalImageReferenceRule,
+    HeadingLevelOverflowRule,
+    InternalMarkdownLinkRule,
+    LocalImageMissingRule,
+    SourceFirstHeadingH1Rule,
+    SourceH1CountRule,
 )
-from scribpy.core.lint_project import lint_project
-from scribpy.core.parse_check import parse_project_documents
+from scribpy.core.html import html_export
+from scribpy.core.image_collector import collect_images
+from scribpy.core.init import (
+    OutlineNode,
+    init_from_outline,
+    init_skeleton,
+    parse_outline,
+)
+from scribpy.core.manifest import FolderManifest, RootManifest
+from scribpy.core.markdown_collection import MarkdownCollection
+from scribpy.core.markdown_document import MarkdownDocument
+from scribpy.core.markdown_file import MarkdownFile
+from scribpy.core.markdown_image import MarkdownImageReference
+from scribpy.core.mkdocs import mkdocs_export
+from scribpy.core.validation import (
+    ProjectDiagnostic,
+    ProjectValidationReport,
+    validate_project,
+)
 
 __all__ = [
-    "DemoVariant",
-    "build_html_project",
-    "build_pdf_project",
-    "build_project",
-    "check_index",
-    "create_demo_project",
-    "lint_project",
-    "merge_documents",
-    "parse_project_documents",
-    "run_index_check",
+    "AssembledDocument",
+    "CollectionDiagnostic",
+    "CollectionDiagnosticReport",
+    "CollectionDiagnosticRule",
+    "DiagnosticSeverity",
+    "ExternalImageReferenceRule",
+    "FolderManifest",
+    "HeadingLevelOverflowRule",
+    "InternalMarkdownLinkRule",
+    "LocalImageMissingRule",
+    "MarkdownCollection",
+    "MarkdownDocument",
+    "MarkdownFile",
+    "MarkdownImageReference",
+    "OutlineNode",
+    "ProjectDiagnostic",
+    "ProjectValidationReport",
+    "RootManifest",
+    "SourceFirstHeadingH1Rule",
+    "SourceH1CountRule",
+    "TransformFn",
+    "apply_transforms",
+    "build_file_slug_map",
+    "collect_images",
+    "concatenate",
+    "html_export",
+    "init_from_outline",
+    "init_skeleton",
+    "mkdocs_export",
+    "parse_outline",
+    "rewrite_internal_links",
+    "slugify_heading",
+    "validate_project",
 ]

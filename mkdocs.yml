@@ -1,45 +1,64 @@
 site_name: Scribpy
-site_description: >-
-  Scribpy — documentation compiler and Docs-as-Code toolkit.
-  Parse, lint, transform, and export Markdown into HTML, PDF-ready,
-  and assembled Markdown artefacts.
-site_author: Antoine Barré
-repo_name: scribpy
-docs_dir: doc
-
-# Recommended theme: pip install mkdocs-material
-# theme:
-#   name: material
-#   palette:
-#     - scheme: default
-#       primary: indigo
-#       accent: indigo
-#   features:
-#     - navigation.tabs
-#     - navigation.sections
-#     - navigation.top
-#     - search.highlight
-#     - content.code.copy
-
+site_description: Assemble ordered Markdown collections into publishable outputs.
+site_url: https://antoinebarre.github.io/scribpy/
+repo_url: https://github.com/antoinebarre/scribpy
+docs_dir: docs
 theme:
-  name: readthedocs
-
+  name: material
+  logo: assets/logo.png
+  favicon: assets/logo.png
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+plugins:
+  - search
 markdown_extensions:
   - admonition
+  - attr_list
   - tables
-  - toc:
-      permalink: true
-  - fenced_code
-
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - plantuml_markdown:
+      server: https://www.plantuml.com/plantuml
+      format: svg
 nav:
-  - Home: index.md
-  - User Manual:
-    - Getting Started: user-manual/getting-started.md
-    - Configuration: user-manual/configuration.md
-    - Pipelines: user-manual/pipelines.md
+  - Project scope: index.md
+  - Getting started:
+      - Installation: getting-started/installation.md
+      - Core concepts: getting-started/concepts.md
+      - First project: cli/demo.md
+  - Architecture:
+      - Overview: architecture/index.md
+      - Domain model: architecture/domain-model.md
+      - Assembly pipeline: architecture/assembly-pipeline.md
+      - Diagram renderers: architecture/diagram-renderers.md
+      - Diagnostics: architecture/diagnostics.md
+  - Organizing a notes project:
+      - Project structure: notes-project/index.md
+      - Markdown sources: notes-project/markdown-sources.md
+      - Links and images: notes-project/links-and-images.md
+      - Root manifest: notes-project/root-manifest.md
+      - Folder manifests and order: notes-project/folder-manifests.md
+      - Diagram sources: notes-project/diagrams.md
+  - Using the CLI:
+      - Workflow: cli/index.md
+      - Project creation: cli/project-creation.md
+      - Validation and diagnostics: cli/validation.md
+      - Build and export: cli/build-export.md
+      - End-to-end demo: cli/demo.md
+  - Using the Python API:
+      - Workflow: python-api/index.md
+      - End-user API: python-api/end-user.md
+      - End-to-end demo: python-api/demo.md
+      - Extension API: python-api/extensions.md
+  - Guides:
+      - Choosing an output: guides/outputs.md
+      - Common recipes: guides/recipes.md
+      - Troubleshooting: guides/troubleshooting.md
   - Reference:
-    - CLI Reference: user-manual/cli-reference.md
-    - Python API: user-manual/python-api-reference.md
-    - Public Classes & Types: user-manual/public-classes.md
-    - Extensions: user-manual/extensions.md
-  - Markdown Guide: user-manual/markdown-guide.md
+      - CLI reference: reference/cli.md
+      - Manifest reference: reference/manifests.md
+      - Diagnostic reference: reference/diagnostics.md
+      - Python API reference: reference/python-api.md

@@ -1,5 +1,5 @@
-"""Public exports for the Scribpy command-line interface."""
+"""Expose the Scribpy command-line entry point."""
 
-from scribpy.cli.main import main
+from scribpy.cli.main import cli
 
-__all__ = ["main"]
+__all__ = ["cli"]

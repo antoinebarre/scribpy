@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -25,22 +26,32 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Check tag matches package version
+        run: |
+          python - <<'PY'
+          import os
+          import tomllib
+
+          with open("pyproject.toml", "rb") as file:
+              version = tomllib.load(file)["project"]["version"]
+
+          tag = os.environ["GITHUB_REF_NAME"]
+          expected = f"v{version}"
+          if tag != expected:
+              raise SystemExit(f"Tag {tag} does not match package version {expected}")
+          PY
+
       - name: Run checks
         run: make check
 
-      - name: Upload quality reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: quality-reports-${{ github.run_number }}
-          path: |
-            work/*.md
-            work/*.xml
-            work/htmlcov/
-          if-no-files-found: ignore
+      - name: Build distributions
+        run: uv build --out-dir dist
 
-      - name: Build and verify distributions
-        run: make check-dist
+      - name: Verify distributions
+        run: uv run twine check dist/*
 
       - name: Upload distributions
         uses: actions/upload-artifact@v4

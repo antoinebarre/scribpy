@@ -1,73 +1,85 @@
-"""scribpy — Docs-as-Code toolkit and document compiler.
+"""Scribpy public package interface."""
 
-Package layout
---------------
-scribpy.cli
-    Command-line interface (scribpy init / lint / build / …).
-scribpy.core
-    Public Python API facade for scripting and automation.
-scribpy.config
-    scribpy.toml loading, parsing, and validation.
-scribpy.project
-    Project scanning and document index management.
-scribpy.model
-    Frozen dataclasses: Project, Document, Heading, Reference, …
-scribpy.parser
-    Markdown parsing layer (MarkdownParser protocol + adapters).
-scribpy.lint
-    Documentation quality engine (lint rules + diagnostics).
-scribpy.transforms
-    Document transformation pipeline (TOC, includes, numbering, …).
-scribpy.builders
-    Output generation: Markdown, HTML, PDF.
-scribpy.themes
-    HTML / PDF templates and CSS theme management.
-scribpy.assets
-    Image, diagram, and static file handling.
-scribpy.extensions
-    Plugin registry for custom rules, transforms, and builders.
-scribpy.utils
-    Low-level path, string, I/O, and hashing helpers.
+__version__ = "0.1.0"
 
-Quick start
------------
-::
-
-    import scribpy
-
-    scribpy.check_index(".")
-    scribpy.lint(".")
-    scribpy.build_html(".", mode="site")
-    scribpy.build_pdf(".")
-"""
-
-from scribpy._version import __version__
-from scribpy.api import (
-    build_html,
-    build_markdown,
-    build_pdf,
-    check_index,
-    check_parse,
-    create_demo,
-    lint,
+from scribpy.core import (
+    CollectionDiagnostic,
+    CollectionDiagnosticReport,
+    CollectionDiagnosticRule,
+    DiagnosticSeverity,
+    ExternalImageReferenceRule,
+    FolderManifest,
+    HeadingLevelOverflowRule,
+    InternalMarkdownLinkRule,
+    LocalImageMissingRule,
+    MarkdownCollection,
+    MarkdownDocument,
+    MarkdownFile,
+    MarkdownImageReference,
+    OutlineNode,
+    ProjectDiagnostic,
+    ProjectValidationReport,
+    RootManifest,
+    SourceFirstHeadingH1Rule,
+    SourceH1CountRule,
+    concatenate,
+    html_export,
+    init_from_outline,
+    init_skeleton,
+    mkdocs_export,
+    parse_outline,
+    validate_project,
 )
-from scribpy.logging import logging_context
-from scribpy.model import BuildArtifact, BuildResult, LintResult, ParseResult
-from scribpy.rendering import print_result
+from scribpy.errors import (
+    InvalidMarkdownError,
+    InvalidScribpyManifestError,
+    MermaidRenderError,
+    OutlineValidationError,
+    PlantUmlRenderError,
+    ScaffoldCollisionError,
+    ScribpyError,
+    ScribpyManifestWarning,
+)
+from scribpy.log import logging_context
+from scribpy.presentation import render_validation_report
+from scribpy.validation import valid_report
 
 __all__ = [
-    "BuildArtifact",
-    "BuildResult",
-    "LintResult",
-    "ParseResult",
-    "__version__",
-    "build_html",
-    "build_markdown",
-    "build_pdf",
-    "check_index",
-    "check_parse",
-    "create_demo",
-    "lint",
+    "CollectionDiagnostic",
+    "CollectionDiagnosticReport",
+    "CollectionDiagnosticRule",
+    "DiagnosticSeverity",
+    "ExternalImageReferenceRule",
+    "FolderManifest",
+    "HeadingLevelOverflowRule",
+    "InternalMarkdownLinkRule",
+    "InvalidMarkdownError",
+    "InvalidScribpyManifestError",
+    "LocalImageMissingRule",
+    "MarkdownCollection",
+    "MarkdownDocument",
+    "MarkdownFile",
+    "MarkdownImageReference",
+    "MermaidRenderError",
+    "OutlineNode",
+    "OutlineValidationError",
+    "PlantUmlRenderError",
+    "ProjectDiagnostic",
+    "ProjectValidationReport",
+    "RootManifest",
+    "ScaffoldCollisionError",
+    "ScribpyError",
+    "ScribpyManifestWarning",
+    "SourceFirstHeadingH1Rule",
+    "SourceH1CountRule",
+    "concatenate",
+    "html_export",
+    "init_from_outline",
+    "init_skeleton",
     "logging_context",
-    "print_result",
+    "mkdocs_export",
+    "parse_outline",
+    "render_validation_report",
+    "valid_report",
+    "validate_project",
 ]
