@@ -1,0 +1,2253 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Assemble ordered Markdown collections into publishable outputs.">
+      
+      
+      
+        <link rel="canonical" href="https://antoinebarre.github.io/scribpy/python-api/extensions/">
+      
+      
+        <link rel="prev" href="../demo/">
+      
+      
+        <link rel="next" href="../../guides/outputs/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Extension API - Scribpy</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#extension-api" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Scribpy" class="md-header__button md-logo" aria-label="Scribpy" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Scribpy
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Extension API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/antoinebarre/scribpy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Scribpy" class="md-nav__button md-logo" aria-label="Scribpy" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    Scribpy
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/antoinebarre/scribpy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project scope
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/domain-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domain model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/assembly-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assembly pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/diagram-renderers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagram renderers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Organizing a notes project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Organizing a notes project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/markdown-sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Markdown sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/links-and-images/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Links and images
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/root-manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Root manifest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/folder-manifests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Folder manifests and order
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagram sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using the CLI
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Using the CLI
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/project-creation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project creation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation and diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/build-export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and export
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using the Python API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Using the Python API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../end-user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    End-user API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    End-to-end demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extension API
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extension API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#design-pattern-strategy-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design pattern: Strategy + Registry
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diagnostic-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagnostic rules
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Diagnostic rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-engine-in-outline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The engine, in outline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sequence-running-a-mixed-rule-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sequence: running a mixed rule set
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#complete-worked-example-flagging-todo-markers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete worked example: flagging TODO markers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#renderer-protocols-and-factories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Renderer protocols and factories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Renderer protocols and factories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-protocols" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The protocols
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-the-built-in-factories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the built-in factories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#complete-worked-example-a-custom-renderer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete worked example: a custom renderer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-trivial-test-double" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A trivial test double
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decorating-an-existing-renderer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decorating an existing renderer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/outputs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choosing an output
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/recipes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common recipes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/manifests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifest reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagnostic reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/python-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#design-pattern-strategy-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design pattern: Strategy + Registry
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diagnostic-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagnostic rules
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Diagnostic rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-engine-in-outline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The engine, in outline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sequence-running-a-mixed-rule-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sequence: running a mixed rule set
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#complete-worked-example-flagging-todo-markers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete worked example: flagging TODO markers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#renderer-protocols-and-factories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Renderer protocols and factories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Renderer protocols and factories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-protocols" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The protocols
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-the-built-in-factories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the built-in factories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#complete-worked-example-a-custom-renderer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete worked example: a custom renderer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-trivial-test-double" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A trivial test double
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decorating-an-existing-renderer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decorating an existing renderer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="extension-api">Extension API</h1>
+<p>Extension interfaces are deliberately not available from <code>scribpy.__all__</code>.
+Import them from their core packages: <code>scribpy.core.diagnostics</code>,
+<code>scribpy.core.plantuml</code>, and <code>scribpy.core.mermaid</code>.</p>
+<p>This is where you reach when the <a href="../end-user/">end-user API</a> does not cover
+what you need: a project-specific diagnostic check, or a diagram renderer
+backed by infrastructure Scribpy does not know about.</p>
+<h2 id="design-pattern-strategy-registry">Design pattern: Strategy + Registry</h2>
+<p>Both extension points in this file follow the same shape, deliberately:</p>
+<ul>
+<li><strong>Strategy</strong> — diagnostic rules and renderers are each defined by a small
+  <code>Protocol</code> (one method). Any object satisfying the protocol is
+  interchangeable with the built-in implementations; nothing in the engine
+  or the factories needs to know your class exists ahead of time.</li>
+<li><strong>Registry</strong> — <code>DEFAULT_COLLECTION_DIAGNOSTIC_RULES</code> is a plain tuple of
+  rule instances that <code>diagnose_collection</code> iterates. <code>make_renderer()</code> is a
+  plain <code>dict[str, factory]</code> that <code>PlantUmlRenderer</code>/<code>MermaidRenderer</code>
+  factories look up by backend name.</li>
+</ul>
+<p>The practical difference between the two registries matters: <strong>diagnostic
+rules are open</strong> — you can build any iterable of rules yourself and hand it
+to <code>collection.diagnose(rules=...)</code> or <code>diagnose_collection(...)</code>, bypassing
+the default registry entirely. <strong>Renderer backends are closed</strong> —
+<code>make_renderer()</code> in <code>scribpy.core.plantuml.renderer</code> and
+<code>scribpy.core.mermaid.renderer</code> each hold a private
+<code>dict[str, RendererFactory]</code> keyed by backend name (<code>"plantuml_server"</code>,
+<code>"kroki"</code>, <code>"web"</code>, <code>"local"</code> for PlantUML; <code>"kroki"</code>, <code>"web"</code>,
+<code>"mermaid_cli"</code>, <code>"local"</code> for Mermaid) with no registration function
+exposed. Adding a new <em>named</em> backend means adding an entry to Scribpy's
+internal registry and tests — an application cannot make
+<code>make_renderer("my_backend")</code> work. What an application <em>can</em> do is
+construct its own <code>PlantUmlRenderer</code>/<code>MermaidRenderer</code>-shaped object
+directly and pass it wherever the pipeline accepts a renderer instance,
+skipping the factory entirely.</p>
+<h2 id="diagnostic-rules">Diagnostic rules</h2>
+<h3 id="the-engine-in-outline">The engine, in outline</h3>
+<p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIGRhdGEtZGlhZ3JhbS10eXBlPSJDTEFTUyIgc3R5bGU9IndpZHRoOjExNDFweDtoZWlnaHQ6NTk4cHg7YmFja2dyb3VuZDojRkZGRkZGOyIgd2lkdGg9IjExNDFweCIgaGVpZ2h0PSI1OThweCIgdmlld0JveD0iMCAwIDExNDEgNTk4IiB6b29tQW5kUGFuPSJtYWduaWZ5IiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBjb250ZW50U3R5bGVUeXBlPSJ0ZXh0L2NzcyI+PD9wbGFudHVtbCAxLjIwMjYuN2JldGE4Pz48ZGVmcy8+PGcgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGxlbmd0aEFkanVzdD0ic3BhY2luZyI+PCEtLWNsdXN0ZXIgc2NyaWJweS0tPjxnIGNsYXNzPSJjbHVzdGVyIiBkYXRhLXF1YWxpZmllZC1uYW1lPSJzY3JpYnB5IiBpZD0iZW50MDAwMyIgZGF0YS1zb3VyY2UtbGluZT0iNCI+PHBhdGggZD0iTTguNSw2IEw2Ny4wMDQsNiBBMy43NSwzLjc1IDAgMCAxIDY5LjUwNCw4LjUgTDc2LjUwNCwyOC4yOTcgTDExMjMuNSwyOC4yOTcgQTIuNSwyLjUgMCAwIDEgMTEyNiwzMC43OTcgTDExMjYsNTgwLjY5IEEyLjUsMi41IDAgMCAxIDExMjMuNSw1ODMuMTkgTDguNSw1ODMuMTkgQTIuNSwyLjUgMCAwIDEgNiw1ODAuNjkgTDYsOC41IEEyLjUsMi41IDAgMCAxIDguNSw2IiBzdHlsZT0ic3Ryb2tlOiMwMDA7c3Ryb2tlLXdpZHRoOjEuNTsiIGZpbGw9Im5vbmUiLz48bGluZSB4MT0iNiIgeTE9IjI4LjI5NyIgeDI9Ijc2LjUwNCIgeTI9IjI4LjI5NyIgc3R5bGU9InN0cm9rZTojMDAwO3N0cm9rZS13aWR0aDoxLjU7Ii8+PHRleHQgeD0iMTAiIHk9IjIwLjk5NSIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iNTcuNTA0IiBmb250LXdlaWdodD0iNzAwIj5zY3JpYnB5PC90ZXh0PjwvZz48IS0tY2x1c3RlciBjb3JlLS0+PGcgY2xhc3M9ImNsdXN0ZXIiIGRhdGEtcXVhbGlmaWVkLW5hbWU9InNjcmlicHkuY29yZSIgaWQ9ImVudDAwMDQiIGRhdGEtc291cmNlLWxpbmU9IjQiPjxwYXRoIGQ9Ik0zMi41LDQ5IEw2Ny44MTYsNDkgQTMuNzUsMy43NSAwIDAgMSA3MC4zMTYsNTEuNSBMNzcuMzE2LDcxLjI5NyBMMTA5OS41LDcxLjI5NyBBMi41LDIuNSAwIDAgMSAxMTAyLDczLjc5NyBMMTEwMiw1NTYuNjkgQTIuNSwyLjUgMCAwIDEgMTA5OS41LDU1OS4xOSBMMzIuNSw1NTkuMTkgQTIuNSwyLjUgMCAwIDEgMzAsNTU2LjY5IEwzMCw1MS41IEEyLjUsMi41IDAgMCAxIDMyLjUsNDkiIHN0eWxlPSJzdHJva2U6IzAwMDtzdHJva2Utd2lkdGg6MS41OyIgZmlsbD0ibm9uZSIvPjxsaW5lIHgxPSIzMCIgeTE9IjcxLjI5NyIgeDI9Ijc3LjMxNiIgeTI9IjcxLjI5NyIgc3R5bGU9InN0cm9rZTojMDAwO3N0cm9rZS13aWR0aDoxLjU7Ii8+PHRleHQgeD0iMzQiIHk9IjYzLjk5NSIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iMzQuMzE2IiBmb250LXdlaWdodD0iNzAwIj5jb3JlPC90ZXh0PjwvZz48IS0tY2x1c3RlciBkaWFnbm9zdGljcy0tPjxnIGNsYXNzPSJjbHVzdGVyIiBkYXRhLXF1YWxpZmllZC1uYW1lPSJzY3JpYnB5LmNvcmUuZGlhZ25vc3RpY3MiIGlkPSJlbnQwMDAxIiBkYXRhLXNvdXJjZS1saW5lPSIzIj48cGF0aCBkPSJNNTYuNSw5MiBMMTQ3LjgzLDkyIEEzLjc1LDMuNzUgMCAwIDEgMTUwLjMzLDk0LjUgTDE1Ny4zMywxMTQuMjk3IEwxMDc1LjUsMTE0LjI5NyBBMi41LDIuNSAwIDAgMSAxMDc4LDExNi43OTcgTDEwNzgsNTMyLjY5IEEyLjUsMi41IDAgMCAxIDEwNzUuNSw1MzUuMTkgTDU2LjUsNTM1LjE5IEEyLjUsMi41IDAgMCAxIDU0LDUzMi42OSBMNTQsOTQuNSBBMi41LDIuNSAwIDAgMSA1Ni41LDkyIiBzdHlsZT0ic3Ryb2tlOiMwMDA7c3Ryb2tlLXdpZHRoOjEuNTsiIGZpbGw9Im5vbmUiLz48bGluZSB4MT0iNTQiIHkxPSIxMTQuMjk3IiB4Mj0iMTU3LjMzIiB5Mj0iMTE0LjI5NyIgc3R5bGU9InN0cm9rZTojMDAwO3N0cm9rZS13aWR0aDoxLjU7Ii8+PHRleHQgeD0iNTgiIHk9IjEwNi45OTUiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjkwLjMzIiBmb250LXdlaWdodD0iNzAwIj5kaWFnbm9zdGljczwvdGV4dD48L2c+PCEtLWNsdXN0ZXIgYnVpbHQtaW4gcnVsZXMtLT48ZyBjbGFzcz0iY2x1c3RlciIgZGF0YS1xdWFsaWZpZWQtbmFtZT0ic2NyaWJweS5jb3JlLmRpYWdub3N0aWNzLmJ1aWx0LWluIHJ1bGVzIiBpZD0iZW50MDAwOSIgZGF0YS1zb3VyY2UtbGluZT0iMjEiPjxwYXRoIGQ9Ik00NTYuNSw0MTIuMTkgTDU1OC43MjcsNDEyLjE5IEEzLjc1LDMuNzUgMCAwIDEgNTYxLjIyNyw0MTQuNjkgTDU2OC4yMjcsNDM0LjQ4NyBMMTA1MS41LDQzNC40ODcgQTIuNSwyLjUgMCAwIDEgMTA1NCw0MzYuOTg3IEwxMDU0LDUwOC42OSBBMi41LDIuNSAwIDAgMSAxMDUxLjUsNTExLjE5IEw0NTYuNSw1MTEuMTkgQTIuNSwyLjUgMCAwIDEgNDU0LDUwOC42OSBMNDU0LDQxNC42OSBBMi41LDIuNSAwIDAgMSA0NTYuNSw0MTIuMTkiIHN0eWxlPSJzdHJva2U6IzAwMDtzdHJva2Utd2lkdGg6MS41OyIgZmlsbD0ibm9uZSIvPjxsaW5lIHgxPSI0NTQiIHkxPSI0MzQuNDg3IiB4Mj0iNTY4LjIyNyIgeTI9IjQzNC40ODciIHN0eWxlPSJzdHJva2U6IzAwMDtzdHJva2Utd2lkdGg6MS41OyIvPjx0ZXh0IHg9IjQ1OCIgeT0iNDI3LjE4NSIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iMTAxLjIyNyIgZm9udC13ZWlnaHQ9IjcwMCI+YnVpbHQtaW4gcnVsZXM8L3RleHQ+PC9nPjwhLS1jbGFzcyBDb2xsZWN0aW9uRGlhZ25vc3RpY1J1bGUtLT48ZyBjbGFzcz0iZW50aXR5IiBkYXRhLXF1YWxpZmllZC1uYW1lPSJzY3JpYnB5LmNvcmUuZGlhZ25vc3RpY3MuQ29sbGVjdGlvbkRpYWdub3N0aWNSdWxlIiBpZD0iZW50MDAwMiIgZGF0YS1zb3VyY2UtbGluZT0iNCI+PHJlY3QgeD0iNjkzLjc1IiB5PSIyNjguMyIgd2lkdGg9IjM2OC40OTQiIGhlaWdodD0iODAuNTk0IiBmaWxsPSIjRjFGMUYxIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiIHJ4PSIyLjUiIHJ5PSIyLjUiLz48ZWxsaXBzZSBjeD0iNzg2LjU5OSIgY3k9IjI4NC4zIiByeD0iMTEiIHJ5PSIxMSIgZmlsbD0iI0I0QTdFNSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxOyIvPjxwYXRoIGQ9Ik03ODIuNTIxLDI4MC4wNjYgTDc4Mi41MjEsMjc3LjkwOSBMNzg5LjkxMiwyNzcuOTA5IEw3ODkuOTEyLDI4MC4wNjYgTDc4Ny40NDMsMjgwLjA2NiBMNzg3LjQ0MywyODguMTQ0IEw3ODkuOTEyLDI4OC4xNDQgTDc4OS45MTIsMjkwLjMgTDc4Mi41MjEsMjkwLjMgTDc4Mi41MjEsMjg4LjE0NCBMNzg0Ljk5LDI4OC4xNDQgTDc4NC45OSwyODAuMDY2IEw3ODIuNTIxLDI4MC4wNjYgWiAiIGZpbGw9IiMwMDAiLz48dGV4dCB4PSI4MDcuMDk5IiB5PSIyODkuMTQ3IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIxNzQuMjk2IiBmb250LXN0eWxlPSJpdGFsaWMiPkNvbGxlY3Rpb25EaWFnbm9zdGljUnVsZTwvdGV4dD48bGluZSB4MT0iNjk0Ljc1IiB5MT0iMzAwLjMiIHgyPSIxMDYxLjI0NCIgeTI9IjMwMC4zIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiLz48dGV4dCB4PSI2OTkuNzUiIHk9IjMxNy4yOTUiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjczLjE5OSI+K2NvZGU6IHN0cjwvdGV4dD48bGluZSB4MT0iNjk0Ljc1IiB5MT0iMzI0LjU5NyIgeDI9IjEwNjEuMjQ0IiB5Mj0iMzI0LjU5NyIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7Ii8+PHRleHQgeD0iNjk5Ljc1IiB5PSIzNDEuNTkyIiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIzNTYuNDk0Ij4rZGlhZ25vc2UoY29udGV4dCk6IEl0ZXJhYmxlW0NvbGxlY3Rpb25EaWFnbm9zdGljXTwvdGV4dD48L2c+PCEtLWNsYXNzIENvbGxlY3Rpb25EaWFnbm9zdGljQ29udGV4dC0tPjxnIGNsYXNzPSJlbnRpdHkiIGRhdGEtcXVhbGlmaWVkLW5hbWU9InNjcmlicHkuY29yZS5kaWFnbm9zdGljcy5Db2xsZWN0aW9uRGlhZ25vc3RpY0NvbnRleHQiIGlkPSJlbnQwMDA1IiBkYXRhLXNvdXJjZS1saW5lPSI4Ij48cmVjdCB4PSI2OS44NiIgeT0iMjY4LjMiIHdpZHRoPSIyMzAuMjgzIiBoZWlnaHQ9IjgwLjU5NCIgZmlsbD0iI0YxRjFGMSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7IiByeD0iMi41IiByeT0iMi41Ii8+PGVsbGlwc2UgY3g9Ijg0Ljg2IiBjeT0iMjg0LjMiIHJ4PSIxMSIgcnk9IjExIiBmaWxsPSIjQUREMUIyIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7Ii8+PHBhdGggZD0iTTg3LjgyOSwyODkuOTQxIFE4Ny4yNTEsMjkwLjIzOCA4Ni42MSwyOTAuMzc4IFE4NS45NjksMjkwLjUzNCA4NS4yNjYsMjkwLjUzNCBRODIuNzY2LDI5MC41MzQgODEuNDM4LDI4OC44OTQgUTgwLjEyNiwyODcuMjM4IDgwLjEyNiwyODQuMTEzIFE4MC4xMjYsMjgwLjk4OCA4MS40MzgsMjc5LjMzMSBRODIuNzY2LDI3Ny42NzUgODUuMjY2LDI3Ny42NzUgUTg1Ljk2OSwyNzcuNjc1IDg2LjYxLDI3Ny44MzEgUTg3LjI2NiwyNzcuOTg4IDg3LjgyOSwyNzguMjg0IEw4Ny44MjksMjgxLjAwMyBRODcuMjA0LDI4MC40MjUgODYuNjEsMjgwLjE1OSBRODYuMDE2LDI3OS44NzggODUuMzkxLDI3OS44NzggUTg0LjA0OCwyNzkuODc4IDgzLjM2LDI4MC45NTYgUTgyLjY3MywyODIuMDE5IDgyLjY3MywyODQuMTEzIFE4Mi42NzMsMjg2LjIwNiA4My4zNiwyODcuMjg0IFE4NC4wNDgsMjg4LjM0NyA4NS4zOTEsMjg4LjM0NyBRODYuMDE2LDI4OC4zNDcgODYuNjEsMjg4LjA4MSBRODcuMjA0LDI4Ny44IDg3LjgyOSwyODcuMjIyIEw4Ny44MjksMjg5Ljk0MSBaICIgZmlsbD0iIzAwMCIvPjx0ZXh0IHg9Ijk4Ljg2IiB5PSIyODkuMTQ3IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIxOTguMjgzIj5Db2xsZWN0aW9uRGlhZ25vc3RpY0NvbnRleHQ8L3RleHQ+PGxpbmUgeDE9IjcwLjg2IiB5MT0iMzAwLjMiIHgyPSIyOTkuMTQzIiB5Mj0iMzAwLjMiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIvPjx0ZXh0IHg9Ijc1Ljg2IiB5PSIzMTcuMjk1IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSI4MC42NTciPityb290OiBQYXRoPC90ZXh0Pjx0ZXh0IHg9Ijc1Ljg2IiB5PSIzMzMuNTkyIiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIyMTUuMTgyIj4rZmlsZXM6IHR1cGxlW01hcmtkb3duRmlsZSwgLi4uXTwvdGV4dD48bGluZSB4MT0iNzAuODYiIHkxPSIzNDAuODk0IiB4Mj0iMjk5LjE0MyIgeTI9IjM0MC44OTQiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIvPjwvZz48IS0tY2xhc3MgQ29sbGVjdGlvbkRpYWdub3N0aWNSZXBvcnQtLT48ZyBjbGFzcz0iZW50aXR5IiBkYXRhLXF1YWxpZmllZC1uYW1lPSJzY3JpYnB5LmNvcmUuZGlhZ25vc3RpY3MuQ29sbGVjdGlvbkRpYWdub3N0aWNSZXBvcnQiIGlkPSJlbnQwMDA2IiBkYXRhLXNvdXJjZS1saW5lPSIxMiI+PHJlY3QgeD0iMzM0LjgyIiB5PSIyNTIiIHdpZHRoPSIzMjQuMzYxIiBoZWlnaHQ9IjExMy4xODgiIGZpbGw9IiNGMUYxRjEiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIgcng9IjIuNSIgcnk9IjIuNSIvPjxlbGxpcHNlIGN4PSIzOTcuNjM1IiBjeT0iMjY4IiByeD0iMTEiIHJ5PSIxMSIgZmlsbD0iI0FERDFCMiIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxOyIvPjxwYXRoIGQ9Ik00MDAuNjA0LDI3My42NDEgUTQwMC4wMjYsMjczLjkzOCAzOTkuMzg1LDI3NC4wNzggUTM5OC43NDUsMjc0LjIzNCAzOTguMDQyLDI3NC4yMzQgUTM5NS41NDIsMjc0LjIzNCAzOTQuMjE0LDI3Mi41OTQgUTM5Mi45MDEsMjcwLjkzOCAzOTIuOTAxLDI2Ny44MTMgUTM5Mi45MDEsMjY0LjY4OCAzOTQuMjE0LDI2My4wMzEgUTM5NS41NDIsMjYxLjM3NSAzOTguMDQyLDI2MS4zNzUgUTM5OC43NDUsMjYxLjM3NSAzOTkuMzg1LDI2MS41MzEgUTQwMC4wNDIsMjYxLjY4OCA0MDAuNjA0LDI2MS45ODQgTDQwMC42MDQsMjY0LjcwMyBRMzk5Ljk3OSwyNjQuMTI1IDM5OS4zODUsMjYzLjg1OSBRMzk4Ljc5MiwyNjMuNTc4IDM5OC4xNjcsMjYzLjU3OCBRMzk2LjgyMywyNjMuNTc4IDM5Ni4xMzUsMjY0LjY1NiBRMzk1LjQ0OCwyNjUuNzE5IDM5NS40NDgsMjY3LjgxMyBRMzk1LjQ0OCwyNjkuOTA2IDM5Ni4xMzUsMjcwLjk4NCBRMzk2LjgyMywyNzIuMDQ3IDM5OC4xNjcsMjcyLjA0NyBRMzk4Ljc5MiwyNzIuMDQ3IDM5OS4zODUsMjcxLjc4MSBRMzk5Ljk3OSwyNzEuNSA0MDAuNjA0LDI3MC45MjIgTDQwMC42MDQsMjczLjY0MSBaICIgZmlsbD0iIzAwMCIvPjx0ZXh0IHg9IjQxOC4xMzUiIHk9IjI3Mi44NDciIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjE5MC4yMyI+Q29sbGVjdGlvbkRpYWdub3N0aWNSZXBvcnQ8L3RleHQ+PGxpbmUgeDE9IjMzNS44MiIgeTE9IjI4NCIgeDI9IjY1OC4xODEiIHkyPSIyODQiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIvPjx0ZXh0IHg9IjM0MC44MiIgeT0iMzAwLjk5NSIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iMzEyLjM2MSI+K2RpYWdub3N0aWNzOiB0dXBsZVtDb2xsZWN0aW9uRGlhZ25vc3RpYywgLi4uXTwvdGV4dD48dGV4dCB4PSIzNDAuODIiIHk9IjMxNy4yOTIiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjEyNC4yOTEiPitoYXNfZXJyb3JzOiBib29sPC90ZXh0PjxsaW5lIHgxPSIzMzUuODIiIHkxPSIzMjQuNTk0IiB4Mj0iNjU4LjE4MSIgeTI9IjMyNC41OTQiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIvPjx0ZXh0IHg9IjM0MC44MiIgeT0iMzQxLjU4OSIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iMjA0LjE5NiI+K2J5X3NldmVyaXR5KHNldmVyaXR5KTogdHVwbGU8L3RleHQ+PHRleHQgeD0iMzQwLjgyIiB5PSIzNTcuODg2IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIxMTYuNDIzIj4rc3VtbWFyeSgpOiBzdHI8L3RleHQ+PC9nPjwhLS1jbGFzcyBlbmdpbmUtLT48ZyBjbGFzcz0iZW50aXR5IiBkYXRhLXF1YWxpZmllZC1uYW1lPSJzY3JpYnB5LmNvcmUuZGlhZ25vc3RpY3MuZW5naW5lIiBpZD0iZW50MDAwNyIgZGF0YS1zb3VyY2UtbGluZT0iMTgiPjxyZWN0IHg9IjQwNi42NiIgeT0iMTI3IiB3aWR0aD0iMTgwLjY4MiIgaGVpZ2h0PSI0OCIgZmlsbD0iI0YxRjFGMSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7IiByeD0iMi41IiByeT0iMi41Ii8+PGVsbGlwc2UgY3g9IjQyMS42NiIgY3k9IjE0MyIgcng9IjExIiByeT0iMTEiIGZpbGw9IiNBREQxQjIiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTsiLz48cGF0aCBkPSJNNDI0LjYyOSwxNDguNjQxIFE0MjQuMDUxLDE0OC45MzggNDIzLjQxLDE0OS4wNzggUTQyMi43NjksMTQ5LjIzNCA0MjIuMDY2LDE0OS4yMzQgUTQxOS41NjYsMTQ5LjIzNCA0MTguMjM4LDE0Ny41OTQgUTQxNi45MjYsMTQ1LjkzOCA0MTYuOTI2LDE0Mi44MTMgUTQxNi45MjYsMTM5LjY4OCA0MTguMjM4LDEzOC4wMzEgUTQxOS41NjYsMTM2LjM3NSA0MjIuMDY2LDEzNi4zNzUgUTQyMi43NjksMTM2LjM3NSA0MjMuNDEsMTM2LjUzMSBRNDI0LjA2NiwxMzYuNjg4IDQyNC42MjksMTM2Ljk4NCBMNDI0LjYyOSwxMzkuNzAzIFE0MjQuMDA0LDEzOS4xMjUgNDIzLjQxLDEzOC44NTkgUTQyMi44MTYsMTM4LjU3OCA0MjIuMTkxLDEzOC41NzggUTQyMC44NDgsMTM4LjU3OCA0MjAuMTYsMTM5LjY1NiBRNDE5LjQ3MywxNDAuNzE5IDQxOS40NzMsMTQyLjgxMyBRNDE5LjQ3MywxNDQuOTA2IDQyMC4xNiwxNDUuOTg0IFE0MjAuODQ4LDE0Ny4wNDcgNDIyLjE5MSwxNDcuMDQ3IFE0MjIuODE2LDE0Ny4wNDcgNDIzLjQxLDE0Ni43ODEgUTQyNC4wMDQsMTQ2LjUgNDI0LjYyOSwxNDUuOTIyIEw0MjQuNjI5LDE0OC42NDEgWiAiIGZpbGw9IiMwMDAiLz48dGV4dCB4PSI0MzUuNjYiIHk9IjE0Ny44NDciIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjE0OC42ODIiPmRpYWdub3NlX2NvbGxlY3Rpb24oKTwvdGV4dD48bGluZSB4MT0iNDA3LjY2IiB5MT0iMTU5IiB4Mj0iNTg2LjM0MiIgeTI9IjE1OSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7Ii8+PGxpbmUgeDE9IjQwNy42NiIgeTE9IjE2NyIgeDI9IjU4Ni4zNDIiIHkyPSIxNjciIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIvPjwvZz48IS0tY2xhc3MgcmVnaXN0cnktLT48ZyBjbGFzcz0iZW50aXR5IiBkYXRhLXF1YWxpZmllZC1uYW1lPSJzY3JpYnB5LmNvcmUuZGlhZ25vc3RpY3MucmVnaXN0cnkiIGlkPSJlbnQwMDA4IiBkYXRhLXNvdXJjZS1saW5lPSIxOSI+PHJlY3QgeD0iNzA4LjE0IiB5PSIxMjciIHdpZHRoPSIzMzkuNzIiIGhlaWdodD0iNDgiIGZpbGw9IiNGMUYxRjEiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIgcng9IjIuNSIgcnk9IjIuNSIvPjxlbGxpcHNlIGN4PSI3MjMuMTQiIGN5PSIxNDMiIHJ4PSIxMSIgcnk9IjExIiBmaWxsPSIjQUREMUIyIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7Ii8+PHBhdGggZD0iTTcyNi4xMDksMTQ4LjY0MSBRNzI1LjUzMSwxNDguOTM4IDcyNC44OSwxNDkuMDc4IFE3MjQuMjQ5LDE0OS4yMzQgNzIzLjU0NiwxNDkuMjM0IFE3MjEuMDQ2LDE0OS4yMzQgNzE5LjcxOCwxNDcuNTk0IFE3MTguNDA2LDE0NS45MzggNzE4LjQwNiwxNDIuODEzIFE3MTguNDA2LDEzOS42ODggNzE5LjcxOCwxMzguMDMxIFE3MjEuMDQ2LDEzNi4zNzUgNzIzLjU0NiwxMzYuMzc1IFE3MjQuMjQ5LDEzNi4zNzUgNzI0Ljg5LDEzNi41MzEgUTcyNS41NDYsMTM2LjY4OCA3MjYuMTA5LDEzNi45ODQgTDcyNi4xMDksMTM5LjcwMyBRNzI1LjQ4NCwxMzkuMTI1IDcyNC44OSwxMzguODU5IFE3MjQuMjk2LDEzOC41NzggNzIzLjY3MSwxMzguNTc4IFE3MjIuMzI4LDEzOC41NzggNzIxLjY0LDEzOS42NTYgUTcyMC45NTMsMTQwLjcxOSA3MjAuOTUzLDE0Mi44MTMgUTcyMC45NTMsMTQ0LjkwNiA3MjEuNjQsMTQ1Ljk4NCBRNzIyLjMyOCwxNDcuMDQ3IDcyMy42NzEsMTQ3LjA0NyBRNzI0LjI5NiwxNDcuMDQ3IDcyNC44OSwxNDYuNzgxIFE3MjUuNDg0LDE0Ni41IDcyNi4xMDksMTQ1LjkyMiBMNzI2LjEwOSwxNDguNjQxIFogIiBmaWxsPSIjMDAwIi8+PHRleHQgeD0iNzM3LjE0IiB5PSIxNDcuODQ3IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIzMDcuNzIiPkRFRkFVTFRfQ09MTEVDVElPTl9ESUFHTk9TVElDX1JVTEVTPC90ZXh0PjxsaW5lIHgxPSI3MDkuMTQiIHkxPSIxNTkiIHgyPSIxMDQ2Ljg2IiB5Mj0iMTU5IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiLz48bGluZSB4MT0iNzA5LjE0IiB5MT0iMTY3IiB4Mj0iMTA0Ni44NiIgeTI9IjE2NyIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7Ii8+PC9nPjwhLS1jbGFzcyBUb2RvUnVsZS0tPjxnIGNsYXNzPSJlbnRpdHkiIGRhdGEtcXVhbGlmaWVkLW5hbWU9InNjcmlicHkuY29yZS5kaWFnbm9zdGljcy5Ub2RvUnVsZSIgaWQ9ImVudDAwMTMiIGRhdGEtc291cmNlLWxpbmU9IjI3Ij48cmVjdCB4PSIzMzIuNzkiIHk9IjQ0My4wNiIgd2lkdGg9IjEwMi40MiIgaGVpZ2h0PSI1Ni4yNjYiIGZpbGw9IiNGMUYxRjEiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIgcng9IjIuNSIgcnk9IjIuNSIvPjxlbGxpcHNlIGN4PSIzNDcuNzkiIGN5PSI0NjMuMTkzIiByeD0iMTEiIHJ5PSIxMSIgZmlsbD0iI0FERDFCMiIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxOyIvPjxwYXRoIGQ9Ik0zNTAuNzU5LDQ2OC44MzMgUTM1MC4xODEsNDY5LjEzIDM0OS41NCw0NjkuMjcxIFEzNDguODk5LDQ2OS40MjcgMzQ4LjE5Niw0NjkuNDI3IFEzNDUuNjk2LDQ2OS40MjcgMzQ0LjM2OCw0NjcuNzg3IFEzNDMuMDU2LDQ2Ni4xMyAzNDMuMDU2LDQ2My4wMDUgUTM0My4wNTYsNDU5Ljg4IDM0NC4zNjgsNDU4LjIyNCBRMzQ1LjY5Niw0NTYuNTY4IDM0OC4xOTYsNDU2LjU2OCBRMzQ4Ljg5OSw0NTYuNTY4IDM0OS41NCw0NTYuNzI0IFEzNTAuMTk2LDQ1Ni44OCAzNTAuNzU5LDQ1Ny4xNzcgTDM1MC43NTksNDU5Ljg5NiBRMzUwLjEzNCw0NTkuMzE4IDM0OS41NCw0NTkuMDUyIFEzNDguOTQ2LDQ1OC43NzEgMzQ4LjMyMSw0NTguNzcxIFEzNDYuOTc4LDQ1OC43NzEgMzQ2LjI5LDQ1OS44NDkgUTM0NS42MDMsNDYwLjkxMiAzNDUuNjAzLDQ2My4wMDUgUTM0NS42MDMsNDY1LjA5OSAzNDYuMjksNDY2LjE3NyBRMzQ2Ljk3OCw0NjcuMjQgMzQ4LjMyMSw0NjcuMjQgUTM0OC45NDYsNDY3LjI0IDM0OS41NCw0NjYuOTc0IFEzNTAuMTM0LDQ2Ni42OTMgMzUwLjc1OSw0NjYuMTE1IEwzNTAuNzU5LDQ2OC44MzMgWiAiIGZpbGw9IiMwMDAiLz48dGV4dCB4PSIzNTkuNzkiIHk9IjQ1OS4xOTkiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTIiIHRleHRMZW5ndGg9Ijc0LjQyIiBmb250LXN0eWxlPSJpdGFsaWMiPsKreW91ciBjb2Rlwrs8L3RleHQ+PHRleHQgeD0iMzY0LjE2NCIgeT0iNDc1LjAyNCIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iNjUuNjczIj5Ub2RvUnVsZTwvdGV4dD48bGluZSB4MT0iMzMzLjc5IiB5MT0iNDgzLjMyNiIgeDI9IjQzNC4yMSIgeTI9IjQ4My4zMjYiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIvPjxsaW5lIHgxPSIzMzMuNzkiIHkxPSI0OTEuMzI2IiB4Mj0iNDM0LjIxIiB5Mj0iNDkxLjMyNiIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7Ii8+PC9nPjwhLS1jbGFzcyBTb3VyY2VGaXJzdEhlYWRpbmdIMVJ1bGUtLT48ZyBjbGFzcz0iZW50aXR5IiBkYXRhLXF1YWxpZmllZC1uYW1lPSJzY3JpYnB5LmNvcmUuZGlhZ25vc3RpY3MuYnVpbHQtaW4gcnVsZXMuU291cmNlRmlyc3RIZWFkaW5nSDFSdWxlIiBpZD0iZW50MDAxMCIgZGF0YS1zb3VyY2UtbGluZT0iMjIiPjxyZWN0IHg9IjQ3MC4xNyIgeT0iNDQ3LjE5IiB3aWR0aD0iMjE5LjY2NyIgaGVpZ2h0PSI0OCIgZmlsbD0iI0YxRjFGMSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7IiByeD0iMi41IiByeT0iMi41Ii8+PGVsbGlwc2UgY3g9IjQ4NS4xNyIgY3k9IjQ2My4xOSIgcng9IjExIiByeT0iMTEiIGZpbGw9IiNBREQxQjIiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTsiLz48cGF0aCBkPSJNNDg4LjEzOSw0NjguODMxIFE0ODcuNTYxLDQ2OS4xMjggNDg2LjkyLDQ2OS4yNjggUTQ4Ni4yNzksNDY5LjQyNCA0ODUuNTc2LDQ2OS40MjQgUTQ4My4wNzYsNDY5LjQyNCA0ODEuNzQ4LDQ2Ny43ODQgUTQ4MC40MzYsNDY2LjEyOCA0ODAuNDM2LDQ2My4wMDMgUTQ4MC40MzYsNDU5Ljg3OCA0ODEuNzQ4LDQ1OC4yMjEgUTQ4My4wNzYsNDU2LjU2NSA0ODUuNTc2LDQ1Ni41NjUgUTQ4Ni4yNzksNDU2LjU2NSA0ODYuOTIsNDU2LjcyMSBRNDg3LjU3Niw0NTYuODc4IDQ4OC4xMzksNDU3LjE3NCBMNDg4LjEzOSw0NTkuODkzIFE0ODcuNTE0LDQ1OS4zMTUgNDg2LjkyLDQ1OS4wNDkgUTQ4Ni4zMjYsNDU4Ljc2OCA0ODUuNzAxLDQ1OC43NjggUTQ4NC4zNTgsNDU4Ljc2OCA0ODMuNjcsNDU5Ljg0NiBRNDgyLjk4Myw0NjAuOTA5IDQ4Mi45ODMsNDYzLjAwMyBRNDgyLjk4Myw0NjUuMDk2IDQ4My42Nyw0NjYuMTc0IFE0ODQuMzU4LDQ2Ny4yMzcgNDg1LjcwMSw0NjcuMjM3IFE0ODYuMzI2LDQ2Ny4yMzcgNDg2LjkyLDQ2Ni45NzEgUTQ4Ny41MTQsNDY2LjY5IDQ4OC4xMzksNDY2LjExMiBMNDg4LjEzOSw0NjguODMxIFogIiBmaWxsPSIjMDAwIi8+PHRleHQgeD0iNDk5LjE3IiB5PSI0NjguMDM3IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIxODcuNjY3Ij5Tb3VyY2VGaXJzdEhlYWRpbmdIMVJ1bGU8L3RleHQ+PGxpbmUgeDE9IjQ3MS4xNyIgeTE9IjQ3OS4xOSIgeDI9IjY4OC44MzciIHkyPSI0NzkuMTkiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIvPjxsaW5lIHgxPSI0NzEuMTciIHkxPSI0ODcuMTkiIHgyPSI2ODguODM3IiB5Mj0iNDg3LjE5IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiLz48L2c+PCEtLWNsYXNzIExvY2FsQW5jaG9yTGlua1J1bGUtLT48ZyBjbGFzcz0iZW50aXR5IiBkYXRhLXF1YWxpZmllZC1uYW1lPSJzY3JpYnB5LmNvcmUuZGlhZ25vc3RpY3MuYnVpbHQtaW4gcnVsZXMuTG9jYWxBbmNob3JMaW5rUnVsZSIgaWQ9ImVudDAwMTEiIGRhdGEtc291cmNlLWxpbmU9IjIzIj48cmVjdCB4PSI3MjUuMTgiIHk9IjQ0Ny4xOSIgd2lkdGg9IjE3Ny42NDYiIGhlaWdodD0iNDgiIGZpbGw9IiNGMUYxRjEiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIgcng9IjIuNSIgcnk9IjIuNSIvPjxlbGxpcHNlIGN4PSI3NDAuMTgiIGN5PSI0NjMuMTkiIHJ4PSIxMSIgcnk9IjExIiBmaWxsPSIjQUREMUIyIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7Ii8+PHBhdGggZD0iTTc0My4xNDksNDY4LjgzMSBRNzQyLjU3MSw0NjkuMTI4IDc0MS45Myw0NjkuMjY4IFE3NDEuMjg5LDQ2OS40MjQgNzQwLjU4Niw0NjkuNDI0IFE3MzguMDg2LDQ2OS40MjQgNzM2Ljc1OCw0NjcuNzg0IFE3MzUuNDQ2LDQ2Ni4xMjggNzM1LjQ0Niw0NjMuMDAzIFE3MzUuNDQ2LDQ1OS44NzggNzM2Ljc1OCw0NTguMjIxIFE3MzguMDg2LDQ1Ni41NjUgNzQwLjU4Niw0NTYuNTY1IFE3NDEuMjg5LDQ1Ni41NjUgNzQxLjkzLDQ1Ni43MjEgUTc0Mi41ODYsNDU2Ljg3OCA3NDMuMTQ5LDQ1Ny4xNzQgTDc0My4xNDksNDU5Ljg5MyBRNzQyLjUyNCw0NTkuMzE1IDc0MS45Myw0NTkuMDQ5IFE3NDEuMzM2LDQ1OC43NjggNzQwLjcxMSw0NTguNzY4IFE3MzkuMzY4LDQ1OC43NjggNzM4LjY4LDQ1OS44NDYgUTczNy45OTMsNDYwLjkwOSA3MzcuOTkzLDQ2My4wMDMgUTczNy45OTMsNDY1LjA5NiA3MzguNjgsNDY2LjE3NCBRNzM5LjM2OCw0NjcuMjM3IDc0MC43MTEsNDY3LjIzNyBRNzQxLjMzNiw0NjcuMjM3IDc0MS45Myw0NjYuOTcxIFE3NDIuNTI0LDQ2Ni42OSA3NDMuMTQ5LDQ2Ni4xMTIgTDc0My4xNDksNDY4LjgzMSBaICIgZmlsbD0iIzAwMCIvPjx0ZXh0IHg9Ijc1NC4xOCIgeT0iNDY4LjAzNyIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iMTQ1LjY0NiI+TG9jYWxBbmNob3JMaW5rUnVsZTwvdGV4dD48bGluZSB4MT0iNzI2LjE4IiB5MT0iNDc5LjE5IiB4Mj0iOTAxLjgyNiIgeTI9IjQ3OS4xOSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7Ii8+PGxpbmUgeDE9IjcyNi4xOCIgeTE9IjQ4Ny4xOSIgeDI9IjkwMS44MjYiIHkyPSI0ODcuMTkiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIvPjwvZz48IS0tY2xhc3MgbW9yZS0tPjxnIGNsYXNzPSJlbnRpdHkiIGRhdGEtcXVhbGlmaWVkLW5hbWU9InNjcmlicHkuY29yZS5kaWFnbm9zdGljcy5idWlsdC1pbiBydWxlcy5tb3JlIiBpZD0iZW50MDAxMiIgZGF0YS1zb3VyY2UtbGluZT0iMjQiPjxyZWN0IHg9IjkzOC4xMyIgeT0iNDQ3LjE5IiB3aWR0aD0iOTkuNzMiIGhlaWdodD0iNDgiIGZpbGw9IiNGMUYxRjEiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIgcng9IjIuNSIgcnk9IjIuNSIvPjxlbGxpcHNlIGN4PSI5NTMuMTMiIGN5PSI0NjMuMTkiIHJ4PSIxMSIgcnk9IjExIiBmaWxsPSIjQUREMUIyIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7Ii8+PHBhdGggZD0iTTk1Ni4wOTksNDY4LjgzMSBROTU1LjUyMSw0NjkuMTI4IDk1NC44OCw0NjkuMjY4IFE5NTQuMjM5LDQ2OS40MjQgOTUzLjUzNiw0NjkuNDI0IFE5NTEuMDM2LDQ2OS40MjQgOTQ5LjcwOCw0NjcuNzg0IFE5NDguMzk2LDQ2Ni4xMjggOTQ4LjM5Niw0NjMuMDAzIFE5NDguMzk2LDQ1OS44NzggOTQ5LjcwOCw0NTguMjIxIFE5NTEuMDM2LDQ1Ni41NjUgOTUzLjUzNiw0NTYuNTY1IFE5NTQuMjM5LDQ1Ni41NjUgOTU0Ljg4LDQ1Ni43MjEgUTk1NS41MzYsNDU2Ljg3OCA5NTYuMDk5LDQ1Ny4xNzQgTDk1Ni4wOTksNDU5Ljg5MyBROTU1LjQ3NCw0NTkuMzE1IDk1NC44OCw0NTkuMDQ5IFE5NTQuMjg2LDQ1OC43NjggOTUzLjY2MSw0NTguNzY4IFE5NTIuMzE4LDQ1OC43NjggOTUxLjYzLDQ1OS44NDYgUTk1MC45NDMsNDYwLjkwOSA5NTAuOTQzLDQ2My4wMDMgUTk1MC45NDMsNDY1LjA5NiA5NTEuNjMsNDY2LjE3NCBROTUyLjMxOCw0NjcuMjM3IDk1My42NjEsNDY3LjIzNyBROTU0LjI4Niw0NjcuMjM3IDk1NC44OCw0NjYuOTcxIFE5NTUuNDc0LDQ2Ni42OSA5NTYuMDk5LDQ2Ni4xMTIgTDk1Ni4wOTksNDY4LjgzMSBaICIgZmlsbD0iIzAwMCIvPjx0ZXh0IHg9Ijk2Ny4xMyIgeT0iNDY4LjAzNyIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iNjcuNzMiPi4uLiA2IG1vcmU8L3RleHQ+PGxpbmUgeDE9IjkzOS4xMyIgeTE9IjQ3OS4xOSIgeDI9IjEwMzYuODYiIHkyPSI0NzkuMTkiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIvPjxsaW5lIHgxPSI5MzkuMTMiIHkxPSI0ODcuMTkiIHgyPSIxMDM2Ljg2IiB5Mj0iNDg3LjE5IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiLz48L2c+PCEtLXJldmVyc2UgbGluayBDb2xsZWN0aW9uRGlhZ25vc3RpY1J1bGUgdG8gU291cmNlRmlyc3RIZWFkaW5nSDFSdWxlLS0+PGcgY2xhc3M9ImxpbmsiIGRhdGEtZW50aXR5LTE9ImVudDAwMDIiIGRhdGEtZW50aXR5LTI9ImVudDAwMTAiIGlkPSJsbmsxNCIgZGF0YS1zb3VyY2UtbGluZT0iMzAiIGRhdGEtbGluay10eXBlPSJleHRlbnNpb24iPjxwYXRoIGQ9Ik03ODguNDk1LDM1Ny44MzEgQzczMS42MTUsMzg4LjQ5MSA2NzAuNzEsNDIxLjMxIDYyMy4zMyw0NDYuODQiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTtzdHJva2UtZGFzaGFycmF5OjcsNzsiIGZpbGw9Im5vbmUiIGlkPSJDb2xsZWN0aW9uRGlhZ25vc3RpY1J1bGUtYmFja3RvLVNvdXJjZUZpcnN0SGVhZGluZ0gxUnVsZSIgY29kZUxpbmU9IjMwIi8+PHBvbHlnb24gcG9pbnRzPSI4MDQuMzQsMzQ5LjI5LDc4NS42NDgsMzUyLjU0OSw3OTEuMzQyLDM2My4xMTIsODA0LjM0LDM0OS4yOSIgZmlsbD0ibm9uZSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDoxMDsiLz48L2c+PCEtLXJldmVyc2UgbGluayBDb2xsZWN0aW9uRGlhZ25vc3RpY1J1bGUgdG8gTG9jYWxBbmNob3JMaW5rUnVsZS0tPjxnIGNsYXNzPSJsaW5rIiBkYXRhLWVudGl0eS0xPSJlbnQwMDAyIiBkYXRhLWVudGl0eS0yPSJlbnQwMDExIiBpZD0ibG5rMTUiIGRhdGEtc291cmNlLWxpbmU9IjMxIiBkYXRhLWxpbmstdHlwZT0iZXh0ZW5zaW9uIj48cGF0aCBkPSJNODU1LjUxNiwzNjYuMDExIEM4NDMuMjk2LDM5Ni42NzEgODMzLjQ4LDQyMS4zMSA4MjMuMzEsNDQ2Ljg0IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWRhc2hhcnJheTo3LDc7IiBmaWxsPSJub25lIiBpZD0iQ29sbGVjdGlvbkRpYWdub3N0aWNSdWxlLWJhY2t0by1Mb2NhbEFuY2hvckxpbmtSdWxlIiBjb2RlTGluZT0iMzEiLz48cG9seWdvbiBwb2ludHM9Ijg2Mi4xOCwzNDkuMjksODQ5Ljk0MiwzNjMuNzg5LDg2MS4wODksMzY4LjIzMiw4NjIuMTgsMzQ5LjI5IiBmaWxsPSJub25lIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1taXRlcmxpbWl0OjEwOyIvPjwvZz48IS0tcmV2ZXJzZSBsaW5rIENvbGxlY3Rpb25EaWFnbm9zdGljUnVsZSB0byBtb3JlLS0+PGcgY2xhc3M9ImxpbmsiIGRhdGEtZW50aXR5LTE9ImVudDAwMDIiIGRhdGEtZW50aXR5LTI9ImVudDAwMTIiIGlkPSJsbmsxNiIgZGF0YS1zb3VyY2UtbGluZT0iMzIiIGRhdGEtbGluay10eXBlPSJleHRlbnNpb24iPjxwYXRoIGQ9Ik05MTUuMzYyLDM2NC4xNDEgQzkzNi4zNjIsMzk0LjgwMSA5NTQuNTIsNDIxLjMxIDk3Mi4wMSw0NDYuODQiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTtzdHJva2UtZGFzaGFycmF5OjcsNzsiIGZpbGw9Im5vbmUiIGlkPSJDb2xsZWN0aW9uRGlhZ25vc3RpY1J1bGUtYmFja3RvLW1vcmUiIGNvZGVMaW5lPSIzMiIvPjxwb2x5Z29uIHBvaW50cz0iOTA1LjE5LDM0OS4yOSw5MTAuNDExLDM2Ny41MzEsOTIwLjMxMiwzNjAuNzUsOTA1LjE5LDM0OS4yOSIgZmlsbD0ibm9uZSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDoxMDsiLz48L2c+PCEtLXJldmVyc2UgbGluayBDb2xsZWN0aW9uRGlhZ25vc3RpY1J1bGUgdG8gVG9kb1J1bGUtLT48ZyBjbGFzcz0ibGluayIgZGF0YS1lbnRpdHktMT0iZW50MDAwMiIgZGF0YS1lbnRpdHktMj0iZW50MDAxMyIgaWQ9ImxuazE3IiBkYXRhLXNvdXJjZS1saW5lPSIzMyIgZGF0YS1saW5rLXR5cGU9ImV4dGVuc2lvbiI+PHBhdGggZD0iTTcyMy43MjcsMzUzLjk1OSBDNzAyLjM0NywzNTkuNjA5IDY5Ny44NCwzNjAuNSA2NzcsMzY1LjE5IEM1NzguODQsMzg3LjI5IDU0My45NSwzNTkuMTEgNDU0LDQwNC4xOSBDNDM1LjYzLDQxMy4zOSA0MTguNzYsNDI4Ljk5IDQwNi4xOCw0NDIuNzEiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTtzdHJva2UtZGFzaGFycmF5OjcsNzsiIGZpbGw9Im5vbmUiIGlkPSJDb2xsZWN0aW9uRGlhZ25vc3RpY1J1bGUtYmFja3RvLVRvZG9SdWxlIiBjb2RlTGluZT0iMzMiLz48cG9seWdvbiBwb2ludHM9Ijc0MS4xMywzNDkuMzYsNzIyLjE5NCwzNDguMTU4LDcyNS4yNiwzNTkuNzYsNzQxLjEzLDM0OS4zNiIgZmlsbD0ibm9uZSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDoxMDsiLz48L2c+PCEtLXJldmVyc2UgbGluayByZWdpc3RyeSB0byBDb2xsZWN0aW9uRGlhZ25vc3RpY1J1bGUtLT48ZyBjbGFzcz0ibGluayIgZGF0YS1lbnRpdHktMT0iZW50MDAwOCIgZGF0YS1lbnRpdHktMj0iZW50MDAwMiIgaWQ9ImxuazE4IiBkYXRhLXNvdXJjZS1saW5lPSIzNCIgZGF0YS1saW5rLXR5cGU9ImFnZ3JlZ2F0aW9uIj48cGF0aCBkPSJNODc4LDE4Ny4zIEM4NzgsMjExLjcxIDg3OCwyMzguNTIgODc4LDI2Ny44IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7IiBmaWxsPSJub25lIiBpZD0icmVnaXN0cnktYmFja3RvLUNvbGxlY3Rpb25EaWFnbm9zdGljUnVsZSIgY29kZUxpbmU9IjM0Ii8+PHBvbHlnb24gcG9pbnRzPSI4NzgsMTc1LjMsODc0LDE4MS4zLDg3OCwxODcuMyw4ODIsMTgxLjMsODc4LDE3NS4zIiBmaWxsPSJub25lIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1taXRlcmxpbWl0OjEwOyIvPjx0ZXh0IHg9Ijg3OSIgeT0iMjE4LjA2NyIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxMyIgdGV4dExlbmd0aD0iODIuNTEzIj5saXN0cyBkZWZhdWx0czwvdGV4dD48L2c+PCEtLWxpbmsgZW5naW5lIHRvIENvbGxlY3Rpb25EaWFnbm9zdGljQ29udGV4dC0tPjxnIGNsYXNzPSJsaW5rIiBkYXRhLWVudGl0eS0xPSJlbnQwMDA3IiBkYXRhLWVudGl0eS0yPSJlbnQwMDA1IiBpZD0ibG5rMTkiIGRhdGEtc291cmNlLWxpbmU9IjM1IiBkYXRhLWxpbmstdHlwZT0iZGVwZW5kZW5jeSI+PHBhdGggZD0iTTQ0OS45NSwxNzUuNDYgQzQwMC45MywxOTkuOTEgMzI3LjY5NSwyMzYuNDM5IDI2OS4wODUsMjY1LjY1OSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1kYXNoYXJyYXk6Nyw3OyIgZmlsbD0ibm9uZSIgaWQ9ImVuZ2luZS10by1Db2xsZWN0aW9uRGlhZ25vc3RpY0NvbnRleHQiIGNvZGVMaW5lPSIzNSIvPjxwb2x5Z29uIHBvaW50cz0iMjY0LjYxLDI2Ny44OSwyNzQuNDQ5LDI2Ny40NTQsMjY5LjA4NSwyNjUuNjU5LDI3MC44OCwyNjAuMjk1LDI2NC42MSwyNjcuODkiIGZpbGw9IiMxODE4MTgiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW1pdGVybGltaXQ6MTA7Ii8+PHRleHQgeD0iMzg4IiB5PSIyMTguMDY3IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjEzIiB0ZXh0TGVuZ3RoPSI0OC4zMjUiPmNyZWF0ZXM8L3RleHQ+PC9nPjwhLS1saW5rIGVuZ2luZSB0byBDb2xsZWN0aW9uRGlhZ25vc3RpY1J1bGUtLT48ZyBjbGFzcz0ibGluayIgZGF0YS1lbnRpdHktMT0iZW50MDAwNyIgZGF0YS1lbnRpdHktMj0iZW50MDAwMiIgaWQ9ImxuazIwIiBkYXRhLXNvdXJjZS1saW5lPSIzNiIgZGF0YS1saW5rLXR5cGU9ImRlcGVuZGVuY3kiPjxwYXRoIGQ9Ik01NTQuNDUsMTc1LjQ2IEM2MTQuMzIsMTk5LjkxIDcwNC41ODEsMjM2Ljc4IDc3Ni4xNTEsMjY2IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWRhc2hhcnJheTo3LDc7IiBmaWxsPSJub25lIiBpZD0iZW5naW5lLXRvLUNvbGxlY3Rpb25EaWFnbm9zdGljUnVsZSIgY29kZUxpbmU9IjM2Ii8+PHBvbHlnb24gcG9pbnRzPSI3ODAuNzgsMjY3Ljg5LDc3My45NiwyNjAuNzg1LDc3Ni4xNTEsMjY2LDc3MC45MzYsMjY4LjE5MSw3ODAuNzgsMjY3Ljg5IiBmaWxsPSIjMTgxODE4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1taXRlcmxpbWl0OjEwOyIvPjx0ZXh0IHg9IjY2NSIgeT0iMjE4LjA2NyIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxMyIgdGV4dExlbmd0aD0iMTc5LjM0Ij5pdGVyYXRlcyAoZGVmYXVsdCBvciBjdXN0b20pPC90ZXh0PjwvZz48IS0tbGluayBlbmdpbmUgdG8gQ29sbGVjdGlvbkRpYWdub3N0aWNSZXBvcnQtLT48ZyBjbGFzcz0ibGluayIgZGF0YS1lbnRpdHktMT0iZW50MDAwNyIgZGF0YS1lbnRpdHktMj0iZW50MDAwNiIgaWQ9ImxuazIxIiBkYXRhLXNvdXJjZS1saW5lPSIzNyIgZGF0YS1saW5rLXR5cGU9ImRlcGVuZGVuY3kiPjxwYXRoIGQ9Ik00OTcsMTc1LjMgQzQ5NywxOTUuNDcgNDk3LDIyMC40OCA0OTcsMjQ2LjgyIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWRhc2hhcnJheTo3LDc7IiBmaWxsPSJub25lIiBpZD0iZW5naW5lLXRvLUNvbGxlY3Rpb25EaWFnbm9zdGljUmVwb3J0IiBjb2RlTGluZT0iMzciLz48cG9seWdvbiBwb2ludHM9IjQ5NywyNTEuODIsNTAxLDI0Mi44Miw0OTcsMjQ2LjgyLDQ5MywyNDIuODIsNDk3LDI1MS44MiIgZmlsbD0iIzE4MTgxOCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDoxMDsiLz48dGV4dCB4PSI0OTgiIHk9IjIxOC4wNjciIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTMiIHRleHRMZW5ndGg9IjQ3LjAzNiI+cmV0dXJuczwvdGV4dD48L2c+PD9wbGFudHVtbC1zcmMgWExEOVp6ZW01Qnh4THBwYkg5STJzYWlGNEs5MkIxc2FUQVkwRU9zZ283NFVtU0J1SFJSSkRidC1VdnJqbjA2T2N2TnRCTV92T2l6SWJ6cG0ybVo1aFBxeFBzSE1FVG04cWRsdjYtNFpPb0tOUHJ1VzE1UnVPYmJGMTFjU3Y5OE5jZ29KbVdSbVhxZGpxMW92RzVZR0tZWVM5QnJ5Vy1tZ1hIdUsyU2VuMWtpQ1l0ZS1aaG9KbXJ5a1o2N1o5TlljeUZNTW43VnNaeEt6dFpIT1QyQURYbzVvQ05wWnhpSVllckhlT3QxTHdMTV9TZEZFd1FUVS11eVZPM0FQRjlSU09LY2NMUm1RVFQyd0hVV3JlbkV0QUhmM25nQ3A4aU1ZaDR1al9hMFpOSnFRN2M0bG5JOVJOSXhTckFFbXN5cEdLcDFpQTFMbFBnQ20wNnUxVEk0cjNoWmJRWnJfSUd4Zk9maWFneUxYaXRyRWJ2bHZiLVZqX2gxUGZCa05QQkxsTUdPQndHdGdndWpjYkxIa0IzS09WdzNzWmZ0Y2RZZVpTMnNEVEtfOFN3Y0JmcV9EM1Zqb0dlQWhrSE9kQ2VkS3Z3akF1NVMwZC03WTR6OXdEV3lfS0x5eks0dmo1QVJKc1pqMDR1VlBoQWRWM1N0cWhuVXlzeXZac2dxczdwRlFUWHozWFhkT2k0d1d5VlgtdzZERzdjS1hub0VsYkJFaWt2c0Zva25YYTZDRzFoZDNUbWN6WXNwLTdHLTdLVXk0dkZUUk1LVU55NXM5Qmtjbkp1WWhaQlJfMEcwMD8+PC9nPjwvc3ZnPg==" class="uml" alt="uml diagram" title="" /></p>
+<p><code>TodoRule</code> — a rule you write — implements exactly the same <code>Protocol</code> as the
+eight built-in rules. The engine has no special case for "built-in" versus
+"custom"; it only ever calls <code>.diagnose(context)</code> on whatever iterable of
+rules it is given.</p>
+<h3 id="sequence-running-a-mixed-rule-set">Sequence: running a mixed rule set</h3>
+<p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIGRhdGEtZGlhZ3JhbS10eXBlPSJTRVFVRU5DRSIgc3R5bGU9IndpZHRoOjExNTRweDtoZWlnaHQ6MzY3cHg7YmFja2dyb3VuZDojRkZGRkZGOyIgd2lkdGg9IjExNTRweCIgaGVpZ2h0PSIzNjdweCIgdmlld0JveD0iMCAwIDExNTQgMzY3IiB6b29tQW5kUGFuPSJtYWduaWZ5IiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBjb250ZW50U3R5bGVUeXBlPSJ0ZXh0L2NzcyI+PD9wbGFudHVtbCAxLjIwMjYuN2JldGE4Pz48ZGVmcy8+PGcgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGxlbmd0aEFkanVzdD0ic3BhY2luZyI+PGc+PHRpdGxlPkFwcGxpY2F0aW9uPC90aXRsZT48cmVjdCB4PSI1Mi42MTIiIHk9IjU3LjU5NCIgd2lkdGg9IjgiIGhlaWdodD0iMjUxLjA2MyIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwIi8+PGxpbmUgeDE9IjU2LjExMiIgeTE9IjU3LjU5NCIgeDI9IjU2LjExMiIgeTI9IjMwOC42NTYiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41O3N0cm9rZS1kYXNoYXJyYXk6NSw1OyIvPjwvZz48Zz48dGl0bGU+TWFya2Rvd25Db2xsZWN0aW9uPC90aXRsZT48cmVjdCB4PSI0ODUuMzEyIiB5PSI1Ny41OTQiIHdpZHRoPSI4IiBoZWlnaHQ9IjI1MS4wNjMiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMCIvPjxsaW5lIHgxPSI0ODguODEyIiB5MT0iNTcuNTk0IiB4Mj0iNDg4LjgxMiIgeTI9IjMwOC42NTYiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41O3N0cm9rZS1kYXNoYXJyYXk6NSw1OyIvPjwvZz48Zz48dGl0bGU+ZGlhZ25vc2VfY29sbGVjdGlvbi4uPC90aXRsZT48cmVjdCB4PSI3ODkuMDk4IiB5PSI1Ny41OTQiIHdpZHRoPSI4IiBoZWlnaHQ9IjI1MS4wNjMiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMCIvPjxsaW5lIHgxPSI3OTIuNTk4IiB5MT0iNTcuNTk0IiB4Mj0iNzkyLjU5OCIgeTI9IjMwOC42NTYiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41O3N0cm9rZS1kYXNoYXJyYXk6NSw1OyIvPjwvZz48Zz48dGl0bGU+U291cmNlSDFDb3VudFJ1bGU8L3RpdGxlPjxyZWN0IHg9Ijk1Ny42OTEiIHk9IjU3LjU5NCIgd2lkdGg9IjgiIGhlaWdodD0iMjUxLjA2MyIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwIi8+PGxpbmUgeDE9Ijk2MS4xOTEiIHkxPSI1Ny41OTQiIHgyPSI5NjEuMTkxIiB5Mj0iMzA4LjY1NiIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7c3Ryb2tlLWRhc2hhcnJheTo1LDU7Ii8+PC9nPjxnPjx0aXRsZT5Ub2RvUnVsZTwvdGl0bGU+PHJlY3QgeD0iMTA5Mi4yNTIiIHk9IjU3LjU5NCIgd2lkdGg9IjgiIGhlaWdodD0iMjUxLjA2MyIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwIi8+PGxpbmUgeDE9IjEwOTUuNzUyIiB5MT0iNTcuNTk0IiB4Mj0iMTA5NS43NTIiIHkyPSIzMDguNjU2IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTtzdHJva2UtZGFzaGFycmF5OjUsNTsiLz48L2c+PHJlY3QgeD0iMTAiIHk9IjI2LjI5NyIgd2lkdGg9IjkyLjIyNCIgaGVpZ2h0PSIzMC4yOTciIGZpbGw9IiNFMkUyRjAiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIgcng9IjIuNSIgcnk9IjIuNSIvPjx0ZXh0IHg9IjE3IiB5PSI0Ni4yOTIiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9Ijc4LjIyNCI+QXBwbGljYXRpb248L3RleHQ+PHJlY3QgeD0iNDExLjA0IiB5PSIyNi4yOTciIHdpZHRoPSIxNTUuNTQ1IiBoZWlnaHQ9IjMwLjI5NyIgZmlsbD0iI0UyRTJGMCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7IiByeD0iMi41IiByeT0iMi41Ii8+PHRleHQgeD0iNDE4LjA0IiB5PSI0Ni4yOTIiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjE0MS41NDUiPk1hcmtkb3duQ29sbGVjdGlvbjwvdGV4dD48cmVjdCB4PSI3MTEuMjU3IiB5PSIyNi4yOTciIHdpZHRoPSIxNjIuNjgyIiBoZWlnaHQ9IjMwLjI5NyIgZmlsbD0iI0UyRTJGMCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7IiByeD0iMi41IiByeT0iMi41Ii8+PHRleHQgeD0iNzE4LjI1NyIgeT0iNDYuMjkyIiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIxNDguNjgyIj5kaWFnbm9zZV9jb2xsZWN0aW9uKCk8L3RleHQ+PHJlY3QgeD0iODgzLjkzOCIgeT0iMTAiIHdpZHRoPSIxNTQuNTA2IiBoZWlnaHQ9IjQ2LjU5NCIgZmlsbD0iI0UyRTJGMCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7IiByeD0iMi41IiByeT0iMi41Ii8+PHRleHQgeD0iODkwLjkzOCIgeT0iMjkuOTk1IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIxNDAuNTA2Ij5Tb3VyY2VIMUNvdW50UnVsZTwvdGV4dD48dGV4dCB4PSI5MzEuMzA4IiB5PSI0Ni4yOTIiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjU5Ljc2NyI+W2J1aWx0LWluXTwvdGV4dD48cmVjdCB4PSIxMDQ4LjQ0NCIgeT0iMTAiIHdpZHRoPSI5NC42MTYiIGhlaWdodD0iNDYuNTk0IiBmaWxsPSIjRTJFMkYwIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiIHJ4PSIyLjUiIHJ5PSIyLjUiLz48dGV4dCB4PSIxMDYyLjkxNiIgeT0iMjkuOTk1IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSI2NS42NzMiPlRvZG9SdWxlPC90ZXh0Pjx0ZXh0IHg9IjEwNTUuNDQ0IiB5PSI0Ni4yOTIiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjgwLjYxNiI+W3lvdXIgY29kZV08L3RleHQ+PHJlY3QgeD0iMTAiIHk9IjMwOC42NTYiIHdpZHRoPSI5Mi4yMjQiIGhlaWdodD0iMzAuMjk3IiBmaWxsPSIjRTJFMkYwIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiIHJ4PSIyLjUiIHJ5PSIyLjUiLz48dGV4dCB4PSIxNyIgeT0iMzI4LjY1MSIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iNzguMjI0Ij5BcHBsaWNhdGlvbjwvdGV4dD48cmVjdCB4PSI0MTEuMDQiIHk9IjMwOC42NTYiIHdpZHRoPSIxNTUuNTQ1IiBoZWlnaHQ9IjMwLjI5NyIgZmlsbD0iI0UyRTJGMCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7IiByeD0iMi41IiByeT0iMi41Ii8+PHRleHQgeD0iNDE4LjA0IiB5PSIzMjguNjUxIiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIxNDEuNTQ1Ij5NYXJrZG93bkNvbGxlY3Rpb248L3RleHQ+PHJlY3QgeD0iNzExLjI1NyIgeT0iMzA4LjY1NiIgd2lkdGg9IjE2Mi42ODIiIGhlaWdodD0iMzAuMjk3IiBmaWxsPSIjRTJFMkYwIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiIHJ4PSIyLjUiIHJ5PSIyLjUiLz48dGV4dCB4PSI3MTguMjU3IiB5PSIzMjguNjUxIiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIxNDguNjgyIj5kaWFnbm9zZV9jb2xsZWN0aW9uKCk8L3RleHQ+PHJlY3QgeD0iODgzLjkzOCIgeT0iMzA4LjY1NiIgd2lkdGg9IjE1NC41MDYiIGhlaWdodD0iNDYuNTk0IiBmaWxsPSIjRTJFMkYwIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiIHJ4PSIyLjUiIHJ5PSIyLjUiLz48dGV4dCB4PSI4OTAuOTM4IiB5PSIzMjguNjUxIiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIxNDAuNTA2Ij5Tb3VyY2VIMUNvdW50UnVsZTwvdGV4dD48dGV4dCB4PSI5MzEuMzA4IiB5PSIzNDQuOTQ4IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSI1OS43NjciPltidWlsdC1pbl08L3RleHQ+PHJlY3QgeD0iMTA0OC40NDQiIHk9IjMwOC42NTYiIHdpZHRoPSI5NC42MTYiIGhlaWdodD0iNDYuNTk0IiBmaWxsPSIjRTJFMkYwIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiIHJ4PSIyLjUiIHJ5PSIyLjUiLz48dGV4dCB4PSIxMDYyLjkxNiIgeT0iMzI4LjY1MSIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iNjUuNjczIj5Ub2RvUnVsZTwvdGV4dD48dGV4dCB4PSIxMDU1LjQ0NCIgeT0iMzQ0Ljk0OCIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iODAuNjE2Ij5beW91ciBjb2RlXTwvdGV4dD48cG9seWdvbiBwb2ludHM9IjQ3Ni44MTIsODIuNzI3LDQ4Ni44MTIsODYuNzI3LDQ3Ni44MTIsOTAuNzI3LDQ4MC44MTIsODYuNzI3IiBmaWxsPSIjMTgxODE4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1taXRlcmxpbWl0OjEwOyIvPjxsaW5lIHgxPSI1Ni4xMTIiIHkxPSI4Ni43MjciIHgyPSI0ODIuODEyIiB5Mj0iODYuNzI3IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7Ii8+PHRleHQgeD0iNjMuMTEyIiB5PSI4MS42NjEiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTMiIHRleHRMZW5ndGg9IjQwOC43Ij5jb2xsZWN0aW9uLmRpYWdub3NlKHJ1bGVzPVtTb3VyY2VIMUNvdW50UnVsZSgpLCBUb2RvUnVsZSgpXSk8L3RleHQ+PHBvbHlnb24gcG9pbnRzPSI3ODAuNTk4LDExMS44NTksNzkwLjU5OCwxMTUuODU5LDc4MC41OTgsMTE5Ljg1OSw3ODQuNTk4LDExNS44NTkiIGZpbGw9IiMxODE4MTgiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW1pdGVybGltaXQ6MTA7Ii8+PGxpbmUgeDE9IjQ4OC44MTIiIHkxPSIxMTUuODU5IiB4Mj0iNzg2LjU5OCIgeTI9IjExNS44NTkiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTsiLz48dGV4dCB4PSI0OTUuODEyIiB5PSIxMTAuNzkzIiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjEzIiB0ZXh0TGVuZ3RoPSIxMDEuNDE3Ij5yb290LCBmaWxlcywgcnVsZXM8L3RleHQ+PHBvbHlnb24gcG9pbnRzPSI5NDkuMTkxLDE0MC45OTIsOTU5LjE5MSwxNDQuOTkyLDk0OS4xOTEsMTQ4Ljk5Miw5NTMuMTkxLDE0NC45OTIiIGZpbGw9IiMxODE4MTgiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW1pdGVybGltaXQ6MTA7Ii8+PGxpbmUgeDE9Ijc5Mi41OTgiIHkxPSIxNDQuOTkyIiB4Mj0iOTU1LjE5MSIgeTI9IjE0NC45OTIiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTsiLz48dGV4dCB4PSI3OTkuNTk4IiB5PSIxMzkuOTI2IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjEzIiB0ZXh0TGVuZ3RoPSIxMTguNDE2Ij5kaWFnbm9zZShjb250ZXh0KTwvdGV4dD48cG9seWdvbiBwb2ludHM9IjgwMy41OTgsMTcwLjEyNSw3OTMuNTk4LDE3NC4xMjUsODAzLjU5OCwxNzguMTI1LDc5OS41OTgsMTc0LjEyNSIgZmlsbD0iIzE4MTgxOCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDoxMDsiLz48bGluZSB4MT0iNzk3LjU5OCIgeTE9IjE3NC4xMjUiIHgyPSI5NjAuMTkxIiB5Mj0iMTc0LjEyNSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1kYXNoYXJyYXk6MiwyOyIvPjx0ZXh0IHg9IjgwOS41OTgiIHk9IjE2OS4wNTkiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTMiIHRleHRMZW5ndGg9IjczLjY3NyI+ZGlhZ25vc3RpY3M8L3RleHQ+PHBvbHlnb24gcG9pbnRzPSIxMDgzLjc1MiwxOTkuMjU4LDEwOTMuNzUyLDIwMy4yNTgsMTA4My43NTIsMjA3LjI1OCwxMDg3Ljc1MiwyMDMuMjU4IiBmaWxsPSIjMTgxODE4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1taXRlcmxpbWl0OjEwOyIvPjxsaW5lIHgxPSI3OTIuNTk4IiB5MT0iMjAzLjI1OCIgeDI9IjEwODkuNzUyIiB5Mj0iMjAzLjI1OCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxOyIvPjx0ZXh0IHg9Ijc5OS41OTgiIHk9IjE5OC4xOTIiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTMiIHRleHRMZW5ndGg9IjExOC40MTYiPmRpYWdub3NlKGNvbnRleHQpPC90ZXh0Pjxwb2x5Z29uIHBvaW50cz0iODAzLjU5OCwyMjguMzkxLDc5My41OTgsMjMyLjM5MSw4MDMuNTk4LDIzNi4zOTEsNzk5LjU5OCwyMzIuMzkxIiBmaWxsPSIjMTgxODE4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1taXRlcmxpbWl0OjEwOyIvPjxsaW5lIHgxPSI3OTcuNTk4IiB5MT0iMjMyLjM5MSIgeDI9IjEwOTQuNzUyIiB5Mj0iMjMyLjM5MSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1kYXNoYXJyYXk6MiwyOyIvPjx0ZXh0IHg9IjgwOS41OTgiIHk9IjIyNy4zMjUiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTMiIHRleHRMZW5ndGg9IjczLjY3NyI+ZGlhZ25vc3RpY3M8L3RleHQ+PHBvbHlnb24gcG9pbnRzPSI0OTkuODEyLDI1Ny41MjMsNDg5LjgxMiwyNjEuNTIzLDQ5OS44MTIsMjY1LjUyMyw0OTUuODEyLDI2MS41MjMiIGZpbGw9IiMxODE4MTgiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW1pdGVybGltaXQ6MTA7Ii8+PGxpbmUgeDE9IjQ5My44MTIiIHkxPSIyNjEuNTIzIiB4Mj0iNzkxLjU5OCIgeTI9IjI2MS41MjMiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTtzdHJva2UtZGFzaGFycmF5OjIsMjsiLz48dGV4dCB4PSI1MDUuODEyIiB5PSIyNTYuNDU4IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjEzIiB0ZXh0TGVuZ3RoPSIyNzkuNzg2Ij5Db2xsZWN0aW9uRGlhZ25vc3RpY1JlcG9ydChhbGwgZGlhZ25vc3RpY3MpPC90ZXh0Pjxwb2x5Z29uIHBvaW50cz0iNjcuMTEyLDI4Ni42NTYsNTcuMTEyLDI5MC42NTYsNjcuMTEyLDI5NC42NTYsNjMuMTEyLDI5MC42NTYiIGZpbGw9IiMxODE4MTgiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW1pdGVybGltaXQ6MTA7Ii8+PGxpbmUgeDE9IjYxLjExMiIgeTE9IjI5MC42NTYiIHgyPSI0ODcuODEyIiB5Mj0iMjkwLjY1NiIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1kYXNoYXJyYXk6MiwyOyIvPjx0ZXh0IHg9IjczLjExMiIgeT0iMjg1LjU5IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjEzIiB0ZXh0TGVuZ3RoPSIzOS45OSI+cmVwb3J0PC90ZXh0Pjw/cGxhbnR1bWwtc3JjIFhQNTFJeUdtNDhObC1ITFhKbWNxMnJ1NTFMYUZOaHBpVWJpTllNYlMxa0RDSTVGS1YteXFKUkNqMlh4QlZFX2hVc3FtQ082NU8zMzlwTHE4N2duOUdCWUhmZlNjMTE2TW1BRTl4bnJ6dWV3eVR4UG9ibG9Rd3kyU2FOaHRPWWtlVDRPVGRXN1RjWnhHNEFyeGtEaEhXNmFfVUZVQ256UzFWNmUxSnBjTGRtM05pSVZnZ0QzVlJFME1kUGptRV9JOUZlSldfaEF6N1VsOVF0Y2ZpZnRoZ1Nabl9rUnVndTNJWlBwcklmLXE2MUxpY2pncEIxQWJIaHUxbm5rUEJRQlNjMmZqNlFpbGllSjlWSUtqdmJreGoxTUNmb3FycXVlX0JVTnFod0lFbF9vbS11aGpOUTJPYkY1LWNJclJFSmItRkx3UWdIeTA/PjwvZz48L3N2Zz4=" class="uml" alt="uml diagram" title="" /></p>
+<h3 id="the-protocol">The protocol</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CollectionDiagnosticRule</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol implemented by collection diagnostic strategies.&quot;&quot;&quot;</span>
+
+    <span class="n">code</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">diagnose</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="s2">&quot;CollectionDiagnosticContext&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="s2">&quot;CollectionDiagnostic&quot;</span><span class="p">]:</span>
+        <span class="o">...</span>
+</code></pre></div>
+<p><code>CollectionDiagnosticContext</code> carries <code>root: Path</code> and
+<code>files: tuple[MarkdownFile, ...]</code> — everything a rule needs is already
+loaded; rules never touch the filesystem themselves.</p>
+<h3 id="complete-worked-example-flagging-todo-markers">Complete worked example: flagging TODO markers</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">scribpy.core.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CollectionDiagnostic</span><span class="p">,</span>
+    <span class="n">CollectionDiagnosticContext</span><span class="p">,</span>
+    <span class="n">CollectionDiagnosticRule</span><span class="p">,</span>
+    <span class="n">DiagnosticSeverity</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TodoRule</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Flag any source file that still contains a TODO marker.&quot;&quot;&quot;</span>
+
+    <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;TODO_FOUND&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">diagnose</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">CollectionDiagnosticContext</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">CollectionDiagnostic</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return one warning per Markdown file containing &quot;TODO&quot;.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            context: Collection diagnostic context.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Warning diagnostics for every file with a TODO marker.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">CollectionDiagnostic</span><span class="p">(</span>
+                <span class="n">code</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">,</span>
+                <span class="n">severity</span><span class="o">=</span><span class="n">DiagnosticSeverity</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span>
+                <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Remove TODO before publication.&quot;</span><span class="p">,</span>
+                <span class="n">path</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">context</span><span class="o">.</span><span class="n">files</span>
+            <span class="k">if</span> <span class="s2">&quot;TODO&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">content</span>
+        <span class="p">)</span>
+</code></pre></div>
+<p>Use it standalone, or alongside the defaults:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">scribpy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scribpy.core.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_COLLECTION_DIAGNOSTIC_RULES</span>
+
+<span class="n">collection</span> <span class="o">=</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">MarkdownCollection</span><span class="o">.</span><span class="n">from_tree</span><span class="p">(</span><span class="s2">&quot;handbook&quot;</span><span class="p">)</span>
+
+<span class="c1"># Only your rule:</span>
+<span class="n">rule</span><span class="p">:</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">CollectionDiagnosticRule</span> <span class="o">=</span> <span class="n">TodoRule</span><span class="p">()</span>
+<span class="n">report</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">diagnose</span><span class="p">(</span><span class="n">rules</span><span class="o">=</span><span class="p">[</span><span class="n">rule</span><span class="p">])</span>
+
+<span class="c1"># Defaults plus your rule:</span>
+<span class="n">report</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">diagnose</span><span class="p">(</span><span class="n">rules</span><span class="o">=</span><span class="p">[</span><span class="o">*</span><span class="n">DEFAULT_COLLECTION_DIAGNOSTIC_RULES</span><span class="p">,</span> <span class="n">TodoRule</span><span class="p">()])</span>
+
+<span class="k">if</span> <span class="n">report</span><span class="o">.</span><span class="n">has_errors</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">InvalidMarkdownError</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+</code></pre></div>
+<p>Or call the engine directly, without going through a <code>MarkdownCollection</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">scribpy.core.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">diagnose_collection</span>
+
+<span class="n">report</span> <span class="o">=</span> <span class="n">diagnose_collection</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;handbook&quot;</span><span class="p">),</span> <span class="n">collection</span><span class="o">.</span><span class="n">files</span><span class="p">,</span> <span class="p">[</span><span class="n">TodoRule</span><span class="p">()])</span>
+</code></pre></div>
+<p><code>CollectionDiagnosticRule</code> itself (the Protocol type) and <code>TodoRule</code>
+instances built against it are structurally compatible with
+<code>scribpy.CollectionDiagnosticRule</code> — the type re-exported at the package
+root is the same Protocol, so annotations written against either name are
+interchangeable.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Two more built-in rules — <code>LocalAnchorLinkRule</code> and
+<code>ImageOutsideRootRule</code> — exist in <code>scribpy.core.diagnostics</code> but are not
+part of <code>scribpy.__all__</code>. They behave exactly like the six rules
+documented on the <a href="../end-user/#load-diagnose-and-assemble">end-user API</a>
+page; import them the same way as <code>TodoRule</code> above:
+<code>from scribpy.core.diagnostics import LocalAnchorLinkRule</code>.</p>
+</div>
+<h2 id="renderer-protocols-and-factories">Renderer protocols and factories</h2>
+<h3 id="architecture">Architecture</h3>
+<p>PlantUML and Mermaid renderers share the same three-layer shape: protocol,
+factory, backends.</p>
+<p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHN0eWxlPSJ3aWR0aDo0ODhweDtoZWlnaHQ6MzI1cHg7YmFja2dyb3VuZDojRkZGRkZGOyIgd2lkdGg9IjQ4OHB4IiBoZWlnaHQ9IjMyNXB4IiB2aWV3Qm94PSIwIDAgNDg4IDMyNSIgem9vbUFuZFBhbj0ibWFnbmlmeSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgY29udGVudFN0eWxlVHlwZT0idGV4dC9jc3MiPjw/cGxhbnR1bWwgMS4yMDI2LjdiZXRhOD8+PGRlZnMvPjxnIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmciPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSI0ODcuODI4IiBoZWlnaHQ9IjkyIiBmaWxsPSIjRUFFMkM5IiBzdHlsZT0ic3Ryb2tlOiNFQUUyQzk7c3Ryb2tlLXdpZHRoOjE7Ii8+PHRleHQgeD0iMTAiIHk9IjI2LjQwMSIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iMzEzLjAwNCIgZm9udC13ZWlnaHQ9IjcwMCI+QWRkIHlvdXIgb3duIGRlZGljYXRpb24gaW50byBQbGFudFVNTDwvdGV4dD48dGV4dCB4PSIxMCIgeT0iNDIuNjk4IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0Ij7CoDwvdGV4dD48dGV4dCB4PSIxMCIgeT0iNTguOTk1IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIxNTcuODQyIj5Gb3IganVzdCAkNSBwZXIgbW9udGghPC90ZXh0Pjx0ZXh0IHg9IjEwIiB5PSI3NS4yOTIiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjcwLjQyNCI+RGV0YWlscyBvbjwvdGV4dD48YSB0YXJnZXQ9IiIgaHJlZj0iaHR0cHM6Ly9wbGFudHVtbC5jb20vZGVkaWNhdGlvbiIgeGxpbms6aHJlZj0iaHR0cHM6Ly9wbGFudHVtbC5jb20vZGVkaWNhdGlvbiIgeGxpbms6dHlwZT0ic2ltcGxlIiB4bGluazphY3R1YXRlPSJvblJlcXVlc3QiIHhsaW5rOnNob3c9Im5ldyIgdGl0bGU9Imh0dHBzOi8vcGxhbnR1bWwuY29tL2RlZGljYXRpb24iIHhsaW5rOnRpdGxlPSJodHRwczovL3BsYW50dW1sLmNvbS9kZWRpY2F0aW9uIj48dGV4dCB4PSI4NC44NzQiIHk9Ijc1LjI5MiIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iMjI0LjczOCIgZm9udC1zdHlsZT0iaXRhbGljIj5odHRwczovL3BsYW50dW1sLmNvbS9kZWRpY2F0aW9uPC90ZXh0PjwvYT48aW1hZ2Ugd2lkdGg9IjkzIiBoZWlnaHQ9IjkzIiB4PSIzMzMuMDA0IiB5PSIwIiB4bGluazpocmVmPSJkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQUYwQUFBQmRDQVlBQUFESGNXckRBQUFEbFVsRVFWUjRYdTJRTWJMYlFBeERmZitiNVJvcC95V1NWc0lBSWFCZGU1MFpGSy9oUG9JU1hqKy9mLzBwbitXRmcvSitXdm9CV3ZvQld2b0JXdm9CV3ZvQld2b0JXdm9Cck5KZnI5ZDJWTDR6VjQ3ak83c3I0QTFHUzk4TTNtQzA5TTNnRFVaY09yNGxPRG40RTVPdmR2R05rZnFLTktlbEI3NGl6V25wZ2E5SWM1Wkt4MklZeXNjYlR4MEY3akNVajFrTTVlTU5Sa3NuUG1ZeGxJODNHQzJkK0pqRlVEN2VZUHczcFdNdXcvR1ZvK1lLNVYvbmlwWSt6QlhLdjg0VkxYMllLNVIvblN1K3J2UVV2SmZrS3grekdNckhHNHlXVG56TVlpZ2ZiekJhT3ZFeGk2Rjh2TUZZS2ozRnlWRU8vdlNFMm5YbUtXbE9TeWZ6bERTbnBaTjVTcG9UbDc0TGxYOXF2b3RydnFLbGIrYWFyMmpwbTdubUs2elMzMDM2MGVtdTQzeVNsbjZBbG40QXEvVHJSNnNmd0xmSndSdk1jWHkxdXpKUFNYTmFPcG1ucERrdG5jeFQwcHlsMHRVeE5YZkFYTWFLcjhDZEJNeWFhT2xCamdLekpscDZrS1BBckFtcjlOdkN5akh5d2YvS1FXL3lUKzA2enMzSHdVUjZRTzA2T2VoTi9xbGR4N241T0poSUQ2aGRKd2U5eVQrMTZ6ZzNId2NKenJIVVNWRTVlSU01Szc0Qzl4a3QvYUd2d0gxR1MzL29LM0NmWVpYdWhDb0hQNHFoZkRWM25KVjVTcHJUMHNrOEpjMXA2V1Nla3VaOHRIVGNlYWVqd0IyRzR6dU9vcVVUSE45eEZDMmQ0UGlPbzRoTFY4ZndMWEVjSDcrSmdWblRybkp3UHdGdk1GbzZjWEEvQVc4d1dqcHhjRDhCYnpEaTB2RXRjUlQ0NFN3SDM1ampnUHNNeDFjTzNtTzBkSUxqS3dmdk1WbzZ3ZkdWZy9jWUh5MGRQM3p5blYyVmcyOVBjVEx4V3lkYStvQ1RpZDg2MGRJSG5FejgxZ21yOUhlRFA4SEFuUW5jVDNLVWoxbk1jV2pwQk9WakZuTWNXanBCK1pqRkhBZXJkRHl5QTd3eG9YYlYzSEhTdVNMMmNjQzRodTRDYjB5b1hUVjNuSFN1aUgwY01LNmh1OEFiRTJwWHpSMG5uU3RpSHdlTU5GVGg1S1JPQ21ZeEhOOXhGQzJkNFBpT28yanBCTWQzSE1WUzZmaERET1duYzBYcXAxenoxUzE4bTJqcEE5ZDhkUXZmSmxyNndEVmYzY0szaWE4dWZaZUQzOFRBckFuY1QzSmFPdkVkY0QvSmFlbkVkOEQ5Sk9jclNuZkEzQjA1K01hY0ZNeGl0SFFDM2tqQUxFWkxKK0NOQk14aUxKV2VvbkxVZk1WeC9IUVgzeGlZeTJqcHdTNitNVENYMGRLRFhYeGpZQzRqTG4wWFRuN3FLSERuNlM2K0pjN054d0VEUDNZSFRuN3FLSERuNlM2K0pjN054d0VEUDNZSFRuN3FLSERuNlM2K0pjN054MEY1UHkzOUFDMzlBQzM5QUMzOUFDMzlBQzM5QUMzOUFDMzlBSDhCT1E5bng0TjQzTzRBQUFBQVNVVk9SSzVDWUlJPSIvPjxyZWN0IHg9IjAiIHk9IjkyIiB3aWR0aD0iNDg3LjgyOCIgaGVpZ2h0PSIyMzIuNTMxIiBmaWxsPSIjMDAwIiBzdHlsZT0ic3Ryb2tlOiMwMDA7c3Ryb2tlLXdpZHRoOjE7Ii8+PHRleHQgeD0iNSIgeT0iMTA5IiBmaWxsPSIjMzNGRjAyIiBmb250LXNpemU9IjEyIiB0ZXh0TGVuZ3RoPSI0NzUuODI4IiBmb250LXdlaWdodD0iNzAwIiBmb250LXN0eWxlPSJpdGFsaWMiPlBsYW50VU1MIHZlcnNpb24gMS4yMDI2LjdiZXRhOCAvIGVmZGUzOGQgWzIwMjYtMDctMDggMjE6MDQ6NTMgVVRDXTwvdGV4dD48cmVjdCB4PSI1IiB5PSIxMTguOTY5IiB3aWR0aD0iMzg3LjE0IiBoZWlnaHQ9IjIxLjI5NyIgZmlsbD0iIzMzRkYwMiIgc3R5bGU9InN0cm9rZTojMzNGRjAyO3N0cm9rZS13aWR0aDoxOyIvPjx0ZXh0IHg9IjYiIHk9IjEzMy45NjkiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjE3MS4yODEiIGZvbnQtd2VpZ2h0PSI3MDAiPltGcm9tIHN0cmluZyAobGluZSA5KSBdPC90ZXh0Pjx0ZXh0IHg9IjUiIHk9IjE1NC4yNjYiIGZpbGw9IiMzM0ZGMDIiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI3MDAiPsKgPC90ZXh0Pjx0ZXh0IHg9IjUiIHk9IjE3MC41NjMiIGZpbGw9IiMzM0ZGMDIiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjgxLjQyMyIgZm9udC13ZWlnaHQ9IjcwMCI+QHN0YXJ0dW1sPC90ZXh0Pjx0ZXh0IHg9IjUiIHk9IjE4Ni44NTkiIGZpbGw9IiMzM0ZGMDIiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjI3OS4yMzQiIGZvbnQtd2VpZ2h0PSI3MDAiPnNraW5wYXJhbSBjbGFzc0F0dHJpYnV0ZUljb25TaXplIDA8L3RleHQ+PHRleHQgeD0iNSIgeT0iMjAzLjE1NiIgZmlsbD0iIzMzRkYwMiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9IjcwMCI+wqA8L3RleHQ+PHRleHQgeD0iNSIgeT0iMjE5LjQ1MyIgZmlsbD0iIzMzRkYwMiIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iMjczLjA4MiIgZm9udC13ZWlnaHQ9IjcwMCI+cGFja2FnZSAic2NyaWJweS5jb3JlLnBsYW50dW1sIiB7PC90ZXh0Pjx0ZXh0IHg9IjUiIHk9IjIzNS43NSIgZmlsbD0iIzMzRkYwMiIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iMjM1Ljg4OCIgZm9udC13ZWlnaHQ9IjcwMCI+aW50ZXJmYWNlIFBsYW50VW1sUmVuZGVyZXIgezwvdGV4dD48dGV4dCB4PSI1IiB5PSIyNTIuMDQ3IiBmaWxsPSIjMzNGRjAyIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIyMjkuMDg2IiBmb250LXdlaWdodD0iNzAwIj4rcmVuZGVyKGRpYWdyYW06IHN0cik6IGJ5dGVzPC90ZXh0Pjx0ZXh0IHg9IjUiIHk9IjI2OC4zNDQiIGZpbGw9IiMzM0ZGMDIiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI3MDAiPn08L3RleHQ+PHRleHQgeD0iNSIgeT0iMjg0LjY0MSIgZmlsbD0iIzMzRkYwMiIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iMzg3LjE0IiBmb250LXdlaWdodD0iNzAwIj5jbGFzcyAibWFrZV9yZW5kZXJlcihiYWNrZW5kKSIgYXMgcHVtbF9mYWN0b3J5PC90ZXh0Pjx0ZXh0IHg9IjUiIHk9IjMwMC45MzgiIGZpbGw9IiMzM0ZGMDIiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjI3Mi40NzQiIGZvbnQtd2VpZ2h0PSI3MDAiIHRleHQtZGVjb3JhdGlvbj0id2F2eSB1bmRlcmxpbmUiPmNsYXNzIEtyb2tpUmVuZGVyZXIgYXMgcHVtbF9rcm9raTwvdGV4dD48dGV4dCB4PSI5Ljg3NCIgeT0iMzE3LjIzNCIgZmlsbD0iI0YwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iMzU2LjQ3NCIgZm9udC13ZWlnaHQ9IjcwMCI+U3ludGF4IEVycm9yPyAoQXNzdW1lZCBkaWFncmFtIHR5cGU6IGNsYXNzKTwvdGV4dD48P3BsYW50dW1sLXNyYyBWUDlESnlDbTM4UmwtSExNSmZrRzBrVGZjZUd1ZUk2NGMzWG1janBLUXdFY0lVTWFlRkJudHFjeDNaZ0R4VVJPWl9FLVlIcWd1bmZhaDQ1UjNFNHNIWlBQNi1iVVV4U243bUd0R1pJZUFvbThQRDJmczdIQVVvUkxNN0luaFFzNEpzNVM5RHdYOWRaZ2lvLXJWSVFONG5FZHVYS0Z5SW10TTJJWDFPSjh5bUxhTlFHV2xpTVcyeEI2WWhPeVRpc285OWRZa0dHQ3EySUxSUmV6VWt2NlZDcy1DaHlRMXdSZ2lvRG5DQjhYVllDLUdTRUc3amE3aHo2VThCUkZaaUloUl9fa00yd3hUMEpqU3JnanFXbDRvUUVOTnFmREJMcTBIWUNOWUJzRl91NmZCcDd6OXIxZ0RONDAydjEzOEU0UXYzamJ5V296anpGWlhfY0VnTkNEV3hrVTdtOGZkOHk0Ujhlb1dqeVQtdGxxNFBYR2J2WFBXYllvUnVqSTcwei1kbE8yN0RRYW45cnRRTERRN0k0dEozaFEzajNiUUhsSkY2OTlPNThQZFV1MzlMOF96RDhfPz48L2c+PC9zdmc+" class="uml" alt="uml diagram" title="" /></p>
+<p><code>MermaidRenderer</code> in <code>scribpy.core.mermaid</code> mirrors this exactly, with
+<code>KrokiRenderer</code> and <code>MermaidCliRenderer</code> as its built-in implementations.</p>
+<h3 id="the-protocols">The protocols</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PlantUmlRenderer</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render a PlantUML diagram source to PNG bytes.</span>
+
+<span class="sd">    Implementations must be stateless and thread-safe.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diagram</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Render a PlantUML diagram to PNG bytes.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            PlantUmlRenderError: If the rendering backend fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+</code></pre></div>
+<p><code>MermaidRenderer</code> has the identical shape (<code>render(diagram: str) -&gt; bytes</code>,
+raising <code>MermaidRenderError</code> instead). Both are single-method Protocols —
+any object with a matching <code>render</code> method satisfies them, with no
+inheritance required.</p>
+<h3 id="using-the-built-in-factories">Using the built-in factories</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">scribpy.core.plantuml</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlantUmlRenderer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scribpy.core.plantuml</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_renderer</span> <span class="k">as</span> <span class="n">make_plantuml_renderer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scribpy.core.mermaid</span><span class="w"> </span><span class="kn">import</span> <span class="n">MermaidRenderer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scribpy.core.mermaid</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_renderer</span> <span class="k">as</span> <span class="n">make_mermaid_renderer</span>
+
+<span class="n">plantuml</span><span class="p">:</span> <span class="n">PlantUmlRenderer</span> <span class="o">=</span> <span class="n">make_plantuml_renderer</span><span class="p">(</span><span class="s2">&quot;kroki&quot;</span><span class="p">)</span>
+<span class="n">mermaid</span><span class="p">:</span> <span class="n">MermaidRenderer</span> <span class="o">=</span> <span class="n">make_mermaid_renderer</span><span class="p">(</span><span class="s2">&quot;mermaid_cli&quot;</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="s2">&quot;mmdc&quot;</span><span class="p">)</span>
+<span class="n">png</span> <span class="o">=</span> <span class="n">plantuml</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;@startuml</span><span class="se">\n</span><span class="s2">Alice -&gt; Bob</span><span class="se">\n</span><span class="s2">@enduml&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><code>make_renderer(backend, *, server_url=...)</code> for PlantUML and
+<code>make_renderer(backend, *, command=...)</code> for Mermaid both raise <code>ValueError</code>
+for an unrecognized <code>backend</code> name — this is the closed registry described
+above.</p>
+<h3 id="complete-worked-example-a-custom-renderer">Complete worked example: a custom renderer</h3>
+<p>Because <code>make_renderer()</code> cannot be extended by name, a fully custom
+renderer is a plain class satisfying the protocol, constructed directly:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>  <span class="c1"># nosec B404</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">scribpy.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlantUmlRenderError</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LocalJarPlantUmlRenderer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render PlantUML by shelling out to a locally installed plantuml.jar.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        jar_path: Path to the plantuml.jar file used for rendering.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">jar_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize with the path to a local plantuml.jar.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            jar_path: Path to plantuml.jar on the local filesystem.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jar_path</span> <span class="o">=</span> <span class="n">jar_path</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diagram</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Render a PlantUML diagram by invoking plantuml.jar.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            diagram: PlantUML diagram source, without fence delimiters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            PNG image bytes produced by plantuml.jar.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            PlantUmlRenderError: If the subprocess exits with an error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>  <span class="c1"># nosec B603</span>
+                <span class="p">[</span><span class="s2">&quot;java&quot;</span><span class="p">,</span> <span class="s2">&quot;-jar&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">jar_path</span><span class="p">,</span> <span class="s2">&quot;-pipe&quot;</span><span class="p">,</span> <span class="s2">&quot;-tpng&quot;</span><span class="p">],</span>
+                <span class="nb">input</span><span class="o">=</span><span class="n">diagram</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span>
+                <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PlantUmlRenderError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span>
+</code></pre></div>
+<p>This renderer is not registered anywhere — it is simply constructed and
+passed wherever the pipeline accepts a <code>PlantUmlRenderer</code>-shaped object.
+Scribpy's manifest-driven <code>build.plantuml_backend</code> selection (used by
+<code>concatenate()</code> and <code>mkdocs_export()</code> internally) only knows the closed set
+of names above; a fully custom renderer is for code that builds its own
+diagram-rendering call sites rather than going through the manifest, or for
+tests:</p>
+<div class="highlight"><pre><span></span><code><span class="n">renderer</span> <span class="o">=</span> <span class="n">LocalJarPlantUmlRenderer</span><span class="p">(</span><span class="n">jar_path</span><span class="o">=</span><span class="s2">&quot;/opt/plantuml/plantuml.jar&quot;</span><span class="p">)</span>
+<span class="n">png_bytes</span> <span class="o">=</span> <span class="n">renderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;@startuml</span><span class="se">\n</span><span class="s2">Alice -&gt; Bob</span><span class="se">\n</span><span class="s2">@enduml&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="a-trivial-test-double">A trivial test double</h3>
+<p>For unit tests exercising code that accepts a renderer, a minimal stub is
+often enough — it only needs the one method:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">StubPlantUmlRenderer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return fixed bytes without performing any real rendering.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diagram</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a constant PNG-shaped payload for any diagram source.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            diagram: Ignored diagram source.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A fixed placeholder byte string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">b</span><span class="s2">&quot;fake-png-bytes&quot;</span>
+</code></pre></div>
+<h3 id="decorating-an-existing-renderer">Decorating an existing renderer</h3>
+<p>Because both protocols are single-method, wrapping a built-in renderer
+(caching, retries, metrics) is ordinary composition — no base class to
+extend:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CachedPlantUmlRenderer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cache PlantUML renders in memory by diagram source.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delegate</span><span class="p">:</span> <span class="n">PlantUmlRenderer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize with the renderer to cache results for.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            delegate: Underlying renderer performing real rendering.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delegate</span> <span class="o">=</span> <span class="n">delegate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diagram</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Render a diagram, reusing a previous result when available.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            diagram: PlantUML diagram source.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            PNG image bytes, from cache when the source repeats.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">diagram</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">diagram</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delegate</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">diagram</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">diagram</span><span class="p">]</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Everything on this page is imported from <code>scribpy.core.*</code>, not from the
+<code>scribpy</code> top-level package. If you find yourself typing
+<code>scribpy.core.diagnostics</code> or <code>scribpy.core.plantuml</code> in application
+code, that is expected — it is the signal that you have crossed from the
+<a href="../end-user/">end-user API</a> into the extension surface.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

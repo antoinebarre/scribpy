@@ -1,0 +1,2372 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Assemble ordered Markdown collections into publishable outputs.">
+      
+      
+      
+        <link rel="canonical" href="https://antoinebarre.github.io/scribpy/reference/cli/">
+      
+      
+        <link rel="prev" href="../../guides/troubleshooting/">
+      
+      
+        <link rel="next" href="../manifests/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>CLI reference - Scribpy</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cli-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Scribpy" class="md-header__button md-logo" aria-label="Scribpy" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Scribpy
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CLI reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/antoinebarre/scribpy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Scribpy" class="md-nav__button md-logo" aria-label="Scribpy" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    Scribpy
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/antoinebarre/scribpy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project scope
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/domain-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domain model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/assembly-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assembly pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/diagram-renderers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagram renderers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Organizing a notes project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Organizing a notes project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/markdown-sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Markdown sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/links-and-images/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Links and images
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/root-manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Root manifest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/folder-manifests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Folder manifests and order
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagram sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using the CLI
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Using the CLI
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/project-creation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project creation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation and diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/build-export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and export
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using the Python API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Using the Python API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../python-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../python-api/end-user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    End-user API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../python-api/demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    End-to-end demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../python-api/extensions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extension API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/outputs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choosing an output
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/recipes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common recipes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI reference
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#new" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        new
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scaffold" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        scaffold
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diagnose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        diagnose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#html" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        html
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mkdocs-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mkdocs-export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#path-validation-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Path validation behavior
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manifests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifest reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagnostic reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#new" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        new
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scaffold" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        scaffold
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diagnose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        diagnose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#html" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        html
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mkdocs-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mkdocs-export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#path-validation-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Path validation behavior
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="cli-reference">CLI reference</h1>
+<p>This page is the exhaustive, option-by-option reference for every <code>scribpy</code>
+command, generated by reading <code>src/scribpy/cli/main.py</code> directly. For
+workflow-level explanations — when to reach for which command, and how
+commands compose — read <a href="../../cli/">Using the CLI</a> and the
+<a href="../../cli/demo/">end-to-end demo</a> instead; this page favors completeness
+over narrative.</p>
+<p>The Click entry point is:</p>
+<div class="highlight"><pre><span></span><code>scribpy [OPTIONS] COMMAND [ARGS]...
+</code></pre></div>
+<p>Global options:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--version</code></td>
+<td>Print Scribpy's package version and exit.</td>
+</tr>
+<tr>
+<td><code>--help</code></td>
+<td>Print the command list and exit.</td>
+</tr>
+</tbody>
+</table>
+<p>Every subcommand also accepts <code>--help</code>, e.g. <code>scribpy build --help</code> prints
+that command's own argument and option list without executing anything.</p>
+<p>All commands use exit status 0 for success. <code>validate</code> and <code>diagnose</code> use 1
+when blocking findings exist. Other expected domain or filesystem failures are
+translated to a Click error with status 1: Click prints <code>Error: &lt;message&gt;</code> to
+stderr and exits, so these failures are visible in scripts through both exit
+status and stderr content. The seven commands map directly onto the seven
+end-user Python functions documented in
+<a href="../python-api/#workflows">Python API reference</a> — each command is a thin
+adapter, not a separate implementation, so behavior described there (default
+values, raised exceptions, side effects) also holds for the CLI.</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Wraps this Python call</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>new</code></td>
+<td><code>scribpy.init_skeleton(...)</code></td>
+</tr>
+<tr>
+<td><code>scaffold</code></td>
+<td><code>scribpy.init_from_outline(...)</code></td>
+</tr>
+<tr>
+<td><code>validate</code></td>
+<td><code>scribpy.valid_report(...)</code></td>
+</tr>
+<tr>
+<td><code>diagnose</code></td>
+<td><code>scribpy.MarkdownCollection.from_tree(root).diagnose()</code></td>
+</tr>
+<tr>
+<td><code>build</code></td>
+<td><code>scribpy.MarkdownCollection.from_tree(root)</code> + <code>scribpy.concatenate(...)</code></td>
+</tr>
+<tr>
+<td><code>html</code></td>
+<td><code>scribpy.html_export(...)</code></td>
+</tr>
+<tr>
+<td><code>mkdocs-export</code></td>
+<td><code>scribpy.mkdocs_export(...)</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="new"><code>new</code></h2>
+<div class="highlight"><pre><span></span><code>scribpy new [OPTIONS] OUTPUT_DIR
+</code></pre></div>
+<p>Create a minimal root manifest and <code>index.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th style="text-align: right;">Required</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OUTPUT_DIR</code></td>
+<td>path</td>
+<td style="text-align: right;">yes</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--title TEXT</code></td>
+<td>text</td>
+<td style="text-align: right;">yes</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--author TEXT</code></td>
+<td>text</td>
+<td style="text-align: right;">no</td>
+<td>empty string</td>
+</tr>
+<tr>
+<td><code>--project-version TEXT</code></td>
+<td>text</td>
+<td style="text-align: right;">no</td>
+<td><code>0.1.0</code></td>
+</tr>
+<tr>
+<td><code>--help</code></td>
+<td>flag</td>
+<td style="text-align: right;">no</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code>Created Scribpy project at OUTPUT_DIR
+</code></pre></div>
+<p><code>OUTPUT_DIR</code> need not exist. Existing unrelated contents are not removed, but
+an existing <code>OUTPUT_DIR/scribpy.yml</code> raises <code>ScaffoldCollisionError</code>.</p>
+<div class="highlight"><pre><span></span><code>scribpy<span class="w"> </span>new<span class="w"> </span>notes<span class="w"> </span>--title<span class="w"> </span><span class="s2">&quot;Engineering Notes&quot;</span><span class="w"> </span>--author<span class="w"> </span><span class="s2">&quot;Ada&quot;</span>
+</code></pre></div>
+<p>This creates <code>notes/scribpy.yml</code> and <code>notes/index.md</code>. The manifest looks
+like:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">project</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Engineering Notes</span>
+<span class="w">  </span><span class="nt">author</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Ada</span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1.0</span>
+<span class="nt">build</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">toc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">heading_numbering</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="nt">order</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">index.md</span>
+</code></pre></div>
+<p><code>author</code> is omitted from the written manifest when left at its default empty
+string; <code>version</code> is always written, defaulting to <code>0.1.0</code> unless
+<code>--project-version</code> overrides it. The generated <code>build</code> block explicitly
+turns TOC and heading numbering off — enable them by editing the manifest
+once your project has more than one page (see
+<a href="../../notes-project/root-manifest/">Root manifest</a>). <code>index.md</code> itself is a
+one-line stub: <code># Engineering Notes</code>. Use <code>new</code> for a project you intend to
+grow by hand, one file at a time. If you already have an outline of your
+intended structure (a Markdown file of nested headings), use <code>scaffold</code>
+instead — it generates the whole tree in one step.</p>
+<div class="highlight"><pre><span></span><code>scribpy<span class="w"> </span>new<span class="w"> </span>notes<span class="w"> </span>--title<span class="w"> </span><span class="s2">&quot;Engineering Notes&quot;</span><span class="w"> </span>--author<span class="w"> </span><span class="s2">&quot;Ada&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--project-version<span class="w"> </span><span class="s2">&quot;0.3.0&quot;</span>
+</code></pre></div>
+<h2 id="scaffold"><code>scaffold</code></h2>
+<div class="highlight"><pre><span></span><code>scribpy scaffold [OPTIONS] OUTLINE_PATH OUTPUT_DIR
+</code></pre></div>
+<p>Parse a headings-only outline and generate directories, stub pages, and local
+manifests.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th style="text-align: right;">Required</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OUTLINE_PATH</code></td>
+<td>existing file</td>
+<td style="text-align: right;">yes</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>OUTPUT_DIR</code></td>
+<td>path</td>
+<td style="text-align: right;">yes</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--max-depth INTEGER</code></td>
+<td>integer 1–6</td>
+<td style="text-align: right;">no</td>
+<td><code>4</code></td>
+</tr>
+<tr>
+<td><code>--help</code></td>
+<td>flag</td>
+<td style="text-align: right;">no</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code>Scaffolded Scribpy project at OUTPUT_DIR
+</code></pre></div>
+<p>Expected failures include unreadable outline, invalid structure,
+<code>max-depth</code> outside 1–6, sibling slug collision, and existing target manifest.</p>
+<div class="highlight"><pre><span></span><code>scribpy<span class="w"> </span>scaffold<span class="w"> </span>outline.md<span class="w"> </span>notes<span class="w"> </span>--max-depth<span class="w"> </span><span class="m">5</span>
+</code></pre></div>
+<p>Given this outline:</p>
+<div class="highlight"><pre><span></span><code><span class="gh"># Engineering Handbook</span>
+
+<span class="gu">## Getting Started</span>
+
+<span class="gu">## Architecture</span>
+
+<span class="gu">### Domain Model</span>
+
+<span class="gu">### Pipeline</span>
+</code></pre></div>
+<p><code>scaffold</code> produces:</p>
+<div class="highlight"><pre><span></span><code>notes/
+├── scribpy.yml              # project.title: Engineering Handbook
+├── index.md                 # &quot;# Engineering Handbook&quot;
+├── getting-started.md       # leaf heading -&gt; stub file
+└── architecture/            # heading with children -&gt; subdirectory
+    ├── scribpy.yml          # title: Architecture, order: [domain-model.md, pipeline.md]
+    ├── domain-model.md
+    └── pipeline.md
+</code></pre></div>
+<p>Headings are slugified for filenames and directory names (<code>Domain Model</code> →
+<code>domain-model</code>), using the same slug function MkForge uses elsewhere in the
+toolchain. A single top-level H1 becomes the project title and its direct
+children become the root <code>order</code>; an outline with multiple H1s instead
+produces a generic <code>Project</code> title with each H1 as a top-level entry. Every
+generated stub file contains only its heading, ready to be filled in.</p>
+<h2 id="validate"><code>validate</code></h2>
+<div class="highlight"><pre><span></span><code>scribpy validate [OPTIONS] ROOT
+</code></pre></div>
+<p>Run manifest inspection, MkForge Markdown verification, and collection
+diagnostics; render the complete report with Rich.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th style="text-align: right;">Required</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ROOT</code></td>
+<td>path</td>
+<td style="text-align: right;">yes</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--help</code></td>
+<td>flag</td>
+<td style="text-align: right;">no</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>The command has no formatting, strictness, rule-selection, or output-file
+option. Use the Python API for structured report handling.</p>
+<div class="highlight"><pre><span></span><code>scribpy<span class="w"> </span>validate<span class="w"> </span>notes
+<span class="nv">status</span><span class="o">=</span><span class="nv">$?</span>
+</code></pre></div>
+<p><code>validate</code> is the broadest check available: it inspects every reachable
+manifest (root and folder), verifies every Markdown source through MkForge
+(heading structure, front matter, image references), and runs the full
+collection diagnostics engine — then renders everything as one Rich report
+with <code>render_validation_report</code>. It always runs to completion and prints
+findings even when there are zero errors, so it is safe to run on every
+change, including in CI:</p>
+<div class="highlight"><pre><span></span><code>scribpy<span class="w"> </span>validate<span class="w"> </span>notes<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+</code></pre></div>
+<p>Because <code>validate</code> prints a formatted report and only signals pass/fail
+through the exit code, prefer <code>scribpy.validate_project()</code> from Python when
+your caller needs to branch on individual finding codes rather than parse
+text output.</p>
+<h2 id="diagnose"><code>diagnose</code></h2>
+<div class="highlight"><pre><span></span><code>scribpy diagnose [OPTIONS] ROOT
+</code></pre></div>
+<p>Load the collection, run default collection rules, and print the plain-text
+summary. This does not replace the broader <code>validate</code> command.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th style="text-align: right;">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ROOT</code></td>
+<td>path</td>
+<td style="text-align: right;">yes</td>
+</tr>
+<tr>
+<td><code>--help</code></td>
+<td>flag</td>
+<td style="text-align: right;">no</td>
+</tr>
+</tbody>
+</table>
+<p>An invalid manifest, filesystem error, or decoding failure becomes a Click
+error. A diagnostic report containing errors exits 1 after printing findings.</p>
+<div class="highlight"><pre><span></span><code>scribpy<span class="w"> </span>diagnose<span class="w"> </span>notes
+</code></pre></div>
+<p><code>diagnose</code> is narrower and faster than <code>validate</code>: it only runs the eight
+default <code>CollectionDiagnosticRule</code> checks (see
+<a href="../diagnostics/#default-collection-rules">Diagnostic reference</a>) and skips
+MkForge front-matter/heading verification and the broader manifest
+inspection that <code>validate</code> performs. Reach for <code>diagnose</code> when you only care
+about Markdown-structure and link/image problems — for example while
+iterating quickly on a single page — and reach for <code>validate</code> before
+publishing or in CI, where the fuller check matters more than speed.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>validate</code></th>
+<th><code>diagnose</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Manifest inspection</td>
+<td>yes</td>
+<td>no</td>
+</tr>
+<tr>
+<td>MkForge Markdown verification</td>
+<td>yes</td>
+<td>no</td>
+</tr>
+<tr>
+<td>Collection diagnostics (8 rules)</td>
+<td>yes (adapted into <code>ProjectDiagnostic</code>)</td>
+<td>yes (raw <code>CollectionDiagnostic</code>)</td>
+</tr>
+<tr>
+<td>Output</td>
+<td>Rich table via <code>render_validation_report</code></td>
+<td>plain-text <code>report.summary()</code></td>
+</tr>
+<tr>
+<td>Underlying call</td>
+<td><code>scribpy.valid_report(root)</code></td>
+<td><code>MarkdownCollection.from_tree(root).diagnose()</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="build"><code>build</code></h2>
+<div class="highlight"><pre><span></span><code>scribpy build [OPTIONS] ROOT OUTPUT
+</code></pre></div>
+<p>Assemble a project into one Markdown file.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th style="text-align: right;">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ROOT</code></td>
+<td>path</td>
+<td style="text-align: right;">yes</td>
+</tr>
+<tr>
+<td><code>OUTPUT</code></td>
+<td>path</td>
+<td style="text-align: right;">yes</td>
+</tr>
+<tr>
+<td><code>--help</code></td>
+<td>flag</td>
+<td style="text-align: right;">no</td>
+</tr>
+</tbody>
+</table>
+<p>All policy options come from the root manifest; there are no CLI overrides for
+TOC, numbering, or renderer backends. The output parent is created. Successful
+output is:</p>
+<div class="highlight"><pre><span></span><code>Built Markdown document at OUTPUT
+</code></pre></div>
+<p>Expected errors include invalid Markdown/manifest, renderer failure,
+unimplemented PlantUML local backend, filesystem failure, and decoding failure.</p>
+<div class="highlight"><pre><span></span><code>scribpy<span class="w"> </span>build<span class="w"> </span>notes<span class="w"> </span>work/notes/document.md
+</code></pre></div>
+<p><code>build</code> runs the full assembly pipeline described in
+<a href="../../architecture/assembly-pipeline/">Assembly pipeline</a>: heading
+numbering (if enabled), internal link rewriting, TOC insertion (if
+enabled), PlantUML/Mermaid rendering, and image collection — always in that
+fixed order, always driven entirely by the project's <code>scribpy.yml</code>. The
+output is one Markdown file plus an <code>assets/</code> directory next to it holding
+copied and generated images:</p>
+<div class="highlight"><pre><span></span><code>work/notes/
+├── document.md
+└── assets/
+    ├── generated/
+    │   └── 3f9c2a…8b1e.png   # diagram, named by content hash
+    └── logo.png               # copied local image
+</code></pre></div>
+<p>If validation matters to you before committing to a build, chain <code>validate</code>
+first — <code>build</code> itself still runs collection diagnostics internally and
+raises <code>InvalidMarkdownError</code> on any error-level finding, but it does not
+print the findings the way <code>validate</code> does:</p>
+<div class="highlight"><pre><span></span><code>scribpy<span class="w"> </span>validate<span class="w"> </span>notes<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>scribpy<span class="w"> </span>build<span class="w"> </span>notes<span class="w"> </span>work/notes/document.md
+</code></pre></div>
+<h2 id="html"><code>html</code></h2>
+<div class="highlight"><pre><span></span><code>scribpy html [OPTIONS] SOURCE OUTPUT
+</code></pre></div>
+<p>Convert one already assembled Markdown file into standalone HTML.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th style="text-align: right;">Required</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SOURCE</code></td>
+<td>path</td>
+<td style="text-align: right;">yes</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>OUTPUT</code></td>
+<td>path</td>
+<td style="text-align: right;">yes</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--toc-depth INTEGER</code></td>
+<td>integer</td>
+<td style="text-align: right;">no</td>
+<td><code>3</code></td>
+</tr>
+<tr>
+<td><code>--css FILE</code></td>
+<td>existing file</td>
+<td style="text-align: right;">no</td>
+<td>built-in CSS only</td>
+</tr>
+<tr>
+<td><code>--help</code></td>
+<td>flag</td>
+<td style="text-align: right;">no</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><code>SOURCE</code> is not a project root. <code>OUTPUT</code>'s parent must already exist.
+<code>toc-depth</code> is relative to H1: 1 includes H2, 2 includes H2 and H3, and 3
+includes through H4. The command reports:</p>
+<div class="highlight"><pre><span></span><code>Exported HTML document at OUTPUT
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>scribpy<span class="w"> </span>html<span class="w"> </span>work/notes/document.md<span class="w"> </span>work/notes/document.html<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--toc-depth<span class="w"> </span><span class="m">2</span><span class="w"> </span>--css<span class="w"> </span>custom.css
+</code></pre></div>
+<p><code>html</code> operates on an already-assembled document — normally <code>build</code>'s
+output, not a raw project source tree. It strips the Markdown TOC block
+that <code>build</code> inserted (if any), converts the remaining Markdown to HTML,
+and rebuilds the navigation from headings up to <code>--toc-depth</code>, presented as
+a collapsible burger menu. All CSS and JavaScript are inlined into the HTML
+file itself, but referenced images (<code>assets/…</code>) remain separate files next
+to the HTML — copy the whole output directory, not just the <code>.html</code> file,
+when distributing it. Run <code>build</code> then <code>html</code> back to back for a
+one-command style pipeline:</p>
+<div class="highlight"><pre><span></span><code>scribpy<span class="w"> </span>build<span class="w"> </span>notes<span class="w"> </span>work/notes/document.md<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+scribpy<span class="w"> </span>html<span class="w"> </span>work/notes/document.md<span class="w"> </span>work/notes/document.html
+</code></pre></div>
+<h2 id="mkdocs-export"><code>mkdocs-export</code></h2>
+<div class="highlight"><pre><span></span><code>scribpy mkdocs-export [OPTIONS] SOURCE OUTPUT
+</code></pre></div>
+<p>Export a Scribpy project as MkDocs input while keeping pages separate.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th style="text-align: right;">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SOURCE</code></td>
+<td>project-root path</td>
+<td style="text-align: right;">yes</td>
+</tr>
+<tr>
+<td><code>OUTPUT</code></td>
+<td>destination-directory path</td>
+<td style="text-align: right;">yes</td>
+</tr>
+<tr>
+<td><code>--help</code></td>
+<td>flag</td>
+<td style="text-align: right;">no</td>
+</tr>
+</tbody>
+</table>
+<p>The command has no force, theme, serve, build, or deploy option. It refuses an
+existing <code>OUTPUT/mkdocs.yml</code>. Successful output is:</p>
+<div class="highlight"><pre><span></span><code>Exported MkDocs project at OUTPUT
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>scribpy<span class="w"> </span>mkdocs-export<span class="w"> </span>notes<span class="w"> </span>work/notes/mkdocs-source
+</code></pre></div>
+<p>Unlike <code>build</code>, <code>mkdocs-export</code> runs directly against the project source
+tree, not an assembled file, and never merges pages into one document.
+Every source page is copied to <code>docs/</code> at its original relative path with
+its diagrams rendered and its images collected in place; links between
+pages are left as ordinary Markdown paths — MkDocs resolves them at its own
+build time, so Scribpy's link-rewriting and heading-numbering transforms do
+not run for this output shape. Navigation (<code>nav:</code> in the generated
+<code>mkdocs.yml</code>) mirrors the manifest hierarchy, using each page's first H1 as
+its navigation label:</p>
+<div class="highlight"><pre><span></span><code>work/notes/mkdocs-source/
+├── mkdocs.yml
+└── docs/
+    ├── index.md
+    └── architecture/
+        ├── domain-model.md
+        └── assets/
+            └── generated/…
+</code></pre></div>
+<p>The generated <code>mkdocs.yml</code> only contains <code>site_name</code>, <code>docs_dir</code>, and
+<code>nav</code> — no theme, plugins, or Material configuration. Add those yourself
+before running <code>mkdocs build</code> or <code>mkdocs serve</code> on the result, or adapt this
+project's own <code>mkdocs.yml</code> as a starting template.</p>
+<h2 id="path-validation-behavior">Path validation behavior</h2>
+<p>Click existence-checks <code>OUTLINE_PATH</code> and <code>--css</code> because they use an existing
+file type. Other path parameters are converted to <code>pathlib.Path</code> without early
+existence checking; the called public API produces the relevant domain or
+filesystem failure.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

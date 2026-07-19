@@ -1,0 +1,2122 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Assemble ordered Markdown collections into publishable outputs.">
+      
+      
+      
+        <link rel="canonical" href="https://antoinebarre.github.io/scribpy/python-api/end-user/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../demo/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>End-user API - Scribpy</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#end-user-api" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Scribpy" class="md-header__button md-logo" aria-label="Scribpy" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Scribpy
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              End-user API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/antoinebarre/scribpy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Scribpy" class="md-nav__button md-logo" aria-label="Scribpy" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    Scribpy
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/antoinebarre/scribpy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project scope
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/domain-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domain model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/assembly-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assembly pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/diagram-renderers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagram renderers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Organizing a notes project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Organizing a notes project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/markdown-sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Markdown sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/links-and-images/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Links and images
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/root-manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Root manifest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/folder-manifests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Folder manifests and order
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notes-project/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagram sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using the CLI
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Using the CLI
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/project-creation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project creation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation and diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/build-export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and export
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using the Python API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Using the Python API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    End-user API
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    End-user API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#object-level-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Object-level workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-a-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create a project
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#work-with-one-markdown-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Work with one Markdown value
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validate-with-or-without-presentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validate with or without presentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#load-diagnose-and-assemble" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Load, diagnose, and assemble
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#add-temporary-logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add temporary logging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#handling-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handling exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    End-to-end demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extensions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extension API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/outputs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choosing an output
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/recipes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common recipes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/manifests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifest reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagnostic reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/python-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#object-level-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Object-level workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-a-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create a project
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#work-with-one-markdown-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Work with one Markdown value
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validate-with-or-without-presentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validate with or without presentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#load-diagnose-and-assemble" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Load, diagnose, and assemble
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#add-temporary-logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add temporary logging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#handling-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handling exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="end-user-api">End-user API</h1>
+<p>The package root is the supported end-user boundary. Start with <code>import
+scribpy</code>, then combine focused functions rather than importing internal
+pipeline steps.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Every name documented on this page is listed in <code>scribpy.__all__</code>. If a
+name is not importable as <code>scribpy.&lt;Name&gt;</code>, it belongs to the
+<a href="../extensions/">Extension API</a> instead.</p>
+</div>
+<h2 id="object-level-workflow">Object-level workflow</h2>
+<p>The functions below operate on a small set of domain objects. This sequence
+diagram shows how they interact for the common validate-then-build path:</p>
+<p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIGRhdGEtZGlhZ3JhbS10eXBlPSJTRVFVRU5DRSIgc3R5bGU9IndpZHRoOjY4NXB4O2hlaWdodDo3NTVweDtiYWNrZ3JvdW5kOiNGRkZGRkY7IiB3aWR0aD0iNjg1cHgiIGhlaWdodD0iNzU1cHgiIHZpZXdCb3g9IjAgMCA2ODUgNzU1IiB6b29tQW5kUGFuPSJtYWduaWZ5IiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBjb250ZW50U3R5bGVUeXBlPSJ0ZXh0L2NzcyI+PD9wbGFudHVtbCAxLjIwMjYuN2JldGE4Pz48ZGVmcy8+PGcgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGxlbmd0aEFkanVzdD0ic3BhY2luZyI+PHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjY2NC4wMTkiIGhlaWdodD0iMTYuNjQxIiBmaWxsPSIjRkZDIiBzdHlsZT0ic3Ryb2tlOiNGRDg7c3Ryb2tlLXdpZHRoOjM7IiByeD0iMi41IiByeT0iMi41Ii8+PHRleHQgeD0iMTUiIHk9IjE4LjY0MSIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxMCIgdGV4dExlbmd0aD0iMzYxLjIzIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIj5QbGVhc2XCoHVzZcKgQ1NTwqBzdHlsZcKgaW5zdGVhZMKgb2bCoHNraW5wYXJhbcKgUGFydGljaXBhbnRQYWRkaW5nPC90ZXh0PjxnPjx0aXRsZT5BcHBsaWNhdGlvbjwvdGl0bGU+PHJlY3QgeD0iNDguNjEyIiB5PSIxMDcuOTM4IiB3aWR0aD0iOCIgaGVpZ2h0PSI1NjAuMDYzIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAiLz48bGluZSB4MT0iNTIuMTEyIiB5MT0iMTA3LjkzOCIgeDI9IjUyLjExMiIgeTI9IjY2OCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7c3Ryb2tlLWRhc2hhcnJheTo1LDU7Ii8+PC9nPjxnPjx0aXRsZT5zY3JpYnB5PC90aXRsZT48cmVjdCB4PSIyODIuOTE2IiB5PSIxMDcuOTM4IiB3aWR0aD0iOCIgaGVpZ2h0PSI1NjAuMDYzIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAiLz48bGluZSB4MT0iMjg2LjQxNiIgeTE9IjEwNy45MzgiIHgyPSIyODYuNDE2IiB5Mj0iNjY4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTtzdHJva2UtZGFzaGFycmF5OjUsNTsiLz48L2c+PGc+PHRpdGxlPk1hcmtkb3duQ29sbGVjdGlvbjwvdGl0bGU+PHJlY3QgeD0iNDAzLjAzNiIgeT0iMTA3LjkzOCIgd2lkdGg9IjgiIGhlaWdodD0iNTYwLjA2MyIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwIi8+PGxpbmUgeDE9IjQwNi41MzYiIHkxPSIxMDcuOTM4IiB4Mj0iNDA2LjUzNiIgeTI9IjY2OCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7c3Ryb2tlLWRhc2hhcnJheTo1LDU7Ii8+PC9nPjxnPjx0aXRsZT5Qcm9qZWN0VmFsaWRhdGlvblJlcG9ydDwvdGl0bGU+PHJlY3QgeD0iNTgwLjY2NCIgeT0iMTA3LjkzOCIgd2lkdGg9IjgiIGhlaWdodD0iNTYwLjA2MyIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwIi8+PGxpbmUgeDE9IjU4NC4xNjQiIHkxPSIxMDcuOTM4IiB4Mj0iNTg0LjE2NCIgeTI9IjY2OCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7c3Ryb2tlLWRhc2hhcnJheTo1LDU7Ii8+PC9nPjx0ZXh0IHg9IjEwIiB5PSIxMDQuNjM2IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSI3OC4yMjQiPkFwcGxpY2F0aW9uPC90ZXh0PjxlbGxpcHNlIGN4PSI1Mi4xMTIiIGN5PSI0MC4xNDEiIHJ4PSI4IiByeT0iOCIgZmlsbD0iI0UyRTJGMCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7Ii8+PHBhdGggZD0iTTUyLjExMiw0OC4xNDEgTDUyLjExMiw3NS4xNDEgTTM5LjExMiw1Ni4xNDEgTDY1LjExMiw1Ni4xNDEgTTUyLjExMiw3NS4xNDEgTDM5LjExMiw5MC4xNDEgTTUyLjExMiw3NS4xNDEgTDY1LjExMiw5MC4xNDEiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIgZmlsbD0ibm9uZSIvPjxyZWN0IHg9IjI1NC4wNjgiIHk9Ijc2LjY0MSIgd2lkdGg9IjY0LjY5NSIgaGVpZ2h0PSIzMC4yOTciIGZpbGw9IiNFMkUyRjAiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MC41OyIgcng9IjIuNSIgcnk9IjIuNSIvPjx0ZXh0IHg9IjI2MS4wNjgiIHk9Ijk2LjYzNiIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iNTAuNjk1Ij5zY3JpYnB5PC90ZXh0PjxyZWN0IHg9IjMyOC43NjQiIHk9Ijc2LjY0MSIgd2lkdGg9IjE1NS41NDUiIGhlaWdodD0iMzAuMjk3IiBmaWxsPSIjRTJFMkYwIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiIHJ4PSIyLjUiIHJ5PSIyLjUiLz48dGV4dCB4PSIzMzUuNzY0IiB5PSI5Ni42MzYiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjE0MS41NDUiPk1hcmtkb3duQ29sbGVjdGlvbjwvdGV4dD48cmVjdCB4PSI0OTQuMzA5IiB5PSI3Ni42NDEiIHdpZHRoPSIxNzkuNzEiIGhlaWdodD0iMzAuMjk3IiBmaWxsPSIjRTJFMkYwIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiIHJ4PSIyLjUiIHJ5PSIyLjUiLz48dGV4dCB4PSI1MDEuMzA5IiB5PSI5Ni42MzYiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9IjE2NS43MSI+UHJvamVjdFZhbGlkYXRpb25SZXBvcnQ8L3RleHQ+PHRleHQgeD0iMTAiIHk9IjY4MC45OTUiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTQiIHRleHRMZW5ndGg9Ijc4LjIyNCI+QXBwbGljYXRpb248L3RleHQ+PGVsbGlwc2UgY3g9IjUyLjExMiIgY3k9IjY5Mi43OTciIHJ4PSI4IiByeT0iOCIgZmlsbD0iI0UyRTJGMCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7Ii8+PHBhdGggZD0iTTUyLjExMiw3MDAuNzk3IEw1Mi4xMTIsNzI3Ljc5NyBNMzkuMTEyLDcwOC43OTcgTDY1LjExMiw3MDguNzk3IE01Mi4xMTIsNzI3Ljc5NyBMMzkuMTEyLDc0Mi43OTcgTTUyLjExMiw3MjcuNzk3IEw2NS4xMTIsNzQyLjc5NyIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7IiBmaWxsPSJub25lIi8+PHJlY3QgeD0iMjU0LjA2OCIgeT0iNjY4IiB3aWR0aD0iNjQuNjk1IiBoZWlnaHQ9IjMwLjI5NyIgZmlsbD0iI0UyRTJGMCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7IiByeD0iMi41IiByeT0iMi41Ii8+PHRleHQgeD0iMjYxLjA2OCIgeT0iNjg3Ljk5NSIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iNTAuNjk1Ij5zY3JpYnB5PC90ZXh0PjxyZWN0IHg9IjMyOC43NjQiIHk9IjY2OCIgd2lkdGg9IjE1NS41NDUiIGhlaWdodD0iMzAuMjk3IiBmaWxsPSIjRTJFMkYwIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjAuNTsiIHJ4PSIyLjUiIHJ5PSIyLjUiLz48dGV4dCB4PSIzMzUuNzY0IiB5PSI2ODcuOTk1IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjE0IiB0ZXh0TGVuZ3RoPSIxNDEuNTQ1Ij5NYXJrZG93bkNvbGxlY3Rpb248L3RleHQ+PHJlY3QgeD0iNDk0LjMwOSIgeT0iNjY4IiB3aWR0aD0iMTc5LjcxIiBoZWlnaHQ9IjMwLjI5NyIgZmlsbD0iI0UyRTJGMCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDowLjU7IiByeD0iMi41IiByeT0iMi41Ii8+PHRleHQgeD0iNTAxLjMwOSIgeT0iNjg3Ljk5NSIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgdGV4dExlbmd0aD0iMTY1LjcxIj5Qcm9qZWN0VmFsaWRhdGlvblJlcG9ydDwvdGV4dD48cG9seWdvbiBwb2ludHM9IjI3NC40MTYsMTMzLjA3LDI4NC40MTYsMTM3LjA3LDI3NC40MTYsMTQxLjA3LDI3OC40MTYsMTM3LjA3IiBmaWxsPSIjMTgxODE4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1taXRlcmxpbWl0OjEwOyIvPjxsaW5lIHgxPSI1Mi4xMTIiIHkxPSIxMzcuMDciIHgyPSIyODAuNDE2IiB5Mj0iMTM3LjA3IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7Ii8+PHRleHQgeD0iNTkuMTEyIiB5PSIxMzIuMDA0IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjEzIiB0ZXh0TGVuZ3RoPSIxNDAuNTk0Ij52YWxpZGF0ZV9wcm9qZWN0KHJvb3QpPC90ZXh0Pjxwb2x5Z29uIHBvaW50cz0iNTcyLjE2NCwxNjIuMjAzLDU4Mi4xNjQsMTY2LjIwMyw1NzIuMTY0LDE3MC4yMDMsNTc2LjE2NCwxNjYuMjAzIiBmaWxsPSIjMTgxODE4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1taXRlcmxpbWl0OjEwOyIvPjxsaW5lIHgxPSIyODYuNDE2IiB5MT0iMTY2LjIwMyIgeDI9IjU3OC4xNjQiIHkyPSIxNjYuMjAzIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7Ii8+PHRleHQgeD0iMjkzLjQxNiIgeT0iMTYxLjEzNyIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxMyIgdGV4dExlbmd0aD0iNzYuMDg5Ij5idWlsZCByZXBvcnQ8L3RleHQ+PHBvbHlnb24gcG9pbnRzPSI2My4xMTIsMTkxLjMzNiw1My4xMTIsMTk1LjMzNiw2My4xMTIsMTk5LjMzNiw1OS4xMTIsMTk1LjMzNiIgZmlsbD0iIzE4MTgxOCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDoxMDsiLz48bGluZSB4MT0iNTcuMTEyIiB5MT0iMTk1LjMzNiIgeDI9IjU4My4xNjQiIHkyPSIxOTUuMzM2IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWRhc2hhcnJheToyLDI7Ii8+PHRleHQgeD0iNjkuMTEyIiB5PSIxOTAuMjciIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTMiIHRleHRMZW5ndGg9IjM5Ljk5Ij5yZXBvcnQ8L3RleHQ+PHBvbHlnb24gcG9pbnRzPSI1NzIuMTY0LDIyMC40NjksNTgyLjE2NCwyMjQuNDY5LDU3Mi4xNjQsMjI4LjQ2OSw1NzYuMTY0LDIyNC40NjkiIGZpbGw9IiMxODE4MTgiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW1pdGVybGltaXQ6MTA7Ii8+PGxpbmUgeDE9IjUyLjExMiIgeTE9IjIyNC40NjkiIHgyPSI1NzguMTY0IiB5Mj0iMjI0LjQ2OSIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxOyIvPjx0ZXh0IHg9IjU5LjExMiIgeT0iMjE5LjQwMyIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxMyIgdGV4dExlbmd0aD0iOTIuMTQzIj5yZXBvcnQuaXNfdmFsaWQ8L3RleHQ+PHBhdGggZD0iTTM2LjExMiwyMzYuNDY5IEwxMDAuNTU1LDIzNi40NjkgTDEwMC41NTUsMjQzLjYwMiBMOTAuNTU1LDI1My42MDIgTDM2LjExMiwyNTMuNjAyIEwzNi4xMTIsMjM2LjQ2OSIgc3R5bGU9InN0cm9rZTojMDAwO3N0cm9rZS13aWR0aDoxLjU7IiBmaWxsPSIjRUVFIi8+PHJlY3QgeD0iMzYuMTEyIiB5PSIyMzYuNDY5IiB3aWR0aD0iMzg2LjQyNCIgaGVpZ2h0PSI0MDcuNTMxIiBmaWxsPSJub25lIiBzdHlsZT0ic3Ryb2tlOiMwMDA7c3Ryb2tlLXdpZHRoOjEuNTsiLz48dGV4dCB4PSI1MS4xMTIiIHk9IjI0OS41MzYiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTMiIHRleHRMZW5ndGg9IjE5LjQ0MyIgZm9udC13ZWlnaHQ9IjcwMCI+YWx0PC90ZXh0Pjx0ZXh0IHg9IjExNS41NTUiIHk9IjI0OC42NzkiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTEiIHRleHRMZW5ndGg9IjU1Ljg4MSIgZm9udC13ZWlnaHQ9IjcwMCI+W2lzX3ZhbGlkXTwvdGV4dD48bGluZSB4MT0iMzYuMTEyIiB5MT0iNTY1LjkzIiB4Mj0iNDIyLjUzNiIgeTI9IjU2NS45MyIgc3R5bGU9InN0cm9rZTojMDAwO3N0cm9rZS13aWR0aDoxO3N0cm9rZS1kYXNoYXJyYXk6MiwyOyIvPjx0ZXh0IHg9IjQxLjExMiIgeT0iNTc4LjE0IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjExIiB0ZXh0TGVuZ3RoPSI4MC4zNTciIGZvbnQtd2VpZ2h0PSI3MDAiPltub3QgaXNfdmFsaWRdPC90ZXh0Pjxwb2x5Z29uIHBvaW50cz0iMzk0LjUzNiwyODAuNzM0LDQwNC41MzYsMjg0LjczNCwzOTQuNTM2LDI4OC43MzQsMzk4LjUzNiwyODQuNzM0IiBmaWxsPSIjMTgxODE4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1taXRlcmxpbWl0OjEwOyIvPjxsaW5lIHgxPSI1Mi4xMTIiIHkxPSIyODQuNzM0IiB4Mj0iNDAwLjUzNiIgeTI9IjI4NC43MzQiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTsiLz48dGV4dCB4PSI1OS4xMTIiIHk9IjI3OS42NjgiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTMiIHRleHRMZW5ndGg9IjIzNS41MzYiPk1hcmtkb3duQ29sbGVjdGlvbi5mcm9tX3RyZWUocm9vdCk8L3RleHQ+PHBvbHlnb24gcG9pbnRzPSI2My4xMTIsMzA5Ljg2Nyw1My4xMTIsMzEzLjg2Nyw2My4xMTIsMzE3Ljg2Nyw1OS4xMTIsMzEzLjg2NyIgZmlsbD0iIzE4MTgxOCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDoxMDsiLz48bGluZSB4MT0iNTcuMTEyIiB5MT0iMzEzLjg2NyIgeDI9IjQwNS41MzYiIHkyPSIzMTMuODY3IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWRhc2hhcnJheToyLDI7Ii8+PHRleHQgeD0iNjkuMTEyIiB5PSIzMDguODAxIiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjEzIiB0ZXh0TGVuZ3RoPSI2Mi4zNzIiPmNvbGxlY3Rpb248L3RleHQ+PHBvbHlnb24gcG9pbnRzPSIzOTQuNTM2LDMzOSw0MDQuNTM2LDM0MywzOTQuNTM2LDM0NywzOTguNTM2LDM0MyIgZmlsbD0iIzE4MTgxOCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDoxMDsiLz48bGluZSB4MT0iNTIuMTEyIiB5MT0iMzQzIiB4Mj0iNDAwLjUzNiIgeTI9IjM0MyIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxOyIvPjx0ZXh0IHg9IjU5LjExMiIgeT0iMzM3LjkzNCIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxMyIgdGV4dExlbmd0aD0iMTM1LjY5NCI+Y29sbGVjdGlvbi5kaWFnbm9zZSgpPC90ZXh0Pjxwb2x5Z29uIHBvaW50cz0iNjMuMTEyLDM2OC4xMzMsNTMuMTEyLDM3Mi4xMzMsNjMuMTEyLDM3Ni4xMzMsNTkuMTEyLDM3Mi4xMzMiIGZpbGw9IiMxODE4MTgiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW1pdGVybGltaXQ6MTA7Ii8+PGxpbmUgeDE9IjU3LjExMiIgeTE9IjM3Mi4xMzMiIHgyPSI0MDUuNTM2IiB5Mj0iMzcyLjEzMyIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1kYXNoYXJyYXk6MiwyOyIvPjx0ZXh0IHg9IjY5LjExMiIgeT0iMzY3LjA2NyIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxMyIgdGV4dExlbmd0aD0iMTc2LjY0MyI+Q29sbGVjdGlvbkRpYWdub3N0aWNSZXBvcnQ8L3RleHQ+PHBvbHlnb24gcG9pbnRzPSIyNzQuNDE2LDM5Ny4yNjYsMjg0LjQxNiw0MDEuMjY2LDI3NC40MTYsNDA1LjI2NiwyNzguNDE2LDQwMS4yNjYiIGZpbGw9IiMxODE4MTgiIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW1pdGVybGltaXQ6MTA7Ii8+PGxpbmUgeDE9IjUyLjExMiIgeTE9IjQwMS4yNjYiIHgyPSIyODAuNDE2IiB5Mj0iNDAxLjI2NiIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxOyIvPjx0ZXh0IHg9IjU5LjExMiIgeT0iMzk2LjIiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTMiIHRleHRMZW5ndGg9IjIwNC41MDkiPmNvbmNhdGVuYXRlKGNvbGxlY3Rpb24sIG91dHB1dCk8L3RleHQ+PHBvbHlnb24gcG9pbnRzPSI2My4xMTIsNDI2LjM5OCw1My4xMTIsNDMwLjM5OCw2My4xMTIsNDM0LjM5OCw1OS4xMTIsNDMwLjM5OCIgZmlsbD0iIzE4MTgxOCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDoxMDsiLz48bGluZSB4MT0iNTcuMTEyIiB5MT0iNDMwLjM5OCIgeDI9IjI4NS40MTYiIHkyPSI0MzAuMzk4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWRhc2hhcnJheToyLDI7Ii8+PHRleHQgeD0iNjkuMTEyIiB5PSI0MjUuMzMzIiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjEzIiB0ZXh0TGVuZ3RoPSIxNzYuNDMzIj53cml0ZXMgb3V0cHV0Lm1kICsgYXNzZXRzLzwvdGV4dD48cG9seWdvbiBwb2ludHM9IjI3NC40MTYsNDU1LjUzMSwyODQuNDE2LDQ1OS41MzEsMjc0LjQxNiw0NjMuNTMxLDI3OC40MTYsNDU5LjUzMSIgZmlsbD0iIzE4MTgxOCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDoxMDsiLz48bGluZSB4MT0iNTIuMTEyIiB5MT0iNDU5LjUzMSIgeDI9IjI4MC40MTYiIHkyPSI0NTkuNTMxIiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7Ii8+PHRleHQgeD0iNTkuMTEyIiB5PSI0NTQuNDY1IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjEzIiB0ZXh0TGVuZ3RoPSIyMDUuNDA0Ij5odG1sX2V4cG9ydChvdXRwdXQsIGh0bWxfcGF0aCk8L3RleHQ+PHBvbHlnb24gcG9pbnRzPSI2My4xMTIsNDg0LjY2NCw1My4xMTIsNDg4LjY2NCw2My4xMTIsNDkyLjY2NCw1OS4xMTIsNDg4LjY2NCIgZmlsbD0iIzE4MTgxOCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDoxMDsiLz48bGluZSB4MT0iNTcuMTEyIiB5MT0iNDg4LjY2NCIgeDI9IjI4NS40MTYiIHkyPSI0ODguNjY0IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWRhc2hhcnJheToyLDI7Ii8+PHRleHQgeD0iNjkuMTEyIiB5PSI0ODMuNTk4IiBmaWxsPSIjMDAwIiBmb250LXNpemU9IjEzIiB0ZXh0TGVuZ3RoPSIxMDkuMjU2Ij53cml0ZXMgaHRtbF9wYXRoPC90ZXh0Pjxwb2x5Z29uIHBvaW50cz0iMjc0LjQxNiw1MTMuNzk3LDI4NC40MTYsNTE3Ljc5NywyNzQuNDE2LDUyMS43OTcsMjc4LjQxNiw1MTcuNzk3IiBmaWxsPSIjMTgxODE4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1taXRlcmxpbWl0OjEwOyIvPjxsaW5lIHgxPSI1Mi4xMTIiIHkxPSI1MTcuNzk3IiB4Mj0iMjgwLjQxNiIgeTI9IjUxNy43OTciIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTsiLz48dGV4dCB4PSI1OS4xMTIiIHk9IjUxMi43MzEiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTMiIHRleHRMZW5ndGg9IjE5MS4xMDMiPm1rZG9jc19leHBvcnQocm9vdCwgc2l0ZV9kaXIpPC90ZXh0Pjxwb2x5Z29uIHBvaW50cz0iNjMuMTEyLDU0Mi45Myw1My4xMTIsNTQ2LjkzLDYzLjExMiw1NTAuOTMsNTkuMTEyLDU0Ni45MyIgZmlsbD0iIzE4MTgxOCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDoxMDsiLz48bGluZSB4MT0iNTcuMTEyIiB5MT0iNTQ2LjkzIiB4Mj0iMjg1LjQxNiIgeTI9IjU0Ni45MyIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1kYXNoYXJyYXk6MiwyOyIvPjx0ZXh0IHg9IjY5LjExMiIgeT0iNTQxLjg2NCIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxMyIgdGV4dExlbmd0aD0iOTUuMTU4Ij53cml0ZXMgc2l0ZV9kaXIvPC90ZXh0Pjxwb2x5Z29uIHBvaW50cz0iMjc0LjQxNiw2MDIuODY3LDI4NC40MTYsNjA2Ljg2NywyNzQuNDE2LDYxMC44NjcsMjc4LjQxNiw2MDYuODY3IiBmaWxsPSIjMTgxODE4IiBzdHlsZT0ic3Ryb2tlOiMxODE4MTg7c3Ryb2tlLXdpZHRoOjE7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1taXRlcmxpbWl0OjEwOyIvPjxsaW5lIHgxPSI1Mi4xMTIiIHkxPSI2MDYuODY3IiB4Mj0iMjgwLjQxNiIgeTI9IjYwNi44NjciIHN0eWxlPSJzdHJva2U6IzE4MTgxODtzdHJva2Utd2lkdGg6MTsiLz48dGV4dCB4PSI1OS4xMTIiIHk9IjYwMS44MDEiIGZpbGw9IiMwMDAiIGZvbnQtc2l6ZT0iMTMiIHRleHRMZW5ndGg9IjIxMC4zMDQiPnJlbmRlcl92YWxpZGF0aW9uX3JlcG9ydChyZXBvcnQpPC90ZXh0Pjxwb2x5Z29uIHBvaW50cz0iNjMuMTEyLDYzMiw1My4xMTIsNjM2LDYzLjExMiw2NDAsNTkuMTEyLDYzNiIgZmlsbD0iIzE4MTgxOCIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDoxMDsiLz48bGluZSB4MT0iNTcuMTEyIiB5MT0iNjM2IiB4Mj0iMjg1LjQxNiIgeTI9IjYzNiIgc3R5bGU9InN0cm9rZTojMTgxODE4O3N0cm9rZS13aWR0aDoxO3N0cm9rZS1kYXNoYXJyYXk6MiwyOyIvPjx0ZXh0IHg9IjY5LjExMiIgeT0iNjMwLjkzNCIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxMyIgdGV4dExlbmd0aD0iMTEzLjYwNCI+cHJpbnRzIFJpY2ggcmVwb3J0PC90ZXh0Pjw/cGxhbnR1bWwtc3JjIFhMOUJSeThtM0J4dExyWVNFV3RBVGtLbVFUZ2thbjI3TlFFR1A2MThheVc5aUZ0eGtHcWpobzhFUkxGeFV6WUV1blBUYTJIaHU3VDJYSzZ3RDlUUWVybDF3cWlYTFY4NHhvNU9MM0FYVHlLUDNhUEg0SXgzdG1YYVhCMVROSVFfOTZzckZ4V0ZSd3JIM1JkNUFNeWxTTkZvNnl2X0l1a3d6TFlPdTJjck82Z0ZITjVNMEtwVTZZLU9tSnVwWjBYUGVJSmxxckZIOTFjSmdHblJ4ajNnSmthT2RKM1dON0ZNdlEtQ1VmNXlnMzJBcmhNR0RhN19TcU5ZM2ZibnN0eHJHeHVNWU9tdkxqZTBSb2pIRk01Ty05SWxEQ2dMeXo2S3p4SEV2ZnlQb2NEVjM3UVFId2d5dXYxbl85R2RkcDd1TkdneFJoT3RCV1YyUEU4SExES1FkbGRrZWFibkVrb29KaEtMdmhTZmV5b2FTT3U1Y1RPRko3aFNpN0pEQ3JVbjRzXzZGOFI4SEE2SDdZWHRpNmJYUjNKV19GcVJwYnZhZDNPYXpsdFlZaG1iUFZ4U2ltazRCYUxPZTVmdE15VDJfbTAwPz48L2c+PC9zdmc+" class="uml" alt="uml diagram" title="" /></p>
+<p>Two things to note: <code>concatenate</code> consumes an in-memory <code>MarkdownCollection</code>
+and writes the assembled Markdown, while <code>html_export</code> and <code>mkdocs_export</code>
+read from disk again — <code>html_export</code> from the assembled Markdown file,
+<code>mkdocs_export</code> from the original source project. See
+<a href="#export">Export</a> below.</p>
+<h2 id="create-a-project">Create a project</h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">scribpy</span>
+
+<span class="n">scribpy</span><span class="o">.</span><span class="n">init_skeleton</span><span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;handbook&quot;</span><span class="p">),</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Team Handbook&quot;</span><span class="p">,</span>
+    <span class="n">author</span><span class="o">=</span><span class="s2">&quot;Ada&quot;</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>To create a hierarchy from headings:</p>
+<div class="highlight"><pre><span></span><code><span class="n">outline</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;outline.md&quot;</span><span class="p">)</span>
+<span class="n">nodes</span> <span class="o">=</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">parse_outline</span><span class="p">(</span><span class="n">outline</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>
+
+<span class="n">scribpy</span><span class="o">.</span><span class="n">init_from_outline</span><span class="p">(</span>
+    <span class="n">outline</span><span class="p">,</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;handbook&quot;</span><span class="p">),</span>
+    <span class="n">max_depth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Both initialization workflows protect an existing <code>scribpy.yml</code> with
+<code>ScaffoldCollisionError</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="k">try</span><span class="p">:</span>
+    <span class="n">scribpy</span><span class="o">.</span><span class="n">init_skeleton</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;handbook&quot;</span><span class="p">),</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Team Handbook&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">ScaffoldCollisionError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A project already exists at: </span><span class="si">{</span><span class="n">error</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>An invalid outline (for example, a heading level jump that skips levels, or
+<code>max_depth</code> outside 1-6) raises <code>OutlineValidationError</code>, which carries a
+one-based <code>line_number</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">try</span><span class="p">:</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">parse_outline</span><span class="p">(</span><span class="n">outline</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">OutlineValidationError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Outline problem at line </span><span class="si">{</span><span class="n">error</span><span class="o">.</span><span class="n">line_number</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">error</span><span class="o">.</span><span class="n">detail</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="work-with-one-markdown-value">Work with one Markdown value</h2>
+<div class="highlight"><pre><span></span><code><span class="n">page</span> <span class="o">=</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">MarkdownFile</span><span class="o">.</span><span class="n">from_path</span><span class="p">(</span><span class="s2">&quot;handbook/index.md&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">suffix</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span>
+
+<span class="n">updated</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">replace_text</span><span class="p">(</span><span class="s2">&quot;Draft&quot;</span><span class="p">,</span> <span class="s2">&quot;Published&quot;</span><span class="p">)</span>
+<span class="n">updated</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;work/index.md&quot;</span><span class="p">)</span>
+
+<span class="n">document</span> <span class="o">=</span> <span class="n">updated</span><span class="o">.</span><span class="n">to_document</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">image_references</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">line</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">column</span><span class="p">)</span>
+</code></pre></div>
+<p><code>MarkdownFile</code> keeps path, content, and encoding. <code>MarkdownDocument</code> is
+path-free in-memory content. Both are immutable-style values: <code>with_content</code>
+and <code>replace_text</code> return new objects. <code>MarkdownImageReference</code> records the
+alt text, raw target, optional title, and optional one-based line/column of
+one image found inside a <code>MarkdownDocument</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="n">document</span> <span class="o">=</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">MarkdownDocument</span><span class="p">(</span>
+    <span class="s1">&#39;# Page</span><span class="se">\n\n</span><span class="s1">![Logo](assets/logo.png &quot;Brand&quot;)</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="p">)</span>
+<span class="n">reference</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">image_references</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">assert</span> <span class="n">reference</span><span class="o">.</span><span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;assets/logo.png&quot;</span>
+<span class="k">assert</span> <span class="n">reference</span><span class="o">.</span><span class="n">title</span> <span class="o">==</span> <span class="s2">&quot;Brand&quot;</span>
+</code></pre></div>
+<h2 id="validate-with-or-without-presentation">Validate with or without presentation</h2>
+<div class="highlight"><pre><span></span><code><span class="n">report</span> <span class="o">=</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">validate_project</span><span class="p">(</span><span class="s2">&quot;handbook&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">report</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+    <span class="n">scribpy</span><span class="o">.</span><span class="n">render_validation_report</span><span class="p">(</span><span class="n">report</span><span class="p">)</span>
+</code></pre></div>
+<p>For a small script where printing is desired immediately:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="ow">not</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">valid_report</span><span class="p">(</span><span class="s2">&quot;handbook&quot;</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+<p>Pass a custom Rich <code>Console</code> to <code>valid_report</code> or
+<code>render_validation_report</code> when capturing output in a host application.</p>
+<p><code>validate_project(root)</code> returns a <code>ProjectValidationReport</code> — inspect
+<code>is_valid</code>, <code>has_errors</code>, <code>markdown_count</code>, <code>manifest_count</code>, and iterate
+<code>diagnostics</code> (a tuple of <code>ProjectDiagnostic</code>). Filter by severity with
+<code>by_severity</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">report</span> <span class="o">=</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">validate_project</span><span class="p">(</span><span class="s2">&quot;handbook&quot;</span><span class="p">)</span>
+
+<span class="n">warnings</span> <span class="o">=</span> <span class="n">report</span><span class="o">.</span><span class="n">by_severity</span><span class="p">(</span><span class="n">scribpy</span><span class="o">.</span><span class="n">DiagnosticSeverity</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">warning</span> <span class="ow">in</span> <span class="n">warnings</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">warning</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">warning</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">warning</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">markdown_count</span><span class="si">}</span><span class="s2"> Markdown files, &quot;</span>
+      <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">manifest_count</span><span class="si">}</span><span class="s2"> manifests inspected&quot;</span><span class="p">)</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>validate_project(root)</code></td>
+<td>Returns a structured <code>ProjectValidationReport</code>. Does not print. Use in services, tests, CI gates.</td>
+</tr>
+<tr>
+<td><code>valid_report(root, *, console=None)</code></td>
+<td>Calls <code>validate_project</code>, renders with Rich, returns <code>bool</code>. Convenience wrapper, not a distinct validator.</td>
+</tr>
+<tr>
+<td><code>render_validation_report(report, *, console=None)</code></td>
+<td>Presents an existing report. Does not revalidate the filesystem.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="load-diagnose-and-assemble">Load, diagnose, and assemble</h2>
+<div class="highlight"><pre><span></span><code><span class="n">root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;handbook&quot;</span><span class="p">)</span>
+<span class="n">collection</span> <span class="o">=</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">MarkdownCollection</span><span class="o">.</span><span class="n">from_tree</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+<span class="n">diagnostics</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">diagnose</span><span class="p">()</span>
+<span class="k">if</span> <span class="n">diagnostics</span><span class="o">.</span><span class="n">has_errors</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">InvalidMarkdownError</span><span class="p">(</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+
+<span class="n">output</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;build/handbook.md&quot;</span><span class="p">)</span>
+<span class="n">scribpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+</code></pre></div>
+<p>The manifest belongs to the collection and controls transforms:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">collection</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">project</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">collection</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">build</span><span class="o">.</span><span class="n">toc</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">([</span><span class="n">item</span><span class="o">.</span><span class="n">path</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">collection</span><span class="o">.</span><span class="n">files</span><span class="p">])</span>
+</code></pre></div>
+<p><code>collection.manifest</code> is a <code>RootManifest</code> (<code>path</code>, <code>project</code>, <code>build</code>,
+<code>order</code>). Folders below the root use the smaller <code>FolderManifest</code> (<code>path</code>,
+<code>title</code>, <code>order</code>), loaded automatically while traversing — you normally do
+not construct either by hand.</p>
+<p><code>collection.diagnose(rules=None)</code> runs the eight default collection rules
+when <code>rules</code> is omitted, or exactly the rules you pass:</p>
+<div class="highlight"><pre><span></span><code><span class="n">errors_only</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">rule</span>
+    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="n">scribpy</span><span class="o">.</span><span class="n">SourceFirstHeadingH1Rule</span><span class="p">(),</span>
+        <span class="n">scribpy</span><span class="o">.</span><span class="n">SourceH1CountRule</span><span class="p">(),</span>
+        <span class="n">scribpy</span><span class="o">.</span><span class="n">HeadingLevelOverflowRule</span><span class="p">(),</span>
+        <span class="n">scribpy</span><span class="o">.</span><span class="n">InternalMarkdownLinkRule</span><span class="p">(),</span>
+        <span class="n">scribpy</span><span class="o">.</span><span class="n">LocalImageMissingRule</span><span class="p">(),</span>
+        <span class="n">scribpy</span><span class="o">.</span><span class="n">ExternalImageReferenceRule</span><span class="p">(),</span>
+    <span class="p">)</span>
+<span class="p">]</span>
+<span class="n">report</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">diagnose</span><span class="p">(</span><span class="n">errors_only</span><span class="p">)</span>
+</code></pre></div>
+<p>These six rule classes are exported from <code>scribpy.__all__</code> because they are
+useful to reference directly (for example, to build a custom subset). Two
+more default rules — <code>LocalAnchorLinkRule</code> and <code>ImageOutsideRootRule</code> — exist
+but are only reachable from <code>scribpy.core.diagnostics</code>; see the
+<a href="../extensions/">Extension API</a>.</p>
+<p><code>CollectionDiagnosticReport</code> (returned by <code>diagnose()</code>) exposes <code>has_errors</code>,
+<code>by_severity(severity)</code>, and <code>summary()</code>. <code>CollectionDiagnostic</code> is the
+individual finding (<code>code</code>, <code>severity</code>, <code>message</code>, <code>path</code>, <code>line</code>).
+<code>CollectionDiagnosticRule</code> is the structural protocol every rule satisfies —
+see the <a href="../extensions/">Extension API</a> for writing your own.</p>
+<h2 id="export">Export</h2>
+<div class="highlight"><pre><span></span><code><span class="n">scribpy</span><span class="o">.</span><span class="n">html_export</span><span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;build/handbook.md&quot;</span><span class="p">),</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;build/handbook.html&quot;</span><span class="p">),</span>
+    <span class="n">toc_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">css</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;handbook.css&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">scribpy</span><span class="o">.</span><span class="n">mkdocs_export</span><span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;handbook&quot;</span><span class="p">),</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;build/handbook-site&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>HTML consumes assembled Markdown. MkDocs export consumes the original project.
+This distinction matches the CLI and prevents accidental double assembly.</p>
+<p><code>html_export(source, output, toc_depth=3, css=None)</code> reads UTF-8 Markdown at
+<code>source</code>, strips Scribpy's own TOC block, derives navigation from headings,
+and writes a self-contained HTML file with inlined CSS and menu JavaScript.
+It does not create the output's parent directory, and raises
+<code>FileNotFoundError</code> if <code>source</code> or <code>css</code> is missing.</p>
+<p><code>mkdocs_export(source, output)</code> loads the project at <code>source</code> again (not the
+assembled Markdown), renders diagrams, collects images, derives navigation,
+and writes a minimal <code>mkdocs.yml</code> under <code>output</code>. It raises
+<code>ScaffoldCollisionError</code> if <code>output/mkdocs.yml</code> already exists.</p>
+<h2 id="add-temporary-logging">Add temporary logging</h2>
+<div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">logging_context</span><span class="p">(</span>
+    <span class="n">level</span><span class="o">=</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">,</span>
+    <span class="n">file</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;build/scribpy.log&quot;</span><span class="p">),</span>
+    <span class="n">console</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">collection</span> <span class="o">=</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">MarkdownCollection</span><span class="o">.</span><span class="n">from_tree</span><span class="p">(</span><span class="s2">&quot;handbook&quot;</span><span class="p">)</span>
+    <span class="n">scribpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;build/handbook.md&quot;</span><span class="p">))</span>
+</code></pre></div>
+<p>The context removes its handlers and restores the previous logger level on
+exit. <code>level</code> accepts a standard name (<code>"DEBUG"</code>, <code>"INFO"</code>, ...) or a numeric
+logging level. Set <code>console=False</code> to suppress stderr output while still
+writing to <code>file</code>.</p>
+<h2 id="handling-exceptions">Handling exceptions</h2>
+<p><code>concatenate</code>, <code>html_export</code>, and <code>mkdocs_export</code> do not convert failures
+into reports — they raise. Catch only what your application can explain or
+recover from:</p>
+<div class="highlight"><pre><span></span><code><span class="k">try</span><span class="p">:</span>
+    <span class="n">collection</span> <span class="o">=</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">MarkdownCollection</span><span class="o">.</span><span class="n">from_tree</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+    <span class="n">scribpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">InvalidScribpyManifestError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid manifest </span><span class="si">{</span><span class="n">error</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">error</span><span class="o">.</span><span class="n">detail</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">InvalidMarkdownError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid Markdown: </span><span class="si">{</span><span class="n">error</span><span class="o">.</span><span class="n">detail</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="p">(</span><span class="n">scribpy</span><span class="o">.</span><span class="n">PlantUmlRenderError</span><span class="p">,</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">MermaidRenderError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Diagram rendering failed: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">ScaffoldCollisionError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Target already has a project: </span><span class="si">{</span><span class="n">error</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filesystem operation failed: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><code>PlantUmlRenderError</code> and <code>MermaidRenderError</code> are both exported from
+<code>scribpy.__all__</code> — every diagram-rendering failure raised anywhere in the
+pipeline (server backend, Kroki backend, or Mermaid CLI) surfaces as one of
+these two domain exceptions, never a raw <code>requests</code>/<code>subprocess</code> error.</p>
+<p>All exceptions except <code>ScribpyManifestWarning</code> inherit from <code>ScribpyError</code>,
+so a broad boundary can also do:</p>
+<div class="highlight"><pre><span></span><code><span class="k">try</span><span class="p">:</span>
+    <span class="n">scribpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">scribpy</span><span class="o">.</span><span class="n">ScribpyError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scribpy could not complete the build: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Avoid catching bare <code>Exception</code>: unexpected defects should remain visible.</p>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Raised for</th>
+<th>Key attributes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ScribpyError</code></td>
+<td>Base class for all domain failures.</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>InvalidMarkdownError</code></td>
+<td>Blocking Markdown/collection structure problem.</td>
+<td><code>detail</code></td>
+</tr>
+<tr>
+<td><code>InvalidScribpyManifestError</code></td>
+<td>Invalid <code>scribpy.yml</code>.</td>
+<td><code>path</code>, <code>detail</code></td>
+</tr>
+<tr>
+<td><code>PlantUmlRenderError</code></td>
+<td>PlantUML backend failed to render.</td>
+<td><code>detail</code></td>
+</tr>
+<tr>
+<td><code>MermaidRenderError</code></td>
+<td>Mermaid backend failed to render.</td>
+<td><code>detail</code></td>
+</tr>
+<tr>
+<td><code>OutlineValidationError</code></td>
+<td>Outline Markdown is structurally invalid.</td>
+<td><code>line_number</code>, <code>detail</code></td>
+</tr>
+<tr>
+<td><code>ScaffoldCollisionError</code></td>
+<td>Target already has a <code>scribpy.yml</code>.</td>
+<td><code>path</code></td>
+</tr>
+<tr>
+<td><code>ScribpyManifestWarning</code></td>
+<td>Ignored manifest key (a <code>UserWarning</code>, not raised).</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>See the <a href="../../reference/python-api/">Python API reference</a> for every root
+export and the <a href="../demo/">complete tutorial</a> for a runnable workflow.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
