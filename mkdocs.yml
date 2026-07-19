@@ -3,6 +3,8 @@ site_description: Assemble ordered Markdown collections into publishable outputs
 docs_dir: docs
 theme:
   name: material
+  logo: assets/logo.png
+  favicon: assets/logo.png
   features:
     - navigation.sections
     - navigation.top

@@ -1,5 +1,9 @@
 # Scribpy
 
+<p align="center">
+  <img src="assets/logo.png" alt="Scribpy logo" width="180">
+</p>
+
 Scribpy assembles a directory of small Markdown notes into publishable output.
 It is for writers who want source files that stay easy to edit while manifests
 control their order. Scribpy validates the collection, rewrites cross-file
