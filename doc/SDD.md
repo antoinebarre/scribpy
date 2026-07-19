@@ -1,5 +1,44 @@
 # Software Design Description
 
+## User documentation site
+
+### Affected modules
+
+- `mkdocs.yml` defines site metadata, theme, plugins, Markdown extensions, and
+  the complete navigation.
+- `docs/` contains one English Markdown page per documentation topic.
+- `pyproject.toml` isolates site build tools in the `docs` dependency group.
+
+No module under `src/scribpy/` is changed.
+
+### Public interfaces
+
+The Scribpy Python and CLI interfaces are unchanged. The documentation build
+interface is:
+
+```shell
+uv run --group docs mkdocs build --strict
+```
+
+### Data flow
+
+MkDocs reads the explicit navigation and Markdown pages from `docs/`. The
+The `plantuml-markdown` extension sends `plantuml` blocks to PlantUML Server
+and embeds returned SVG diagrams. MkDocs Material renders the resulting page
+model as a static site under `site/`.
+
+### Error handling
+
+Strict builds fail on invalid navigation, broken internal links, malformed
+configuration, or plugin rendering errors. Network and PlantUML Server errors
+are surfaced by the plugin; no fallback diagram is silently substituted.
+
+### Test strategy
+
+Build the site in strict mode, inspect all CLI help from the actual Click
+application, execute representative CLI and Python workflows in temporary
+projects, and run the repository-wide `make check` quality gate.
+
 ## Validation d'un projet
 
 ### Modules affectés
@@ -39,4 +78,3 @@ Les tests unitaires isolent l'inspection des manifests, l'adaptation Mkforge et
 le rendu console. Les tests d'intégration créent des projets temporaires et
 exécutent `validate_project` ainsi que `valid_report` sans mocker les modules
 internes.
-

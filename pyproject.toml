@@ -40,6 +40,10 @@ dev = [
     "types-PyYAML>=6",
     "yggtools>=1.2.0",
 ]
+docs = [
+    "mkdocs-material>=9.6",
+    "plantuml-markdown>=3.11",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
