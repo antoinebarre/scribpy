@@ -1,5 +1,7 @@
 site_name: Scribpy
 site_description: Assemble ordered Markdown collections into publishable outputs.
+site_url: https://antoinebarre.github.io/scribpy/
+repo_url: https://github.com/antoinebarre/scribpy
 docs_dir: docs
 theme:
   name: material
